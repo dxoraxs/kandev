@@ -18,6 +18,7 @@ const ZH_HK_LOCALE = "zh-hk";
 const PT_PT_LOCALE = "pt-pt";
 const JA_LOCALE = "ja";
 const KO_LOCALE = "ko";
+const RU_LOCALE = "ru";
 const DISPLAY_LANGUAGE_KEY = "settings:displayLanguage";
 
 const expectLocaleActivation = async (
@@ -60,6 +61,8 @@ describe("locale predicates", () => {
     expect(isSupportedLocale(KO_LOCALE)).toBe(true);
     expect(isSupportedLocale("ko-KR")).toBe(true);
     expect(isSupportedLocale("  KO  ")).toBe(true);
+    expect(isSupportedLocale(RU_LOCALE)).toBe(true);
+    expect(isSupportedLocale("ru-RU")).toBe(true);
     expect(isSupportedLocale("pseudo")).toBe(true);
     expect(isSupportedLocale("fr")).toBe(false);
     expect(isSupportedLocale(42)).toBe(false);
@@ -76,6 +79,8 @@ describe("locale predicates", () => {
     expect(normalizeLocale("ja-JP")).toBe(JA_LOCALE);
     expect(normalizeLocale("ko")).toBe(KO_LOCALE);
     expect(normalizeLocale("ko-KR")).toBe(KO_LOCALE);
+    expect(normalizeLocale("ru")).toBe(RU_LOCALE);
+    expect(normalizeLocale("ru-RU")).toBe(RU_LOCALE);
     expect(normalizeLocale("pseudo")).toBe("pseudo");
     expect(normalizeLocale("nope")).toBe(DEFAULT_LOCALE);
     expect(normalizeLocale(undefined)).toBe(DEFAULT_LOCALE);
@@ -91,6 +96,7 @@ describe("locale predicates", () => {
       "zh-hk",
       "ja",
       "ko",
+      "ru",
       "pseudo",
     ]);
   });
@@ -108,9 +114,19 @@ describe("locale predicates", () => {
       "zh-hk",
       "ja",
       "ko",
+      "ru",
       "pseudo",
     ]);
-    expect(selectableLocales(true)).toEqual(["en", "pt-pt", "zh-cn", "zh-tw", "zh-hk", "ja", "ko"]);
+    expect(selectableLocales(true)).toEqual([
+      "en",
+      "pt-pt",
+      "zh-cn",
+      "zh-tw",
+      "zh-hk",
+      "ja",
+      "ko",
+      "ru",
+    ]);
   });
 
   /**
@@ -185,6 +201,7 @@ describe("activateLocale", () => {
     ["Traditional Chinese (Hong Kong)", "zh-HK", ZH_HK_LOCALE, "顯示語言"],
     ["Japanese", "ja", JA_LOCALE, "表示言語"],
     ["Korean", "ko-KR", KO_LOCALE, "표시 언어"],
+    ["Russian", "ru-RU", RU_LOCALE, "Язык интерфейса"],
   ])(
     "activates %s and resolves its real catalog",
     async (_name, requested, canonical, displayLanguage) => {

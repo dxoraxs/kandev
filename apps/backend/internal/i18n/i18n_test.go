@@ -25,6 +25,8 @@ func TestNormalize(t *testing.T) {
 		{"ja-JP", "ja"},
 		{"ko", "ko"},
 		{"ko-KR", "ko"},
+		{"ru", "ru"},
+		{"ru-RU", "ru"},
 		{localePtPT, localePtPT},
 		{"pt-PT", localePtPT},
 		{"pseudo", "pseudo"},
@@ -63,6 +65,9 @@ func TestTranslatesAndFallsBack(t *testing.T) {
 	}
 	if korean := T("ko", "webapp.shellUnavailable"); korean == en {
 		t.Fatalf("ko message should differ from en, both %q", en)
+	}
+	if russian := T("ru", "webapp.shellUnavailable"); russian == en {
+		t.Fatalf("ru message should differ from en, both %q", en)
 	}
 	if portuguese := T(localePtPT, "webapp.shellUnavailable"); portuguese == en {
 		t.Fatalf("pt-pt message should differ from en, both %q", en)
@@ -147,21 +152,53 @@ func TestCatalogsHaveMatchingKeys(t *testing.T) {
 	t.Parallel()
 	load()
 	source := catalogs[DefaultLocale]
-	for _, locale := range []string{"pseudo", "zh-cn", "zh-tw", "zh-hk", "ja", "ko", localePtPT} {
+	for _, locale := range []string{"pseudo", "zh-cn", "zh-tw", "zh-hk", "ja", "ko", "ru", localePtPT} {
 		translated := catalogs[locale]
-		if len(translated) != len(source) {
-			t.Fatalf("%s catalog has %d keys, want %d", locale, len(translated), len(source))
-		}
 		for key := range source {
 			if _, ok := translated[key]; !ok {
 				t.Fatalf("%s catalog is missing key %q", locale, key)
 			}
 		}
 		for key := range translated {
-			if _, ok := source[key]; !ok {
+			if _, ok := source[key]; ok {
+				continue
+			}
+			// Russian needs `few` and `many` forms that English does not have;
+			// they are legitimate only beside a plural pair the source defines.
+			base, isPlural := strings.CutSuffix(key, "_few")
+			if !isPlural {
+				base, isPlural = strings.CutSuffix(key, "_many")
+			}
+			if _, ok := source[base+"_other"]; !isPlural || !ok {
 				t.Fatalf("%s catalog has extra key %q", locale, key)
 			}
 		}
+	}
+}
+
+func TestRussianPluralCategories(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		count float64
+		want  string
+	}{
+		{0, "many"}, {1, "one"}, {2, "few"}, {4, "few"}, {5, "many"}, {11, "many"},
+		{12, "many"}, {14, "many"}, {21, "one"}, {22, "few"}, {25, "many"},
+		{101, "one"}, {111, "many"}, {1.5, "other"},
+	}
+	for _, c := range cases {
+		if got := pluralCategory("ru", c.count); got != c.want {
+			t.Errorf("pluralCategory(ru, %v) = %q, want %q", c.count, got, c.want)
+		}
+	}
+	if got := Tf("ru", "share.messageCount", map[string]any{"count": 3}); got != "3 сообщения" {
+		t.Errorf("ru few = %q", got)
+	}
+	if got := Tf("ru", "share.messageCount", map[string]any{"count": 5}); got != "5 сообщений" {
+		t.Errorf("ru many = %q", got)
+	}
+	if got := Tf("en", "share.messageCount", map[string]any{"count": 5}); got != "5 messages" {
+		t.Errorf("en other = %q", got)
 	}
 }
 

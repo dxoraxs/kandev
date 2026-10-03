@@ -37,7 +37,7 @@ const tauriConfigPath = resolve(desktopRoot, "src-tauri/tauri.conf.json");
 const startupCapabilityPath = resolve(desktopRoot, "src-tauri/capabilities/startup.json");
 const appRequire = createRequire(resolve(repoRoot, "apps/web/package.json"));
 
-const STARTUP_LOCALES = ["en", "pt-pt", "zh-cn", "zh-hk", "zh-tw", "ja"];
+const STARTUP_LOCALES = ["en", "pt-pt", "zh-cn", "zh-hk", "zh-tw", "ja", "ru"];
 const STARTUP_COPY_KEYS = [
   "loadingTitle",
   "loadingDetail",

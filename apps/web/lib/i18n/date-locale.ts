@@ -42,6 +42,7 @@ const LAZY_LOCALES: Partial<Record<SupportedLocale, () => Promise<Locale>>> = {
   "zh-hk": () => import("date-fns/locale/zh-HK").then((m) => m.zhHK),
   ja: () => import("date-fns/locale/ja").then((m) => m.ja),
   ko: () => import("date-fns/locale/ko").then((m) => m.ko),
+  ru: () => import("date-fns/locale/ru").then((m) => m.ru),
 };
 
 const loaded = new Map<SupportedLocale, Locale>([

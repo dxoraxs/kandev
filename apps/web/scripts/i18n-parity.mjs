@@ -51,12 +51,26 @@ const LOCALES_DIR = process.argv[2] ?? DEFAULT_LOCALES_DIR;
 const SOURCE_LOCALE = "en";
 
 /**
+ * `key_few` / `key_many` beside a source `key_other` are the locale's own CLDR
+ * plural forms (Russian), not a rename nobody propagated.
+ */
+function isLocalePluralForm(key, sourceMessages, locale) {
+  const match = /^(.*)_(zero|two|few|many)$/.exec(key);
+  if (!match || !sourceMessages.has(`${match[1]}_other`)) return false;
+  try {
+    return new Intl.PluralRules(locale).resolvedOptions().pluralCategories.includes(match[2]);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Per-namespace counts for one locale.
  *
  * `missing` treats an absent namespace file as all of its `en` keys missing —
  * see the note above on why this deliberately diverges from the advisory check.
  */
-function localeReport(sourceNamespaces, translatedNamespaces) {
+function localeReport(sourceNamespaces, translatedNamespaces, locale) {
   const missingByNamespace = new Map();
   const extraKeys = [];
   const absentNamespaces = [];
@@ -72,7 +86,8 @@ function localeReport(sourceNamespaces, translatedNamespaces) {
     for (const key of sourceMessages.keys()) if (!translatedMessages.has(key)) missing += 1;
     missingByNamespace.set(namespace, missing);
     for (const key of translatedMessages.keys()) {
-      if (!sourceMessages.has(key)) extraKeys.push(`${namespace}: ${key}`);
+      if (sourceMessages.has(key) || isLocalePluralForm(key, sourceMessages, locale)) continue;
+      extraKeys.push(`${namespace}: ${key}`);
     }
   }
 
@@ -146,7 +161,7 @@ const locales = discoverRealLocales(LOCALES_DIR);
 const reports = new Map(
   locales.map((locale) => [
     locale,
-    localeReport(sourceNamespaces, readLocaleNamespaces(LOCALES_DIR, locale)),
+    localeReport(sourceNamespaces, readLocaleNamespaces(LOCALES_DIR, locale), locale),
   ]),
 );
 

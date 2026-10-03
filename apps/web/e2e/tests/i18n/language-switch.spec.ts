@@ -98,6 +98,13 @@ test.describe("i18n language switcher", () => {
       screenshot: "korean-locale-desktop",
       caption: "Settings > General > Appearance with Korean active",
     },
+    {
+      id: "ru",
+      option: "Русский",
+      displayLanguage: "Язык интерфейса",
+      screenshot: "russian-locale-desktop",
+      caption: "Settings > General > Appearance with Russian active",
+    },
   ] as const) {
     test(`switching to ${locale.option} persists through reload and can restore English`, async ({
       testPage,

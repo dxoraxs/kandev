@@ -123,11 +123,43 @@ function messageParityIssuesForNamespace(sourceMessages, translatedMessages, loc
     );
   }
   for (const key of translatedMessages.keys()) {
-    if (!sourceMessages.has(key)) {
+    if (sourceMessages.has(key)) continue;
+    const pluralSource = localePluralSourceKey(key, sourceMessages, locale);
+    if (pluralSource === null) {
       issues.push({ locale, namespace, type: "extra key", key });
+      continue;
     }
+    issues.push(
+      ...messageParityIssues(sourceMessages.get(pluralSource), translatedMessages.get(key), {
+        locale,
+        namespace,
+        key,
+      }),
+    );
   }
   return issues;
+}
+
+/**
+ * English only has `one` and `other`, so `en` cannot be the template for every
+ * plural category: Russian also needs `few` and `many`. A `key_<category>` the
+ * source lacks is legitimate when the locale's CLDR rules define that category
+ * and the source defines the `key_other` it is checked against.
+ *
+ * @returns {string | null} the source key to compare against, or null when the key is extra
+ */
+function localePluralSourceKey(key, sourceMessages, locale) {
+  const match = /^(.*)_(zero|two|few|many)$/.exec(key);
+  if (!match) return null;
+  const [, base, category] = match;
+  if (!sourceMessages.has(`${base}_other`)) return null;
+  let categories;
+  try {
+    categories = new Intl.PluralRules(locale).resolvedOptions().pluralCategories;
+  } catch {
+    return null;
+  }
+  return categories.includes(category) ? `${base}_other` : null;
 }
 
 function extraNamespaceIssues(source, translated, locale) {

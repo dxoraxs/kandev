@@ -36,6 +36,11 @@ describe("resolveInitialLocale", () => {
     expect(resolveInitialLocale(payloadWithLocale())).toBe("ko");
   });
 
+  it("restores ru from the locale cookie", () => {
+    document.cookie = `${LOCALE_COOKIE}=ru; path=/`;
+    expect(resolveInitialLocale(payloadWithLocale())).toBe("ru");
+  });
+
   it("defaults to en when neither payload nor cookie is present", () => {
     expect(resolveInitialLocale(undefined)).toBe("en");
   });

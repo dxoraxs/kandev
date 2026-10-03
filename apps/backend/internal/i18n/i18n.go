@@ -52,6 +52,7 @@ var supportedLocales = map[string]bool{
 	"zh-hk":  true,
 	"ja":     true,
 	"ko":     true,
+	"ru":     true,
 	"pseudo": true,
 }
 
@@ -259,18 +260,46 @@ func pluralKey(locale, key string, vars map[string]any) string {
 	if !ok {
 		return key
 	}
-	// Only an exact 1 is singular. Comparing the original value rather than a
-	// truncated integer is what stops 1.5 from rendering as "1.5 message".
-	suffixed := key + "_other"
-	if count == 1 {
-		suffixed = key + "_one"
-	}
 	// T echoes the key back when it is missing — that is how we detect a catalog
-	// that never defined the plural forms.
-	if T(locale, suffixed) != suffixed {
-		return suffixed
+	// that never defined the plural forms. A locale-specific category (ru `few`,
+	// `many`) that the catalog lacks falls back to `_other`, the form every
+	// catalog defines.
+	for _, category := range []string{pluralCategory(Normalize(locale), count), "other"} {
+		suffixed := key + "_" + category
+		if T(locale, suffixed) != suffixed {
+			return suffixed
+		}
 	}
 	return key
+}
+
+// pluralCategory returns the CLDR plural category for count, matching what
+// i18next derives from Intl.PluralRules on the frontend. Only an exact 1 is
+// singular in the default rule: comparing the original value rather than a
+// truncated integer is what stops 1.5 from rendering as "1.5 message".
+//
+// Russian has four categories: `one` (1, 21, 31…), `few` (2–4, 22–24…), `many`
+// (0, 5–20, 25–30…) and `other` for fractions.
+func pluralCategory(locale string, count float64) string {
+	if locale != "ru" {
+		if count == 1 {
+			return "one"
+		}
+		return "other"
+	}
+	if count != math.Trunc(count) {
+		return "other"
+	}
+	n := int64(math.Abs(count))
+	mod10, mod100 := n%10, n%100
+	switch {
+	case mod10 == 1 && mod100 != 11:
+		return "one"
+	case mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14):
+		return "few"
+	default:
+		return "many"
+	}
 }
 
 // countVar reads the plural selector out of vars as a float64, which is wide

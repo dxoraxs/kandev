@@ -74,6 +74,7 @@ describe("resolveDateLocale", () => {
     ["zh-hk", "zh-HK"],
     ["ja", "ja"],
     ["ko", "ko"],
+    ["ru", "ru"],
   ])("maps %j to the %j date-fns locale", async (locale, code) => {
     const resolved = await resolveDateLocale(locale as "en");
     expect(resolved.code).toBe(code);
@@ -138,5 +139,16 @@ describe("dateLocale", () => {
     expect(dateLocale().code).toBe("ko");
     expect(formatTimeDistance(ago(HOUR))).toBe("약 1시간 전");
     expect(formatTimeDistance(ago(3 * DAY))).toBe("3일 전");
+  });
+
+  it("renders Russian distances once ru is active", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+    await activateLocale("ru");
+    await primeDateLocale("ru");
+
+    expect(dateLocale().code).toBe("ru");
+    expect(formatTimeDistance(ago(HOUR))).toBe("около 1 часа назад");
+    expect(formatTimeDistance(ago(3 * DAY))).toBe("3 дня назад");
   });
 });

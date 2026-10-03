@@ -132,7 +132,7 @@ line-anchored and will not see one buried in a `/** */` block. The pseudo-locale
 (Settings → General → Appearance, dev/e2e builds) is still the completeness check
 for copy no literal scan can see.
 
-**Translations gate the build.** `pt-pt`, `zh-cn`, `zh-hk`, `zh-tw`, `ja` and `ko`
+**Translations gate the build.** `pt-pt`, `zh-cn`, `zh-hk`, `zh-tw`, `ja`, `ko` and `ru`
 are complete, and `check-i18n-keys.mjs` now fails on a missing key, an extra key, a
 dropped placeholder, or a value left identical to English. Adding user-facing
 copy means adding it in seven languages; for the Traditional Chinese pair run

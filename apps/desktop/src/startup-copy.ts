@@ -1,6 +1,7 @@
 import en from "./locales/en.json";
 import ja from "./locales/ja.json";
 import ptPt from "./locales/pt-pt.json";
+import ru from "./locales/ru.json";
 import zhCn from "./locales/zh-cn.json";
 import zhHk from "./locales/zh-hk.json";
 import zhTw from "./locales/zh-tw.json";
@@ -12,6 +13,7 @@ const dictionaries = {
   "zh-hk": zhHk,
   "zh-tw": zhTw,
   ja,
+  ru,
 } as const;
 
 export type StartupLocale = keyof typeof dictionaries;
@@ -35,6 +37,7 @@ function resolveStartupLocale(languages: readonly string[]): StartupLocale {
     const normalized = language.toLowerCase().replaceAll("_", "-");
     if (normalized.startsWith("pt")) return "pt-pt";
     if (normalized.startsWith("ja")) return "ja";
+    if (normalized.startsWith("ru")) return "ru";
     if (normalized.startsWith("zh")) {
       if (/^zh-(?:hant-)?(?:hk|mo)(-|$)/.test(normalized)) return "zh-hk";
       if (/^zh-(?:hant-)?tw(-|$)/.test(normalized)) return "zh-tw";

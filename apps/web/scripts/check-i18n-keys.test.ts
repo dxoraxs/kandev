@@ -59,6 +59,56 @@ const completeFixture = (): Fixture => ({
   [ZH_CN]: { common: { first: "第一", second: "第二" }, settings: { third: "第三" } },
 });
 
+/** English has only `one`/`other`; Russian also needs `few` and `many`. */
+const russianPluralFixture = (): Fixture => {
+  const fixture = completeFixture();
+  for (const locale of ["en", "pseudo", ZH_CN]) {
+    fixture[locale].common.items_one = `${locale} {{count}} item`;
+    fixture[locale].common.items_other = `${locale} {{count}} items`;
+  }
+  fixture.en.common.items_one = "{{count}} item";
+  fixture.en.common.items_other = "{{count}} items";
+  fixture.ru = {
+    common: {
+      first: "Первый",
+      second: "Второй",
+      items_one: "{{count}} элемент",
+      items_few: "{{count}} элемента",
+      items_many: "{{count}} элементов",
+      items_other: "{{count}} элемента",
+    },
+    settings: { third: "Третий" },
+  };
+  return fixture;
+};
+
+describe("locale-specific plural categories", () => {
+  it("accepts the locale's own CLDR plural categories beside a source plural pair", () => {
+    const result = runFixture(russianPluralFixture());
+
+    expect(result.stderr).not.toContain("extra key");
+    expect(result.status).toBe(0);
+  });
+
+  it("checks placeholders of a locale-only plural form against the source _other", () => {
+    const fixture = russianPluralFixture();
+    fixture.ru.common.items_few = "несколько элементов";
+    const result = runFixture(fixture);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("interpolation placeholder mismatch: items_few");
+  });
+
+  it("still fails on a plural category the locale does not have", () => {
+    const fixture = russianPluralFixture();
+    fixture[ZH_CN].common.items_few = "{{count}} 项";
+    const result = runFixture(fixture);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("extra key: items_few");
+  });
+});
+
 describe("real locale catalog parity", () => {
   it("accepts a complete real locale", () => {
     const result = runFixture(completeFixture());

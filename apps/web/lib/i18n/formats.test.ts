@@ -50,6 +50,7 @@ describe("formatRelative (catalog buckets)", () => {
   it.each([
     ["ja", "たった今", "5分前", "3時間前", "2日前"],
     ["ko", "방금", "5분 전", "3시간 전", "2일 전"],
+    ["ru", "только что", "5 мин назад", "3 ч назад", "2 д назад"],
   ] as const)("uses the %s catalog buckets", async (locale, justNow, minutes, hours, days) => {
     await activateLocale(locale);
     expect(formatRelative(ago(30_000), now)).toBe(justNow);
@@ -98,6 +99,7 @@ describe("formatSidebarElapsedTime", () => {
     ["zh-tw", "3週"],
     ["ja", "3週間"],
     ["ko", "3주"],
+    ["ru", "3нед"],
     ["pseudo", "3ŵ"],
   ] as const)("uses the %s compact unit catalog", async (locale, expected) => {
     await activateLocale(locale);
@@ -117,6 +119,7 @@ describe("formatCompactDuration", () => {
   it.each([
     ["en", "42s", "5m", "3h", "2d"],
     ["ko", "42초", "5분", "3시간", "2일"],
+    ["ru", "42с", "5мин", "3ч", "2д"],
   ] as const)("formats compact units in %s", async (locale, seconds, minutes, hours, days) => {
     await activateLocale(locale);
     expect(formatCompactDuration(42, "second")).toBe(seconds);
@@ -180,6 +183,7 @@ describe("locale-aware Intl wrappers", () => {
     ["zh-hk", "HKD", "code"],
     ["ja", "JPY", "code"],
     ["ko", "KRW", "code"],
+    ["ru", "RUB", "code"],
   ] as const)("passes %s to number and date formatters", async (locale, currency, display) => {
     await activateLocale(locale);
     expectLocaleFormatters(locale, currencyOptions(currency, display));
@@ -316,5 +320,12 @@ describe("formatRelativeTime (locale awareness)", () => {
     const korean = formatRelativeTime(threeHoursAgo, now);
     expect(korean).toContain("3");
     expect(korean).toMatch(/시간/);
+  });
+
+  it("renders Russian relative time once ru is active", async () => {
+    await activateLocale("ru");
+    const russian = formatRelativeTime(threeHoursAgo, now);
+    expect(russian).toContain("3");
+    expect(russian).toMatch(/час/);
   });
 });

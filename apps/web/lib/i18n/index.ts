@@ -26,6 +26,7 @@ export const SUPPORTED_LOCALES = [
   "zh-hk",
   "ja",
   "ko",
+  "ru",
   "pseudo",
 ] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -40,6 +41,7 @@ export const LOCALE_LABELS: Record<SupportedLocale, string> = {
   "zh-hk": "繁體中文（香港）",
   ja: "日本語",
   ko: "한국어",
+  ru: "Русский",
   pseudo: "Pseudo (QA)",
 };
 
