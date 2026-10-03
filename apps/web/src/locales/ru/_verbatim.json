@@ -1,0 +1,9 @@
+{
+  "canvases:releaseOption": "Nothing but interpolated values and punctuation; there is no prose to translate.",
+  "executors:kubernetesRequestCpu": "Nothing but an interpolated value and the CPU unit; there is no prose to translate.",
+  "office:tierBalanced": "Office model tier name, a product term shown verbatim in the Russian help text as well.",
+  "office:tierEconomy": "Office model tier name, a product term shown verbatim in the Russian help text as well.",
+  "office:tierFrontier": "Office model tier name, a product term shown verbatim in the Russian help text as well.",
+  "sidebar:office": "Office is the product mode name and stays untranslated in Russian, as the rest of the catalog refers to it.",
+  "stats:summaryGit": "The only word is the tool name Git; the rest of the line is the interpolated value."
+}
