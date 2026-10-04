@@ -168,7 +168,7 @@ func (p *pass) staysInHandoff(pf format.PlanFile, task *taskmodels.Task) bool {
 			return false
 		}
 	}
-	return true
+	return handoffHolds(p.cfg, pf, task.WorkflowStepID)
 }
 
 // describe builds the task description of a plan file. notice is the
@@ -206,6 +206,7 @@ func (p *pass) applyOne(ctx context.Context, tr tracked) error {
 	tr.task = task
 	tr.notice = carriedNotice(tr.row, tr.entry)
 	p.reconcileBoardEdit(ctx, &tr)
+	task = tr.task
 	e := tr.entry
 	stepID, err := p.desiredStep(e.file, task)
 	if err != nil {

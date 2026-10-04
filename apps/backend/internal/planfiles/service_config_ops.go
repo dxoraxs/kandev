@@ -72,6 +72,10 @@ func resolveOperationSettings(existing *Config, req *PutConfigRequest) (operatio
 			indexFile:      existing.IndexFile,
 		}
 	}
+	if existing != nil && existing.WorkflowID != req.WorkflowID {
+		// Executor steps are steps of the old workflow.
+		out.executorSteps = map[string]string{}
+	}
 	if req.ExecutorSteps != nil {
 		out.executorSteps = *req.ExecutorSteps
 	}

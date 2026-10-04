@@ -1,7 +1,7 @@
 ---
 id: "03-executor-steps"
 title: "Executor steps"
-status: pending
+status: done
 wave: 3
 depends_on: ["02-config-and-settings"]
 plan: "plan.md"
@@ -71,4 +71,8 @@ Task 02
 
 ## Results
 
-Pending.
+- `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)`: `ok  	github.com/kandev/kandev/internal/planfiles/scan	1.295s` (planfiles 2.144s, planfiles/format 1.502s, all ok).
+- `make -C apps/backend lint`: `0 issues.`
+- `gofmt -l apps/backend/internal/planfiles/`: no output.
+
+The first pass after an executor write projects the executor into the task title and description (one update, no move, no file write); the pass after that changes nothing.
