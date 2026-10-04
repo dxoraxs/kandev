@@ -133,5 +133,11 @@
   "bulkActions": "Àćţĩōńś",
   "selectTasks": "Śēĺēćţ ţàśķś",
   "cancelTaskSelection": "Ćàńćēĺ śēĺēćţĩōń",
-  "groupTasksIntoSectionsByWorkflowStep": "Ĝŕōũƥ ţàśķś ĩńţō śēćţĩōńś ƀŷ ŵōŕķƒĺōŵ śţēƥ, ŵōŕķƒĺōŵ, ŕēƥōśĩţōŕŷ, ōŕ ńōńē."
+  "groupTasksIntoSectionsByWorkflowStep": "Ĝŕōũƥ ţàśķś ĩńţō śēćţĩōńś ƀŷ ŵōŕķƒĺōŵ śţēƥ, ŵōŕķƒĺōŵ, ŕēƥōśĩţōŕŷ, ōŕ ńōńē.",
+  "cardDateWaiting": "Ŵàĩţĩńĝ ũńţĩĺ {{date}}",
+  "cardDateDue": "Ďũē {{date}}",
+  "cardDateDeferred": "Ďēƒēŕŕēď ũńţĩĺ {{date}}",
+  "cardExecutor": "Ēxēćũţōŕ: {{name}}",
+  "cardProgress_one": "{{done}} ōƒ {{count}} śţēƥ ďōńē",
+  "cardProgress_other": "{{done}} ōƒ {{count}} śţēƥś ďōńē"
 }

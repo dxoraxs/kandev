@@ -2082,4 +2082,5 @@ export const i18nGuardFiles = [
   "lib/ws/use-websocket.tsx",
   "components/task/sessionless-task-view.tsx",
   "components/task/sessionless-task-view-model.ts",
+  "components/kanban-card-display-hints.tsx",
 ];

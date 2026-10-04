@@ -252,3 +252,20 @@ describe("KanbanCardBody — parent relationship (KanbanCardRelationship)", () =
     expect(relationship.textContent).toContain(t("task:subtask"));
   });
 });
+
+describe("KanbanCardBody — title-first body", () => {
+  it("renders no description text on the card", () => {
+    render(
+      <KanbanCardBody
+        task={{ ...TASK, description: "A long description that must not show" }}
+        repositoryChips={[]}
+      />,
+    );
+    expect(screen.queryByText("A long description that must not show")).toBeNull();
+  });
+
+  it("aligns the title row to the start", () => {
+    render(<KanbanCardBody task={TASK} repositoryChips={[]} />);
+    expect(screen.getByTestId("kanban-card-title-row").className).toContain("items-start");
+  });
+});

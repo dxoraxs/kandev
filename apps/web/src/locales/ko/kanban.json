@@ -133,5 +133,11 @@
   "bulkSelected_other": "{{count}}개 선택됨",
   "bulkActions": "작업",
   "selectTasks": "작업 선택",
-  "cancelTaskSelection": "선택 취소"
+  "cancelTaskSelection": "선택 취소",
+  "cardDateWaiting": "{{date}}까지 대기",
+  "cardDateDue": "마감 {{date}}",
+  "cardDateDeferred": "{{date}}까지 연기",
+  "cardExecutor": "실행자: {{name}}",
+  "cardProgress_one": "{{count}}개 단계 중 {{done}}개 완료",
+  "cardProgress_other": "{{count}}개 단계 중 {{done}}개 완료"
 }

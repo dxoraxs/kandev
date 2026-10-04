@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Tracks whether a single-line title element is visually truncated at its
+ * Tracks whether a line-clamped title element is visually truncated at its
  * rendered width, re-measuring on resize and whenever `text` changes. Attach
  * the returned `ref` to the element whose truncation should be measured.
  *
- * The element is clamped with `line-clamp-1` (`-webkit-box` + `-webkit-line-
- * clamp`). Most titles are clipped vertically by the line clamp, while a
- * single unbroken title can also be clipped horizontally. Both axes are
- * checked so either case enables the full-title disclosure.
+ * The element is clamped with `-webkit-box` + `-webkit-line-clamp` (any line
+ * count). A title longer than the clamp is clipped vertically, while a single
+ * unbroken word can also be clipped horizontally. Both axes are checked so
+ * either case enables the full-title disclosure.
  *
  * `ResizeObserver` alone misses a truncation change caused by the title text
  * itself changing while the clamped box's own size stays constant (fixed

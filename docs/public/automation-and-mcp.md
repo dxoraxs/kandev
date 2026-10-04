@@ -787,6 +787,38 @@ When `create_task_kandev.repositories[].repository_url` is a canonical GitHub pu
 
 The task server runs inside agentctl's local runtime boundary. Its MCP routes do not use a separate bearer token. Do not expose agentctl ports; rely on the executor's process/network isolation and Kandev's session scoping.
 
+### Card display hints
+
+External writers, such as a board synchronizer, can show a date, an executor, and checklist progress on a kanban card by setting `metadata.card_display` when they create or update a task. The card shows the task title on up to two lines and no description preview; the description stays in the title hover card and the task description view.
+
+Every field is optional and validated on its own. An invalid field renders nothing, valid sibling fields still render, and a task without `card_display` shows no hint row.
+
+| Field                             | Valid value                                                            | Card result                                                                                                                                                            |
+| --------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `date`                            | `YYYY-MM-DD`, a real calendar date.                                    | Date tag with the day and abbreviated month (and the year when it is not the current year). Neutral by default, warning for today or tomorrow, danger for a past date. |
+| `date_kind`                       | `waiting`, `due`, or `deferred`. Absent or other values read as `due`. | Sets the tag icon and its tooltip: "Waiting until", "Due", or "Deferred until" plus the full date. `deferred` never uses the danger tone.                              |
+| `executor.name`                   | String of 1 to 40 characters after trimming.                           | Round badge with the tooltip "Executor: name".                                                                                                                         |
+| `executor.kind`                   | `agent` or `person`. Absent or other values read as `agent`.           | `agent` shows the first letter of the name; `person` shows a person icon.                                                                                              |
+| `progress.done`, `progress.total` | Integers with `0 <= done <= total` and `total > 0`.                    | Chip reading `done/total`, in the success tone when `done` equals `total`.                                                                                             |
+
+Dates are compared with the viewer's local calendar day. The task API stores `metadata` as given and an update replaces it, so a writer that updates `card_display` must send the other metadata keys along with it. The board reflects a change without a reload.
+
+```json
+{
+  "title": "Plan the Q4 launch",
+  "metadata": {
+    "card_display": {
+      "date": "2026-10-05",
+      "date_kind": "waiting",
+      "executor": { "name": "Claude", "kind": "agent" },
+      "progress": { "done": 1, "total": 3 }
+    }
+  }
+}
+```
+
+Include this `metadata` object in the body of the task create request (`POST /api/v1/tasks`) or the task update request (`PATCH /api/v1/tasks/:id`, with the full desired `metadata` object) to set or change the hints.
+
 <details>
 <summary>Office MCP and runtime CLI</summary>
 

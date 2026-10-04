@@ -93,6 +93,17 @@ describe("snapshotToState", () => {
     expect(state.kanban?.tasks[0]?.assigneeUserId).toBe("user-7");
   });
 
+  it("derives card display hints from task metadata", () => {
+    const snapshot = snapshotWithPendingAction(undefined);
+    snapshot.tasks[0].metadata = { card_display: { date: "2026-10-05", date_kind: "waiting" } };
+
+    const state = snapshotToState(snapshot);
+
+    expect(state.kanban?.tasks[0]?.cardDisplay).toEqual({
+      date: { iso: "2026-10-05", kind: "waiting" },
+    });
+  });
+
   it("hydrates task metadata into the initial kanban state", () => {
     const snapshot = snapshotWithPendingAction(undefined);
     snapshot.tasks[0].metadata = {

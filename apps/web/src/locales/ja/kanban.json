@@ -133,5 +133,11 @@
   "bulkActions": "操作",
   "selectTasks": "タスクを選択",
   "cancelTaskSelection": "選択をキャンセル",
-  "groupTasksIntoSectionsByWorkflowStep": "タスクをワークフローのステップ、ワークフロー、リポジトリでセクションにまとめるか、グループ化しない設定を選びます。"
+  "groupTasksIntoSectionsByWorkflowStep": "タスクをワークフローのステップ、ワークフロー、リポジトリでセクションにまとめるか、グループ化しない設定を選びます。",
+  "cardDateWaiting": "{{date}} まで待機",
+  "cardDateDue": "期限 {{date}}",
+  "cardDateDeferred": "{{date}} まで延期",
+  "cardExecutor": "担当: {{name}}",
+  "cardProgress_one": "{{count}} 件中 {{done}} 件のステップが完了",
+  "cardProgress_other": "{{count}} 件中 {{done}} 件のステップが完了"
 }

@@ -133,5 +133,11 @@
   "selectTasks": "選擇任務",
   "cancelTaskSelection": "取消選擇",
   "bulkSelected_one": "已選擇 {{count}} 個",
-  "groupTasksIntoSectionsByWorkflowStep": "按工作流程步驟、工作流程、儲存庫分組，或不分組。"
+  "groupTasksIntoSectionsByWorkflowStep": "按工作流程步驟、工作流程、儲存庫分組，或不分組。",
+  "cardDateWaiting": "等待至 {{date}}",
+  "cardDateDue": "截止 {{date}}",
+  "cardDateDeferred": "推遲至 {{date}}",
+  "cardExecutor": "執行者：{{name}}",
+  "cardProgress_one": "已完成 {{done}}/{{count}} 個步驟",
+  "cardProgress_other": "已完成 {{done}}/{{count}} 個步驟"
 }

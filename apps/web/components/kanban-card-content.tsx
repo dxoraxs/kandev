@@ -18,6 +18,7 @@ import {
   RepoChipRow,
 } from "@/components/kanban-card-status-strip";
 import { KanbanCardPriorityIndicator } from "@/components/kanban-card-priority-indicator";
+import { KanbanCardHintRow } from "@/components/kanban-card-display-hints";
 import { CardTitle } from "@/components/kanban-card-title";
 import { RemoteCloudTooltip } from "@/components/task/remote-cloud-tooltip";
 import { taskPRInfoFromSummary } from "@/lib/task-pr-info";
@@ -79,7 +80,7 @@ export function KanbanCardBody({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <RepoChipRow chips={repositoryChips} />
-          <div className="flex items-center gap-1 min-w-0" data-testid="kanban-card-title-row">
+          <div className="flex items-start gap-1 min-w-0" data-testid="kanban-card-title-row">
             <CardTitle task={task} enableTitleHover={enableTitleHover} />
             <KanbanCardPriorityIndicator priority={task.priority} />
             <PRTaskIcon taskId={task.id} prInfo={taskPRInfoFromSummary(task.statusSummary)} />
@@ -99,11 +100,7 @@ export function KanbanCardBody({
         )}
         {actions}
       </div>
-      {task.description && (
-        <p className="text-xs text-muted-foreground mt-1 leading-tight line-clamp-1">
-          {task.description}
-        </p>
-      )}
+      <KanbanCardHintRow task={task} />
       <KanbanCardRelationship task={task} />
       <KanbanCardBadges task={task} />
       <TaskCardTags task={task} />
