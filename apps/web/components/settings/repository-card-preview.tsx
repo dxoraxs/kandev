@@ -9,6 +9,7 @@ import { Button } from "@kandev/ui/button";
 import { UnsavedChangesBadge } from "@/components/settings/unsaved-indicator";
 import { SettingsCard } from "@/components/settings/settings-card";
 import { RepositoryCleanupButton } from "@/components/settings/repository-cleanup-button";
+import { useResponsiveBreakpoint } from "@/hooks/use-responsive-breakpoint";
 import type { Repository, RepositoryScript } from "@/lib/types/http";
 
 type RepositoryWithScripts = Repository & { scripts: RepositoryScript[] };
@@ -82,6 +83,9 @@ export function RepositoryPreview({
   readOnly = false,
 }: RepositoryPreviewProps) {
   const { t } = useTranslation();
+  // Desktop keeps the compact buttons; phones get the 44px touch size.
+  const { isMobile } = useResponsiveBreakpoint();
+  const buttonSize = isMobile ? "default" : "sm";
   const {
     repositoryName,
     scriptsCount,
@@ -124,10 +128,15 @@ export function RepositoryPreview({
             </div>
           </div>
           <div className="flex items-center justify-end gap-2">
-            <RepositoryCleanupButton repository={repository} readOnly={readOnly} />
+            <RepositoryCleanupButton
+              repository={repository}
+              readOnly={readOnly}
+              compact={!isMobile}
+            />
             <Button
               type="button"
               variant="outline"
+              size={buttonSize}
               className="cursor-pointer"
               onClick={(event) => {
                 event.stopPropagation();
@@ -140,6 +149,7 @@ export function RepositoryPreview({
             <Button
               type="button"
               variant="outline"
+              size={buttonSize}
               className="cursor-pointer"
               onClick={(event) => {
                 event.stopPropagation();
