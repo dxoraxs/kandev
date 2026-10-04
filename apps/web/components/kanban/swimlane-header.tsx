@@ -6,7 +6,6 @@ import { Checkbox } from "@kandev/ui/checkbox";
 import { IconChevronRight, IconGripVertical } from "@tabler/icons-react";
 import { cn } from "@kandev/ui/lib/utils";
 import { useTranslation } from "react-i18next";
-import { KanbanHeaderSort } from "./kanban-header-sort";
 
 export type SwimlaneHeaderProps = {
   workflowName: string;
@@ -81,8 +80,6 @@ export function SwimlaneHeader({
       </button>
       <div className="flex items-center gap-1">
         <div className="flex-1 border-t border-dashed border-border/50" />
-        {/* The home board has no kanban top bar, so its sort lives on the lane panel. */}
-        <KanbanHeaderSort />
         {columnsMenu}
       </div>
     </div>
