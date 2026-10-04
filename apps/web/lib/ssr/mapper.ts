@@ -2,6 +2,7 @@ import type { AppState, KanbanState } from "@/lib/state/store";
 import { primaryTaskRepository } from "@/lib/types/http";
 import type { WorkflowSnapshot, Message, Task } from "@/lib/types/http";
 import { pickAssignee, pickPendingAction, workspaceModeFromMetadata } from "@/lib/kanban/map-task";
+import { cardDisplayFromMetadata } from "@/lib/kanban/card-display";
 import {
   isPRReviewFromMetadata,
   isIssueWatchFromMetadata,
@@ -151,6 +152,7 @@ export function snapshotToState(snapshot: WorkflowSnapshot): Partial<AppState> {
         assigneeUserId: pickAssignee(task.assignee_user_id),
         parentTaskId: task.parent_id ?? undefined,
         metadata: task.metadata,
+        cardDisplay: cardDisplayFromMetadata(task.metadata),
         workspaceMode: workspaceModeFromMetadata(task.metadata),
         updatedAt: task.updated_at,
         isPRReview: isPRReviewFromMetadata(task.metadata),

@@ -1,5 +1,6 @@
 import { mapSidebarWorkspaces } from "../slices/ui/sidebar-workspace-state";
 /* eslint-disable max-lines -- Hydration owns the cross-slice merge boundary. */
+import { cardDisplayFromMetadata } from "@/lib/kanban/card-display";
 import type { Draft } from "immer";
 import type { AppState, HydrationState } from "../store";
 import type { KanbanState } from "../slices/kanban/types";
@@ -141,17 +142,41 @@ function seedOrderRevisionsFromSteps(
   );
 }
 
+/** Boot-payload tasks carry raw metadata; derive the card hints the same way the WS mapper does. */
+function withCardDisplay<T extends { metadata?: unknown }>(
+  tasks: T[] | undefined,
+): T[] | undefined {
+  return tasks?.map((task) => ({ ...task, cardDisplay: cardDisplayFromMetadata(task.metadata) }));
+}
+
+function withSnapshotCardDisplay(
+  snapshots: NonNullable<HydrationState["kanbanMulti"]>["snapshots"],
+): typeof snapshots {
+  if (!snapshots) return snapshots;
+  return Object.fromEntries(
+    Object.entries(snapshots).map(([id, snapshot]) => [
+      id,
+      snapshot ? { ...snapshot, tasks: withCardDisplay(snapshot.tasks) } : snapshot,
+    ]),
+  ) as typeof snapshots;
+}
+
 /** Hydrate kanban and workspace slices. */
 function hydrateKanbanAndWorkspace(draft: Draft<AppState>, state: HydrationState): void {
   if (state.kanban) {
     // Merge tasks by ID with timestamp comparison to avoid overwriting fresher WS data
-    const { tasks, ...kanbanRest } = state.kanban;
+    const { tasks: rawTasks, ...kanbanRest } = state.kanban;
+    const tasks = withCardDisplay(rawTasks);
     if (Object.keys(kanbanRest).length > 0) deepMerge(draft.kanban, kanbanRest);
     mergeKanbanTasks(draft.kanban, tasks);
     seedOrderRevisionsFromSteps(draft, state.kanban.steps);
   }
   if (state.kanbanMulti) {
-    deepMerge(draft.kanbanMulti, state.kanbanMulti);
+    const { snapshots, ...multiRest } = state.kanbanMulti;
+    deepMerge(draft.kanbanMulti, {
+      ...multiRest,
+      ...(snapshots ? { snapshots: withSnapshotCardDisplay(snapshots) } : {}),
+    });
     for (const snapshot of Object.values(state.kanbanMulti.snapshots ?? {})) {
       seedOrderRevisionsFromSteps(draft, snapshot?.steps);
     }

@@ -14,7 +14,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function localDay(iso: string): Date | undefined {
+export function localDay(iso: string): Date | undefined {
   const match = ISO_DATE.exec(iso);
   if (!match) return undefined;
   const [y, m, d] = [Number(match[1]), Number(match[2]), Number(match[3])];
@@ -32,7 +32,8 @@ function parseDate(raw: Record<string, unknown>): CardDisplayHints["date"] {
 function parseExecutor(raw: unknown): CardDisplayHints["executor"] {
   if (!isRecord(raw) || typeof raw.name !== "string") return undefined;
   const name = raw.name.trim();
-  if (name.length < 1 || name.length > MAX_EXECUTOR_NAME) return undefined;
+  const chars = Array.from(name).length;
+  if (chars < 1 || chars > MAX_EXECUTOR_NAME) return undefined;
   return { name, kind: raw.kind === "person" ? "person" : "agent" };
 }
 

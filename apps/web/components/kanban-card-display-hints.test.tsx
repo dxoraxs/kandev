@@ -106,4 +106,15 @@ describe("KanbanCardHintRow", () => {
     expect(screen.queryByTestId(PROGRESS_CHIP)).toBeNull();
     expect(screen.getByTestId(EXECUTOR_BADGE).className).toContain("ml-auto");
   });
+
+  it("exposes each hint as an image with an accessible name", () => {
+    row({
+      date: { iso: "2026-10-05", kind: "waiting" },
+      progress: { done: 1, total: 3 },
+      executor: { name: "claude", kind: "agent" },
+    });
+    expect(screen.getByRole("img", { name: "Waiting until October 5, 2026" })).not.toBeNull();
+    expect(screen.getByRole("img", { name: "1 of 3 steps done" })).not.toBeNull();
+    expect(screen.getByRole("img", { name: "Executor: claude" })).not.toBeNull();
+  });
 });

@@ -53,6 +53,12 @@ describe("cardDisplayFromMetadata", () => {
       "Ann",
     );
     expect(cardDisplayFromMetadata(wrap({ executor: { name: "a".repeat(40) } }))).toBeDefined();
+    expect(
+      cardDisplayFromMetadata(wrap({ executor: { name: "\u{1F600}".repeat(40) } })),
+    ).toBeDefined();
+    expect(
+      cardDisplayFromMetadata(wrap({ executor: { name: "\u{1F600}".repeat(41) } })),
+    ).toBeUndefined();
     for (const name of ["   ", "", "a".repeat(41), 5, null]) {
       expect(cardDisplayFromMetadata(wrap({ executor: { name } }))).toBeUndefined();
     }

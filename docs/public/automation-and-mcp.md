@@ -817,7 +817,7 @@ Dates are compared with the viewer's local calendar day. The task API stores `me
 }
 ```
 
-Send it as the body of `POST /api/v1/tasks` to create a task, or as the body of `PATCH /api/v1/tasks/:id` (with the full desired `metadata` object) to change the hints.
+Include this `metadata` object in the body of the task create request (`POST /api/v1/tasks`) or the task update request (`PATCH /api/v1/tasks/:id`, with the full desired `metadata` object) to set or change the hints.
 
 <details>
 <summary>Office MCP and runtime CLI</summary>

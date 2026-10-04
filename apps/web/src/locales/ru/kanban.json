@@ -152,7 +152,7 @@
   "cardDateDue": "Срок {{date}}",
   "cardDateDeferred": "Отложено до {{date}}",
   "cardExecutor": "Исполнитель: {{name}}",
-  "cardProgress_one": "{{done}} из {{count}} шагов выполнено",
+  "cardProgress_one": "{{done}} из {{count}} шага выполнено",
   "cardProgress_few": "{{done}} из {{count}} шагов выполнено",
   "cardProgress_many": "{{done}} из {{count}} шагов выполнено",
   "cardProgress_other": "{{done}} из {{count}} шагов выполнено"

@@ -9,7 +9,7 @@ import {
   IconUser,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
-import { dateTagTone, type DateKind, type DateTone } from "@/lib/kanban/card-display";
+import { dateTagTone, localDay, type DateKind, type DateTone } from "@/lib/kanban/card-display";
 import type { Task } from "@/components/kanban-card";
 
 const PILL =
@@ -33,15 +33,11 @@ const DATE_KEY = {
   deferred: "kanban:cardDateDeferred",
 } as const;
 
-function parseDay(iso: string): Date {
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
-
 function DateTag({ iso, kind }: { iso: string; kind: DateKind }) {
   const { t, i18n } = useTranslation();
   const today = new Date();
-  const day = parseDay(iso);
+  const day = localDay(iso);
+  if (!day) return null;
   const short = new Intl.DateTimeFormat(i18n.language, {
     day: "numeric",
     month: "short",
@@ -57,11 +53,12 @@ function DateTag({ iso, kind }: { iso: string; kind: DateKind }) {
       className={cn(PILL, TONE_CLASS[tone])}
       data-testid="kanban-card-date-tag"
       data-tone={tone}
+      role="img"
       aria-label={full}
       title={full}
     >
       <Icon className="h-3 w-3" aria-hidden="true" />
-      <span>{short}</span>
+      <span aria-hidden="true">{short}</span>
     </span>
   );
 }
@@ -78,11 +75,12 @@ function ProgressChip({ done, total }: { done: number; total: number }) {
       )}
       data-testid="kanban-card-progress-chip"
       data-complete={complete ? "true" : "false"}
+      role="img"
       aria-label={label}
       title={label}
     >
       <IconListCheck className="h-3 w-3" aria-hidden="true" />
-      <span>{`${done}/${total}`}</span>
+      <span aria-hidden="true">{`${done}/${total}`}</span>
     </span>
   );
 }
@@ -99,6 +97,7 @@ function ExecutorBadge({ name, kind }: { name: string; kind: "agent" | "person" 
       )}
       data-testid="kanban-card-executor-badge"
       data-kind={kind}
+      role="img"
       aria-label={label}
       title={label}
     >
