@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../client";
 import {
   createPlanFilesBoard,
+  decidePlan,
+  planDecisionErrorCode,
   getPlanFilesConfig,
   getUnadaptedPlanFiles,
   putPlanFilesConfig,
@@ -162,5 +164,41 @@ describe("plan-files-api unadapted", () => {
   it("getUnadaptedPlanFiles resolves an empty list for a null repositories field", async () => {
     fetchSpy.mockResolvedValueOnce(json({ repositories: null }));
     await expect(getUnadaptedPlanFiles(WS)).resolves.toEqual([]);
+  });
+});
+
+describe("plan-files-api decision", () => {
+  beforeEach(() => {
+    global.fetch = vi.fn() as unknown as typeof fetch;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  it("decidePlan POSTs the decision to the task route without a workspace parameter", async () => {
+    const fetchSpy = vi.fn().mockResolvedValueOnce(json({ board: "queued" }));
+    global.fetch = fetchSpy as unknown as typeof fetch;
+    const res = await decidePlan("task 1", { action: "return", comment: "fix it" });
+    const [url, init] = fetchSpy.mock.calls[0]! as [string, RequestInit];
+    expect(url).toContain("/api/v1/plan-files/tasks/task%201/decision");
+    expect(url).not.toContain("workspace_id");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual({ action: "return", comment: "fix it" });
+    expect(res.board).toBe("queued");
+  });
+
+  it("planDecisionErrorCode reads the typed code of a rejected decision", async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValueOnce(json({ error: "changed", code: "file_changed" }, 409))
+      .mockResolvedValueOnce(json({ error: "boom" }, 500));
+    global.fetch = fetchSpy as unknown as typeof fetch;
+    const changed = await decidePlan("t", { action: "accept" }).catch((e) => e);
+    expect(planDecisionErrorCode(changed)).toBe("file_changed");
+    const other = await decidePlan("t", { action: "accept" }).catch((e) => e);
+    expect(planDecisionErrorCode(other)).toBeNull();
+    expect(planDecisionErrorCode(new Error("x"))).toBeNull();
   });
 });

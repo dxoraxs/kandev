@@ -1,7 +1,7 @@
 ---
 id: "04-owner-decisions"
 title: "Owner decisions"
-status: pending
+status: done
 wave: 4
 depends_on: ["02-config-and-settings"]
 plan: "plan.md"
@@ -97,4 +97,13 @@ Task 02
 
 ## Results
 
-Pending.
+- `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)`: `ok  github.com/kandev/kandev/internal/planfiles/scan  1.560s` (planfiles, format, scan all ok).
+- `make -C apps/backend lint`: `0 issues.`
+- `(cd apps && pnpm --filter @kandev/web test -- components/task/plan-decision-bar.test.tsx)`: `Tests  16 passed (16)`.
+- `(cd apps && pnpm --filter @kandev/web test -- lib/api/domains/plan-files-api.test.ts)`: `Tests  11 passed (11)`.
+- `(cd apps/web && pnpm run typecheck)`: `tsc --noEmit` with no output (exit 0).
+- `(cd apps/web && pnpm run i18n:check)`: `no non-JSX copy - 3659 guarded file(s) checked.` (all checks passed).
+- `(cd apps && pnpm --filter @kandev/web lint)`: `eslint --max-warnings 0` with no findings.
+- Also run: `pnpm run i18n:ratchet` (`guard allowlist intact`), `gofmt -l` (empty).
+
+Mounts: the desktop bar is rendered by `TaskPageInner` in `apps/web/components/task/task-page-inner.tsx` right after the top bar, for tasks with and without sessions. The phone trigger is rendered by `MobileChatPanelContent` in `apps/web/components/task/mobile/session-mobile-layout.tsx`, in the sessionless branch and in the chat branch.

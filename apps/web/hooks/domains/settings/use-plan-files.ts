@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { t } from "@/lib/i18n";
+import { invalidatePlanBoardConfig } from "@/hooks/domains/plans/use-plan-board";
 import { ApiError } from "@/lib/api/client";
 import { listWorkflows } from "@/lib/api/domains/kanban-api";
 import { listWorkflowSteps } from "@/lib/api/domains/workflow-api";
@@ -186,6 +187,7 @@ function useSaveConfig({
         },
         { workspaceId },
       );
+      invalidatePlanBoardConfig(workspaceId);
       setConfig(saved);
       setDraft(draftFromConfig(saved));
       setError(null);

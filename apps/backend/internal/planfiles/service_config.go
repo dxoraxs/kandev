@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -53,6 +54,9 @@ type Service struct {
 
 	tasks    TaskAccess
 	archiver TaskArchiver
+
+	// clock supplies the current time to owner decisions; nil means time.Now.
+	clock func() time.Time
 
 	// workspaceAuthorizer enforces per-user workspace scoping. Nil, or a
 	// context without caller identity, means unscoped: internal callers such

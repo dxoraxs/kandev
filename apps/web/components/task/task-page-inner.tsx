@@ -16,6 +16,7 @@ import {
   SessionRecoveryFeedback,
 } from "@/components/task/ensure-session-error";
 import { TaskMoveErrorBanner } from "@/components/task/task-move-error-banner";
+import { PlanDecisionDesktopTaskBar } from "@/components/task/plan-decision-task-bars";
 import type { Layout } from "react-resizable-panels";
 import { TaskArchivedProvider } from "./task-archived-context";
 import { TaskCommands } from "@/components/task-commands";
@@ -586,6 +587,7 @@ export function TaskPageInner(props: TaskPageInnerProps) {
               onMoveStart={clearTaskMoveError}
               onMoveError={reportTaskMoveError}
             />
+            {!isMobile && <PlanDecisionDesktopTaskBar task={task} />}
             <TaskPageEntryFeedback
               taskMoveError={taskMoveError}
               ensureSession={ensureSession}

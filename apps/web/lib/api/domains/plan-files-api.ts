@@ -96,13 +96,13 @@ function planFilesUrl(path: string, workspaceId: string): string {
   return `/api/v1/plan-files/${path}?workspace_id=${encodeURIComponent(workspaceId)}`;
 }
 
-function requestOptions(options: PlanFilesApiOptions): ApiRequestOptions {
+function requestOptions(options: ApiRequestOptions & { workspaceId?: string }): ApiRequestOptions {
   const { workspaceId: _workspaceId, ...rest } = options;
   return rest;
 }
 
 function withMethod(
-  options: PlanFilesApiOptions,
+  options: ApiRequestOptions & { workspaceId?: string },
   method: string,
   body?: unknown,
 ): ApiRequestOptions {
@@ -172,4 +172,48 @@ export async function getUnadaptedPlanFiles(
     requestOptions(rest),
   );
   return res.repositories ?? [];
+}
+
+export type PlanDecisionBody = {
+  action: "accept" | "return";
+  /** Accept only: the status the plan moves to. The server defaults to done. */
+  result?: "done" | "queued";
+  comment?: string;
+};
+
+export type PlanDecisionErrorCode =
+  | "not_plan_task"
+  | "not_waiting_owner"
+  | "file_changed"
+  | "invalid_decision";
+
+const PLAN_DECISION_ERROR_CODES: readonly string[] = [
+  "not_plan_task",
+  "not_waiting_owner",
+  "file_changed",
+  "invalid_decision",
+];
+
+/** The decision error code a rejected `decidePlan` carries, or null for any other failure. */
+export function planDecisionErrorCode(err: unknown): PlanDecisionErrorCode | null {
+  if (!(err instanceof ApiError)) return null;
+  const code = (err.body as { code?: unknown } | null)?.code;
+  return typeof code === "string" && PLAN_DECISION_ERROR_CODES.includes(code)
+    ? (code as PlanDecisionErrorCode)
+    : null;
+}
+
+/**
+ * Records the owner's decision on a plan task waiting for them. The workspace
+ * comes from the task, so the route takes no workspace parameter.
+ */
+export function decidePlan(
+  taskId: string,
+  body: PlanDecisionBody,
+  options: ApiRequestOptions = {},
+): Promise<{ board: PlanFileStatus }> {
+  return fetchJson<{ board: PlanFileStatus }>(
+    `/api/v1/plan-files/tasks/${encodeURIComponent(taskId)}/decision`,
+    withMethod(options, "POST", body),
+  );
 }

@@ -2084,4 +2084,8 @@ export const i18nGuardFiles = [
   "components/task/sessionless-task-view-model.ts",
   "components/kanban-card-display-hints.tsx",
   "components/settings/plan-files-operations.tsx",
+  "components/task/plan-decision-bar.tsx",
+  "components/task/plan-decision-dialog.tsx",
+  "components/task/plan-decision-drawer.tsx",
+  "hooks/domains/plans/use-plan-decision.ts",
 ];
