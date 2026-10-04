@@ -1,7 +1,7 @@
 ---
 id: "02-maintenance-launcher"
 title: "Repository maintenance task launcher and plan adaptation kind"
-status: pending
+status: done
 wave: 2
 depends_on: ["01-unadapted-detection"]
 plan: "plan.md"
