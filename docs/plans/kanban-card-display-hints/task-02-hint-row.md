@@ -1,7 +1,7 @@
 ---
 id: "02-hint-row"
 title: "Hint row components"
-status: planned
+status: done
 wave: 2
 depends_on:
   - "01-parser-mapping-and-body"

@@ -18,6 +18,7 @@ import {
   RepoChipRow,
 } from "@/components/kanban-card-status-strip";
 import { KanbanCardPriorityIndicator } from "@/components/kanban-card-priority-indicator";
+import { KanbanCardHintRow } from "@/components/kanban-card-display-hints";
 import { CardTitle } from "@/components/kanban-card-title";
 import { RemoteCloudTooltip } from "@/components/task/remote-cloud-tooltip";
 import { taskPRInfoFromSummary } from "@/lib/task-pr-info";
@@ -99,6 +100,7 @@ export function KanbanCardBody({
         )}
         {actions}
       </div>
+      <KanbanCardHintRow task={task} />
       <KanbanCardRelationship task={task} />
       <KanbanCardBadges task={task} />
       <TaskCardTags task={task} />

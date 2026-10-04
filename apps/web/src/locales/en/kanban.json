@@ -133,5 +133,11 @@
   "bulkActions": "Actions",
   "selectTasks": "Select tasks",
   "cancelTaskSelection": "Cancel selection",
-  "groupTasksIntoSectionsByWorkflowStep": "Group tasks into sections by workflow step, workflow, repository, or none."
+  "groupTasksIntoSectionsByWorkflowStep": "Group tasks into sections by workflow step, workflow, repository, or none.",
+  "cardDateWaiting": "Waiting until {{date}}",
+  "cardDateDue": "Due {{date}}",
+  "cardDateDeferred": "Deferred until {{date}}",
+  "cardExecutor": "Executor: {{name}}",
+  "cardProgress_one": "{{done}} of {{count}} step done",
+  "cardProgress_other": "{{done}} of {{count}} steps done"
 }

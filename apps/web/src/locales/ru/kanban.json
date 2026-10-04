@@ -147,5 +147,13 @@
   "bulkActions": "Действия",
   "selectTasks": "Выбрать задачи",
   "cancelTaskSelection": "Отменить выбор",
-  "groupTasksIntoSectionsByWorkflowStep": "Группировать задачи по этапам процесса, процессам, репозиториям или без группировки."
+  "groupTasksIntoSectionsByWorkflowStep": "Группировать задачи по этапам процесса, процессам, репозиториям или без группировки.",
+  "cardDateWaiting": "Ждёт до {{date}}",
+  "cardDateDue": "Срок {{date}}",
+  "cardDateDeferred": "Отложено до {{date}}",
+  "cardExecutor": "Исполнитель: {{name}}",
+  "cardProgress_one": "{{done}} из {{count}} шагов выполнено",
+  "cardProgress_few": "{{done}} из {{count}} шагов выполнено",
+  "cardProgress_many": "{{done}} из {{count}} шагов выполнено",
+  "cardProgress_other": "{{done}} из {{count}} шагов выполнено"
 }
