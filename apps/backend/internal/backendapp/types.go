@@ -30,6 +30,7 @@ import (
 	"github.com/kandev/kandev/internal/org"
 	"github.com/kandev/kandev/internal/orgunit"
 	"github.com/kandev/kandev/internal/persistence/requiredstores"
+	"github.com/kandev/kandev/internal/planfiles"
 	"github.com/kandev/kandev/internal/plugins"
 	promptservice "github.com/kandev/kandev/internal/prompts/service"
 	promptstore "github.com/kandev/kandev/internal/prompts/store"
@@ -103,9 +104,12 @@ type Services struct {
 	// WorkflowSync keeps workspace workflows in sync with definition files
 	// in a configured GitHub repository. Nil when GitHub is unavailable.
 	WorkflowSync *workflowsync.Service
-	Share        *share.HTTPHandlers
-	Office       *officeservice.Service
-	OfficeSvcs   *office.Services
+	// PlanFiles syncs plan files from local repositories onto a plan board.
+	// Nil while features.planFiles is off.
+	PlanFiles  *planfiles.Service
+	Share      *share.HTTPHandlers
+	Office     *officeservice.Service
+	OfficeSvcs *office.Services
 	// OrchScheduler is the office SchedulerIntegration constructed by
 	// startSchedulingRuntime. Exposed here so registerRoutes can
 	// wire SetTaskContextProvider after the HandoffService is built.

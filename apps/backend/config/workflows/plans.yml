@@ -1,0 +1,84 @@
+# Internal workflow TEMPLATE definition — NOT the portable import/export format.
+# Steps here reference each other by string `step_id`; the importable YAML uses a
+# `version`/`type`/`workflows` envelope and `step_position`. Don't paste this file
+# (or its `step_id` transitions) into the workflow import endpoint.
+# Format reference: docs/workflow-import-export.md
+#
+# Board for repository plan files. Each step corresponds to one plan-file
+# `board` status through the fixed table in internal/planfiles/template.go.
+# hand-to-agent has no status of its own: a task parked there is being worked
+# by an agent while its file still reads `queued` or `in_progress`.
+id: plans
+name: Plans
+description: >-
+  Board for plan files kept in local repositories. Each plan file is a task;
+  its status in the file decides the column. Moving a task to Hand to agent
+  starts an agent on the plan file.
+
+steps:
+  - id: queue
+    name: Queue
+    position: 0
+    color: bg-neutral-400
+    is_start_step: true
+    show_in_command_panel: false
+    allow_manual_move: true
+
+  - id: hand-to-agent
+    name: Hand to agent
+    position: 1
+    color: bg-purple-500
+    show_in_command_panel: false
+    allow_manual_move: true
+    prompt: |
+      This task is a plan file kept in a repository. The header at the top of
+      the task description names the repository and the path of the plan file.
+
+      Work from that file in the repository's main checkout. Read the plan,
+      do the work it describes, and keep the `board` key in the file's
+      frontmatter current: set it to `in_progress` when you start, and when you
+      stop set it to `waiting_owner` (needs the owner), `waiting_external`
+      (blocked on something outside the repository), `deferred`, or `done`.
+      In the frontmatter, change only the `board` key; other frontmatter keys
+      are managed from the board.
+
+      {{task_prompt}}
+    events:
+      on_enter:
+        - type: auto_start_agent
+
+  - id: in-progress
+    name: In progress
+    position: 2
+    color: bg-blue-500
+    show_in_command_panel: false
+    allow_manual_move: true
+
+  - id: waiting-owner
+    name: Waiting for owner
+    position: 3
+    color: bg-yellow-500
+    show_in_command_panel: false
+    allow_manual_move: true
+
+  - id: waiting-external
+    name: Waiting external
+    position: 4
+    color: bg-orange-500
+    show_in_command_panel: false
+    allow_manual_move: true
+
+  - id: deferred
+    name: Deferred
+    position: 5
+    color: bg-slate-500
+    show_in_command_panel: false
+    allow_manual_move: true
+
+  - id: done
+    name: Done
+    position: 6
+    color: bg-green-500
+    show_in_command_panel: false
+    allow_manual_move: true
+    complete_task_on_enter: true

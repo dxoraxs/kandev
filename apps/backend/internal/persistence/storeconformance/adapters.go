@@ -30,6 +30,7 @@ import (
 	"github.com/kandev/kandev/internal/orgunit"
 	"github.com/kandev/kandev/internal/persistence"
 	"github.com/kandev/kandev/internal/persistence/requiredstores"
+	"github.com/kandev/kandev/internal/planfiles"
 	"github.com/kandev/kandev/internal/plugins"
 	"github.com/kandev/kandev/internal/plugins/instances"
 	"github.com/kandev/kandev/internal/plugins/marketplace"
@@ -122,6 +123,7 @@ var schemaInitializers = map[string]testconformance.Scenario{
 	"sentry":                sentrySchema,
 	"azure-devops":          azureDevOpsSchema,
 	"workflow-sync":         workflowSyncSchema,
+	"plan-files":            planFilesSchema,
 	"office-config-sync":    officeConfigSyncSchema,
 	"automation":            automationSchema,
 }
@@ -470,6 +472,16 @@ func workflowSyncSchema(s testconformance.ScenarioContext) error {
 	}
 	if _, err := workflowsync.NewStore(s.DB, s.DB); err != nil {
 		return fmt.Errorf("workflow sync schema: %w", err)
+	}
+	return nil
+}
+
+func planFilesSchema(s testconformance.ScenarioContext) error {
+	if err := taskSchema(s); err != nil {
+		return err
+	}
+	if _, err := planfiles.NewStore(s.DB, s.DB); err != nil {
+		return fmt.Errorf("plan files schema: %w", err)
 	}
 	return nil
 }

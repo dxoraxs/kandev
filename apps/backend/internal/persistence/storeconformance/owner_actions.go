@@ -30,6 +30,8 @@ import (
 	"github.com/kandev/kandev/internal/org"
 	"github.com/kandev/kandev/internal/orgunit"
 	"github.com/kandev/kandev/internal/persistence"
+	"github.com/kandev/kandev/internal/planfiles"
+	"github.com/kandev/kandev/internal/planfiles/format"
 	"github.com/kandev/kandev/internal/plugins"
 	"github.com/kandev/kandev/internal/plugins/instances"
 	"github.com/kandev/kandev/internal/plugins/marketplace"
@@ -189,6 +191,7 @@ func buildOwnerBehaviors() map[string]ownerBehavior {
 	behaviors["sentry"] = ownerBehavior{actions: []apiAction{sentryAction()}}
 	behaviors["azure-devops"] = ownerBehavior{actions: []apiAction{azureDevOpsAction()}}
 	behaviors["workflow-sync"] = ownerBehavior{actions: []apiAction{workflowSyncAction()}}
+	behaviors["plan-files"] = ownerBehavior{actions: []apiAction{planFilesAction()}}
 	behaviors["office-config-sync"] = ownerBehavior{actions: []apiAction{officeConfigSyncAction()}}
 	behaviors["automation"] = ownerBehavior{actions: []apiAction{automationAction()}}
 
@@ -358,6 +361,10 @@ func sentryFactory(s testconformance.ScenarioContext) (any, error) {
 
 func azureDevOpsFactory(s testconformance.ScenarioContext) (any, error) {
 	return azuredevops.NewStore(s.DB, s.DB)
+}
+
+func planFilesFactory(s testconformance.ScenarioContext) (any, error) {
+	return planfiles.NewStore(s.DB, s.DB)
 }
 
 func workflowSyncFactory(s testconformance.ScenarioContext) (any, error) {
@@ -2995,6 +3002,119 @@ func workflowSyncAction() apiAction {
 	action.readBoolean = providerBoolean
 	action.conflict = action.update
 	return action
+}
+
+// planFilesAction drives plan_file_configs and plan_file_tasks through the
+// planfiles store: a config row and one task row per workspace.
+func planFilesAction() apiAction {
+	action := apiAction{name: "plan_file_configs", key: providerConfigKey}
+	action.create = planFilesCreate
+	action.read = planFilesRead
+	action.update = func(s testconformance.ScenarioContext, id string, _ any) error {
+		st, err := planFilesStore(s)
+		if err != nil {
+			return err
+		}
+		_, err = st.UpsertConfig(s.Context, planFilesConfig(id, true, "docs/plans", "docs/superpowers/plans"))
+		return err
+	}
+	action.delete = func(s testconformance.ScenarioContext, id string) error {
+		st, err := planFilesStore(s)
+		if err != nil {
+			return err
+		}
+		if err := st.DeleteTaskRow(s.Context, "task-"+id); err != nil {
+			return err
+		}
+		return st.DeleteConfig(s.Context, id)
+	}
+	action.assertDeleted = func(s testconformance.ScenarioContext, id string, _ any) error {
+		return planFilesAssertDeleted(s, id)
+	}
+	action.setBoolean = func(s testconformance.ScenarioContext, id string, _ any, enabled bool) (any, error) {
+		st, err := planFilesStore(s)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := st.UpsertConfig(s.Context, planFilesConfig(id, enabled, "docs/plans")); err != nil {
+			return nil, err
+		}
+		return planFilesRead(s, id)
+	}
+	action.readBoolean = providerBoolean
+	action.conflict = action.update
+	return action
+}
+
+func planFilesConfig(workspaceID string, enabled bool, dirs ...string) *planfiles.Config {
+	return &planfiles.Config{
+		WorkspaceID: workspaceID,
+		Enabled:     enabled,
+		WorkflowID:  "workflow-" + workspaceID,
+		StatusSteps: map[format.BoardStatus]string{format.BoardQueued: "step-queued", format.BoardDone: "step-done"},
+		Directories: dirs,
+	}
+}
+
+func planFilesStore(s testconformance.ScenarioContext) (*planfiles.Store, error) {
+	raw, err := planFilesFactory(s)
+	if err != nil {
+		return nil, err
+	}
+	return raw.(*planfiles.Store), nil
+}
+
+func planFilesRead(s testconformance.ScenarioContext, id string) (any, error) {
+	st, err := planFilesStore(s)
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := st.GetConfig(s.Context, id)
+	if err != nil {
+		return nil, err
+	}
+	return requireProviderConfig(cfg, "plan files")
+}
+
+func planFilesCreate(s testconformance.ScenarioContext, id string) (any, error) {
+	st, err := planFilesStore(s)
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := st.UpsertConfig(s.Context, planFilesConfig(id, true, "docs/plans"))
+	if err != nil {
+		return nil, err
+	}
+	taskRow := &planfiles.TaskRow{
+		TaskID: "task-" + id, WorkspaceID: id, RepositoryID: "repo-" + id, RelPath: "docs/plans/a.md",
+		ExternalID: "plan-file:" + id, LastSeenAt: time.Now().UTC(),
+	}
+	if err := st.UpsertTaskRow(s.Context, taskRow); err != nil {
+		return nil, err
+	}
+	return requireProviderConfig(cfg, "plan files")
+}
+
+func planFilesAssertDeleted(s testconformance.ScenarioContext, id string) error {
+	st, err := planFilesStore(s)
+	if err != nil {
+		return err
+	}
+	cfg, err := st.GetConfig(s.Context, id)
+	if err != nil {
+		return err
+	}
+	if cfg != nil {
+		return fmt.Errorf("plan files config %q remains after delete", id)
+	}
+	row, err := st.GetTaskRow(s.Context, "task-"+id)
+	if err != nil {
+		return err
+	}
+	if row != nil {
+		return fmt.Errorf("plan file task row for %q remains after delete", id)
+	}
+	return nil
 }
 
 //nolint:funlen // This adapter enumerates every office-config-sync assertion.

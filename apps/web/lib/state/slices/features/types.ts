@@ -11,6 +11,7 @@ export const defaultFeatureFlags = {
   office: false,
   auth: false,
   canvases: false,
+  planFiles: false,
   multiTenancy: false,
   dynamicAgentRouting: false,
   claudeBackgroundPromptHandoff: false,

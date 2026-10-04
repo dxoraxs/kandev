@@ -146,6 +146,24 @@ var registrations = []runtimeFlagRegistration{
 	},
 	{
 		definition: RuntimeFlagDefinition{
+			Key:         "features.planFiles",
+			EnvVar:      "KANDEV_FEATURES_PLAN_FILES",
+			Kind:        KindFeature,
+			Label:       "Repository plan files",
+			Description: "Shows plan files from the workspace's local repositories as tasks on a plan board and writes board edits back into the files.",
+			Stability:   StabilityExperimental,
+			RiskLevel:   RiskHigh,
+			RiskDescription: "Sync reads Markdown files from registered local repositories and writes status, priority, " +
+				"and order back into their frontmatter. Enable it only on an installation whose plan files are under " +
+				"version control, and review the first sync before relying on write-back.",
+			RestartRequired: true,
+			Mutable:         true,
+		},
+		read:  func(cfg *config.Config) bool { return cfg.Features.PlanFiles },
+		apply: func(cfg *config.Config, value bool) { cfg.Features.PlanFiles = value },
+	},
+	{
+		definition: RuntimeFlagDefinition{
 			Key:         "features.multiTenancy",
 			EnvVar:      "KANDEV_FEATURES_MULTI_TENANCY",
 			Kind:        KindFeature,

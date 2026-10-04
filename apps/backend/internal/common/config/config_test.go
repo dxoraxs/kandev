@@ -211,6 +211,7 @@ func TestFeatures_ProductionDefaults(t *testing.T) {
 	t.Setenv("KANDEV_FEATURES_OFFICE", "")
 	unsetEnv(t, "KANDEV_FEATURES_AUTH")
 	unsetEnv(t, "KANDEV_FEATURES_CANVASES")
+	unsetEnv(t, "KANDEV_FEATURES_PLAN_FILES")
 	unsetEnv(t, "KANDEV_FEATURES_CLAUDE_BACKGROUND_PROMPT_HANDOFF")
 	t.Setenv("KANDEV_DEBUG_DEV_MODE", "")
 	t.Setenv("KANDEV_DEBUG_PPROF_ENABLED", "")
@@ -229,6 +230,9 @@ func TestFeatures_ProductionDefaults(t *testing.T) {
 	}
 	if cfg.Features.ClaudeBackgroundPromptHandoff {
 		t.Error("Features.ClaudeBackgroundPromptHandoff = true, want false (experiment must remain opt-in by default)")
+	}
+	if cfg.Features.PlanFiles {
+		t.Error("Features.PlanFiles = true, want false (plan file sync must remain opt-in by default)")
 	}
 }
 

@@ -35,6 +35,10 @@ describe("feature flag repository contract", () => {
     expect(defaultFeatureFlags.canvases).toBe(false);
   });
 
+  it("keeps plan files disabled by default", () => {
+    expect(defaultFeatureFlags.planFiles).toBe(false);
+  });
+
   it("omits the graduated remote executor plugins flag", () => {
     expect(defaultFeatureFlags).not.toHaveProperty("remoteExecutorPlugins");
   });

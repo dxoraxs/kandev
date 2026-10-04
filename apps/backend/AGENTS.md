@@ -91,6 +91,7 @@ apps/backend/
 │   ├── utility/          # Shared utility functions
 │   ├── workflow/         # Workflow engine (engine, models, repository, service)
 │   ├── workflowsync/     # GitHub workflow sync (per-workspace repo config, poller, force sync)
+│   ├── planfiles/        # Repository plan files on a board (frontmatter format, safe scan, sync pass, write-back)
 │   └── worktree/         # Git worktree management for workspace isolation
 ```
 

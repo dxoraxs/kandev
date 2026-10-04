@@ -149,6 +149,7 @@ signals, and task-scoped scheduling contracts.
 - [Workflow task-step transition ledger scenarios](requirements/workflow-task-step-transition-ledger-scenarios.md)
 - [Workflow task-step transition ledger](requirements/workflow-task-step-transition-ledger.md)
 - [Human Assignee and Actor Attribution](requirements/human-assignee.md)
+- [Repository Plan Files](requirements/repository-plan-files.md)
 
 ### System design
 
@@ -220,6 +221,7 @@ signals, and task-scoped scheduling contracts.
 - [Workflow task-step transition ledger](system-design/workflow-task-step-transition-ledger.md)
 - [Human Assignee](system-design/human-assignee.md)
 - [Task Create Agent Compatibility Recovery](system-design/task-create-agent-executor-compatibility.md)
+- [Repository Plan Files](system-design/repository-plan-files.md)
 
 ## Migration record
 

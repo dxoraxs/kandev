@@ -1,0 +1,98 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError } from "../client";
+import {
+  createPlanFilesBoard,
+  getPlanFilesConfig,
+  putPlanFilesConfig,
+  syncPlanFilesNow,
+} from "./plan-files-api";
+
+const originalFetch = global.fetch;
+const WS = { workspaceId: "ws 1" };
+const WS_PARAM = "workspace_id=ws%201";
+
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+describe("plan-files-api", () => {
+  let fetchSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchSpy = vi.fn();
+    global.fetch = fetchSpy as unknown as typeof fetch;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  it("getPlanFilesConfig reads the config with an encoded workspace_id", async () => {
+    fetchSpy.mockResolvedValueOnce(json({ workspace_id: "ws 1", enabled: true }));
+    const cfg = await getPlanFilesConfig(WS);
+    const url = fetchSpy.mock.calls[0]![0] as string;
+    expect(url).toContain(`/api/v1/plan-files/config?${WS_PARAM}`);
+    expect(cfg?.enabled).toBe(true);
+  });
+
+  it("getPlanFilesConfig resolves null on 404 and rethrows other errors", async () => {
+    fetchSpy.mockResolvedValueOnce(json({ error: "plan files config not found" }, 404));
+    await expect(getPlanFilesConfig(WS)).resolves.toBeNull();
+    fetchSpy.mockResolvedValueOnce(json({ error: "boom" }, 500));
+    await expect(getPlanFilesConfig(WS)).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("putPlanFilesConfig PUTs the raw status tokens and directories", async () => {
+    fetchSpy.mockResolvedValueOnce(json({ enabled: true }));
+    const payload = {
+      enabled: true,
+      workflow_id: "wf-1",
+      status_steps: { queued: "s1", in_progress: "s2" },
+      directories: ["docs/plans"],
+    };
+    await putPlanFilesConfig(payload, WS);
+    const [url, init] = fetchSpy.mock.calls[0]! as [string, RequestInit];
+    expect(url).toContain(`/api/v1/plan-files/config?${WS_PARAM}`);
+    expect(init.method).toBe("PUT");
+    expect(JSON.parse(init.body as string)).toEqual(payload);
+  });
+
+  it("putPlanFilesConfig surfaces the backend validation message", async () => {
+    fetchSpy.mockResolvedValueOnce(
+      json({ error: 'invalid plan files config: status "done" needs a step' }, 400),
+    );
+    await expect(
+      putPlanFilesConfig(
+        { enabled: true, workflow_id: "w", status_steps: {}, directories: ["a"] },
+        WS,
+      ),
+    ).rejects.toMatchObject({ status: 400, message: expect.stringContaining("needs a step") });
+  });
+
+  it("createPlanFilesBoard POSTs to /board", async () => {
+    fetchSpy.mockResolvedValueOnce(json({ workflow_id: "wf-9", status_steps: { done: "s9" } }));
+    const res = await createPlanFilesBoard(WS);
+    const [url, init] = fetchSpy.mock.calls[0]! as [string, RequestInit];
+    expect(url).toContain(`/api/v1/plan-files/board?${WS_PARAM}`);
+    expect(init.method).toBe("POST");
+    expect(res.workflow_id).toBe("wf-9");
+  });
+
+  it("syncPlanFilesNow POSTs to /sync and rejects with a 409 ApiError while a pass runs", async () => {
+    fetchSpy.mockResolvedValueOnce(
+      json({ outcome: "ok", at: "2026-10-04T10:00:00Z", counts: {}, file_errors: [] }),
+    );
+    const res = await syncPlanFilesNow(WS);
+    const [url, init] = fetchSpy.mock.calls[0]! as [string, RequestInit];
+    expect(url).toContain(`/api/v1/plan-files/sync?${WS_PARAM}`);
+    expect(init.method).toBe("POST");
+    expect(res.outcome).toBe("ok");
+
+    fetchSpy.mockResolvedValueOnce(json({ error: "a plan file sync is already running" }, 409));
+    await expect(syncPlanFilesNow(WS)).rejects.toMatchObject({ status: 409 });
+  });
+});

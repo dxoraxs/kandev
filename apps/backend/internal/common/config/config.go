@@ -518,6 +518,10 @@ type FeaturesConfig struct {
 	// isolated runtime and lifecycle are ready for opt-in use.
 	Canvases bool `mapstructure:"canvases" json:"canvases"`
 
+	// PlanFiles gates repository plan-file sync: the config API, the plan
+	// board, and the Plan files settings section. Off in every shipped profile.
+	PlanFiles bool `mapstructure:"plan_files" json:"planFiles"`
+
 	// MultiTenancy gates organizations: a tenant boundary above users, where
 	// every user belongs to exactly one org and cross-org reach is a bug
 	// rather than a permission level. It requires Auth; enabling it without

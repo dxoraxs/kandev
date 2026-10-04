@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@kande
 import { WorkflowCard } from "@/components/settings/workflow-card";
 import { WorkflowSectionActions } from "@/components/settings/workflow-section-actions";
 import { WorkflowSyncSection } from "@/components/settings/workflow-sync-section";
+import { PlanFilesSection } from "@/components/settings/plan-files-section";
 import { useSettingsSaveContributor } from "@/components/settings/settings-save-provider";
 import { useToast } from "@/components/toast-provider";
 import { useWorkflowSettings } from "@/hooks/domains/settings/use-workflow-settings";
@@ -445,6 +446,7 @@ export function WorkspaceWorkflowsClient({
             onDialogOpenChange={setSyncDialogOpen}
           />
         )}
+        {!isImproveWorkspace && <PlanFilesSection workspaceId={workspace.id} />}
         <WorkflowList
           workflowItems={page.workflowItems}
           savedWorkflowItems={page.savedWorkflowItems}

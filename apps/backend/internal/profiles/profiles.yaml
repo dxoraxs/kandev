@@ -69,6 +69,14 @@ features:
     dev:  "false"
     e2e:  "false"
 
+  # Repository plan files: shows plan files from a workspace's local
+  # repositories as tasks on a plan board. Off in every shipped profile; e2e
+  # specs enable it through the backend fixture environment.
+  KANDEV_FEATURES_PLAN_FILES:
+    prod: "false"
+    dev:  "false"
+    e2e:  "false"
+
   # Organizations: a tenant boundary above users. Requires KANDEV_FEATURES_AUTH;
   # the backend refuses to start with this on and auth off. Off everywhere until
   # the runtime-isolation work (per-org filesystem roots, per-org agent

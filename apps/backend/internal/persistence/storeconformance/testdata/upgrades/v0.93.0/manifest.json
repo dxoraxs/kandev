@@ -97,6 +97,7 @@
     "sentry",
     "azure-devops",
     "workflow-sync",
+    "plan-files",
     "office-config-sync",
     "automation"
   ]

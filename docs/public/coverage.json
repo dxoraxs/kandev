@@ -119,6 +119,26 @@
       ]
     },
     {
+      "id": "repository-plan-files",
+      "audiences": [
+        "user"
+      ],
+      "stability": "experimental",
+      "docs": [
+        "plan-files"
+      ],
+      "sources": [
+        "apps/backend/internal/planfiles/service_sync.go",
+        "apps/backend/internal/planfiles/format/parse.go",
+        "apps/backend/internal/planfiles/scan/scan.go"
+      ],
+      "tests": [
+        "apps/backend/internal/planfiles/service_sync_test.go",
+        "apps/backend/internal/planfiles/format/parse_test.go",
+        "apps/backend/internal/planfiles/scan/scan_test.go"
+      ]
+    },
+    {
       "id": "office-and-quorum",
       "audiences": [
         "user",

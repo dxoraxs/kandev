@@ -265,6 +265,19 @@ func handleE2EReset(
 			c.JSON(http.StatusInternalServerError, gin.H{errKey: "workflow sync config cleanup failed"})
 			return
 		}
+		// The plan-file poller reads these rows globally, so they go before the
+		// task and workflow deletion for the same reason. Both tables always
+		// exist: the store is opened whether or not the feature flag is on.
+		for _, q := range []string{
+			`DELETE FROM plan_file_tasks WHERE workspace_id = ?`,
+			`DELETE FROM plan_file_configs WHERE workspace_id = ?`,
+		} {
+			if _, err := repo.DB().ExecContext(ctx, q, workspaceID); err != nil {
+				log.Error("e2e reset: plan files cleanup failed", zap.String("sql", q), zap.Error(err))
+				c.JSON(http.StatusInternalServerError, gin.H{errKey: "plan files cleanup failed"})
+				return
+			}
+		}
 		// Office config sync's poller reads office_config_sync_configs the
 		// same way the workflow-sync poller reads workflow_sync_configs
 		// above; office_config_sync_manifest has no FK/cascade onto it

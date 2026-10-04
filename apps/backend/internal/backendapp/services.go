@@ -46,6 +46,7 @@ import (
 	"github.com/kandev/kandev/internal/org"
 	"github.com/kandev/kandev/internal/orgunit"
 	"github.com/kandev/kandev/internal/persistence/requiredstores"
+	"github.com/kandev/kandev/internal/planfiles"
 	"github.com/kandev/kandev/internal/plugins"
 	promptservice "github.com/kandev/kandev/internal/prompts/service"
 	"github.com/kandev/kandev/internal/repoclone"
@@ -167,6 +168,7 @@ func assembleServices(
 		Linear:                   providers.linear,
 		Sentry:                   providers.sentry,
 		WorkflowSync:             providers.workflowSync,
+		PlanFiles:                providers.planFiles,
 		Share:                    integrations.shareHTTP,
 		Automation:               integrations.automationComponents,
 		Plugins:                  integrations.pluginsSvc,
@@ -539,6 +541,8 @@ type thirdPartyProviders struct {
 	linear        *linear.Service
 	sentry        *sentry.Service
 	workflowSync  *workflowsync.Service
+	// planFiles is nil while features.planFiles is off.
+	planFiles *planfiles.Service
 }
 
 func initThirdPartyProviders(
@@ -598,11 +602,35 @@ func initThirdPartyProviders(
 	if recordErr := recordRequiredStore(ctx, storeTracker, "workflow-sync", workflowSyncErr); recordErr != nil {
 		return nil, fmt.Errorf("initialize workflow sync: %w", recordErr)
 	}
+	planFilesSvc, planFilesErr := initPlanFilesService(cfg, dbPool, taskSvc, workflowSvc, log)
+	if recordErr := recordRequiredStore(ctx, storeTracker, "plan-files", planFilesErr); recordErr != nil {
+		return nil, fmt.Errorf("initialize plan files: %w", recordErr)
+	}
 	return &thirdPartyProviders{
 		github: githubSvc, gitlab: gitlabSvc, gitlabCleanup: gitlabCleanup,
 		azureDevOps: azureDevOpsSvc, jira: jiraSvc, linear: linearSvc,
-		sentry: sentrySvc, workflowSync: workflowSyncSvc,
+		sentry: sentrySvc, workflowSync: workflowSyncSvc, planFiles: planFilesSvc,
 	}, nil
+}
+
+// initPlanFilesService opens the plan-file store, which creates its tables
+// whether or not the feature is on, and builds the service only while
+// features.planFiles is on. A nil service keeps the routes, the poller, and
+// every other entry point unregistered.
+func initPlanFilesService(
+	cfg *config.Config, dbPool *db.Pool, taskSvc *taskservice.Service,
+	workflowSvc *workflowservice.Service, log *logger.Logger,
+) (*planfiles.Service, error) {
+	store, err := planfiles.NewStore(dbPool.Writer(), dbPool.Reader())
+	if err != nil {
+		return nil, fmt.Errorf("plan-files store: %w", err)
+	}
+	if !cfg.Features.PlanFiles {
+		return nil, nil
+	}
+	svc := planfiles.NewService(store, taskSvc, workflowSvc, log)
+	svc.SetWorkspaceAuthorizer(taskSvc.AuthorizeWorkspaceAccess)
+	return svc, nil
 }
 
 // initPluginsWiring constructs the plugins service and the agent-conversation

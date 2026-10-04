@@ -75,6 +75,7 @@ import (
 	"github.com/kandev/kandev/internal/org"
 	"github.com/kandev/kandev/internal/orgunit"
 	"github.com/kandev/kandev/internal/persistence/requiredstores"
+	"github.com/kandev/kandev/internal/planfiles"
 	"github.com/kandev/kandev/internal/plugins"
 	pluginstore "github.com/kandev/kandev/internal/plugins/store"
 	"github.com/kandev/kandev/internal/profiles"
@@ -1152,6 +1153,11 @@ func registerRoutes(p routeParams) {
 	// before the gateway accepts clients.
 	handoffSvc.RepairOrphanedWorkspaceMarkers(context.Background())
 	handoffSvc.SetVacatedStepReconciler(p.taskSvc)
+	// The plan-file sync pass archives and restores plan tasks through the
+	// shared handoff service; it exists only when features.planFiles is on.
+	if p.services.PlanFiles != nil {
+		p.services.PlanFiles.SetSyncDeps(p.taskSvc, handoffSvc)
+	}
 	// Per-user scoping for the cascade is installed by
 	// TaskHandlers.SetHandoffService, which is the call that makes the archive /
 	// delete routes prefer the cascade over the guarded Service methods.
@@ -1879,6 +1885,11 @@ func registerSecondaryRoutes(
 		p.log.Debug("Registered workflow sync handlers (HTTP)")
 	}
 
+	if p.services.PlanFiles != nil {
+		planfiles.RegisterRoutes(p.router, p.services.PlanFiles, p.log)
+		p.log.Debug("Registered plan files handlers (HTTP)")
+	}
+
 	if p.services.Automation != nil {
 		if p.services.Plugins != nil {
 			p.services.Automation.Service.SetPluginAutomationProvider(p.services.Plugins)
@@ -2018,6 +2029,7 @@ func newSSHAgentctlResolver(p routeParams) *lifecycle.AgentctlResolver {
 var integrationWorkspacePrefixes = []string{
 	"/api/v1/jira/", "/api/v1/linear/", "/api/v1/sentry/",
 	"/api/v1/azure-devops/", "/api/v1/gitlab/", "/api/v1/github/", "/api/v1/workflow-sync/",
+	"/api/v1/plan-files/",
 }
 
 // integrationWorkspaceScopeMiddleware enforces workspace ownership on the

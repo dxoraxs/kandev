@@ -28,6 +28,7 @@ import (
 	"github.com/kandev/kandev/internal/entityrefs"
 	"github.com/kandev/kandev/internal/org"
 	"github.com/kandev/kandev/internal/persistence/requiredstores"
+	"github.com/kandev/kandev/internal/planfiles"
 	"go.uber.org/zap"
 
 	// Common packages
@@ -898,6 +899,22 @@ func startAgentInfrastructure(
 		workflowSyncPoller.Start(ctx)
 		addRuntimeCleanup(func() error { workflowSyncPoller.Stop(); return nil })
 		log.Info("Workflow sync poller started")
+	}
+
+	// Start plan-file poller: reconciles plan files in each enabled
+	// workspace's local repositories with tasks on its plan board.
+	if services.PlanFiles != nil {
+		planFilesPoller := planfiles.NewPoller(services.PlanFiles, log)
+		planFilesPoller.Start(ctx)
+		addRuntimeCleanup(func() error { planFilesPoller.Stop(); return nil })
+		log.Info("Plan files poller started")
+
+		// Board moves, reorders, and priority changes on plan tasks are
+		// written back to their plan files.
+		planFilesWriteBack := planfiles.NewWriteBackSubscriber(services.PlanFiles, eventBus, log)
+		planFilesWriteBack.Start(ctx)
+		addRuntimeCleanup(func() error { planFilesWriteBack.Stop(); return nil })
+		log.Info("Plan files write-back started")
 	}
 
 	// Start Office config sync poller: periodically pulls agent/skill/
