@@ -69,6 +69,19 @@ See [docs/features.md](docs/features.md) for the full feature inventory, includi
 
 We're working on **Office mode**, a feature-flagged autonomy layer for persistent agent teams. The direction is agent instances with roles and permissions, dashboards, inbox/approvals, routines, task delegation, skills, memory, cost tracking, budgets, and workspace config sync. We'll document Office as a supported feature after it is live.
 
+## What's new in this fork
+
+Changes added in [dxoraxs/kandev](https://github.com/dxoraxs/kandev) on top of upstream Kandev. Newest first.
+
+- **Open a task without an agent** - A task with no agent profile no longer fails to start a session when you open it. It opens on a **Description** tab that renders the task description as Markdown, with a small "No agent profile configured" notice and a **Start agent** button in the corner. The **Agent** tab appears with the first session, and the Description tab stays open. On phones the description gets its own bottom-nav item and the notice moves into a drawer.
+- **Repository plan files on a board** - Plan files with a `board` frontmatter key in local repositories become tasks on a chosen workflow board. Moving a card, or changing its priority or order, is written back into the file. Experimental, behind the `features.planFiles` runtime flag (off by default).
+- **Board-order sort** - A `position_asc` sort that follows the order of cards on the board, available in the kanban header sort picker, the home swimlane panel and the sidebar task list.
+- **Russian UI** - A complete Russian translation of the web UI, with proper one/few/many/other plural forms.
+
+<p align="center">
+  <img src="docs/screenshots/task-description-view.png" alt="A task without an agent opens on the Description tab" width="900">
+</p>
+
 ## Integrations
 
 <p align="center">
