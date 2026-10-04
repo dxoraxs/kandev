@@ -1,7 +1,7 @@
 ---
 id: "01-format-additions"
 title: "Format additions"
-status: pending
+status: done
 wave: 1
 depends_on: []
 plan: "plan.md"
@@ -78,4 +78,7 @@ None
 
 ## Results
 
-Pending.
+- `(cd apps/backend && go test ./internal/planfiles/format/... -count=1 -race)`: `ok  	github.com/kandev/kandev/internal/planfiles/format	1.736s`
+- `(cd apps/backend && go test ./internal/planfiles/format/ -run FuzzAppendNote -fuzz FuzzAppendNote -fuzztime 20s)`: `ok  	github.com/kandev/kandev/internal/planfiles/format	21.699s` (the fuzzer found a lone trailing CR on the last line; fixed, and its corpus entry is kept under `format/testdata/fuzz/FuzzAppendNote`)
+- `make -C apps/backend lint`: `0 issues.`
+- Extra: `(cd apps/backend && go test ./internal/planfiles/... -count=1)`: all packages `ok`.
