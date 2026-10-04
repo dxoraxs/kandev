@@ -99,7 +99,8 @@ across projects in one place.
   the plan tasks of the `depends_on` entries that exist, and any parse error,
   followed by the file body without its frontmatter. A body longer than
   16 KiB shall be cut to at most 16 KiB, and the header shall say that the
-  full plan is in the file. Dependencies shall not block task launch.
+  full plan is in the file. Blocking by dependencies is defined by
+  [Plan board operations](plan-board-operations.md).
 - **AC-TASKS-PLAN-FILES-002.5:** Within a step, plan tasks shall be ordered by
   `order` ascending; tasks without `order` follow in file path order. The task
   priority shall equal the file's `priority`.
