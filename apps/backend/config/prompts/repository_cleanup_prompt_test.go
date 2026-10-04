@@ -74,6 +74,7 @@ func TestRepositoryCleanupPromptInventoryAndSnapshotCommands(t *testing.T) {
 		"git fetch --prune",
 		"git checkout <default>",
 		"git pull --ff-only",
+		"Do not check out anything in this phase",
 		"git branch --format",
 		"git branch -r",
 		"git worktree list",
@@ -198,5 +199,47 @@ func TestRepositoryCleanupPromptStripsSystemTagsFromRepositoryValues(t *testing.
 		if !strings.Contains(out, want) {
 			t.Errorf("stripped value %q is not rendered", want)
 		}
+	}
+}
+
+func TestRepositoryCleanupPromptSnapshotsBeforeAnyCheckout(t *testing.T) {
+	out := renderRepositoryCleanup(repositoryCleanupVars())
+	snapshot := strings.Index(out, "Before any checkout, commit")
+	checkout := strings.Index(out, "git checkout <default>")
+	pull := strings.Index(out, "git pull --ff-only")
+	if snapshot < 0 || checkout < 0 || pull < 0 {
+		t.Fatalf("missing snapshot (%d), checkout (%d), or pull (%d) instruction", snapshot, checkout, pull)
+	}
+	if snapshot > checkout || snapshot > pull {
+		t.Error("the snapshot instruction must precede the checkout and pull instructions")
+	}
+	inventory := strings.Index(out, "Phase 1: Inventory")
+	phase2 := strings.Index(out, "Phase 2: Snapshot")
+	if idx := strings.Index(out, "git checkout"); idx >= 0 && idx < phase2 && idx > inventory {
+		t.Error("Phase 1 must not check anything out")
+	}
+	for _, want := range []string{
+		"its own current branch",
+		"If the main checkout's current branch is protected, do not snapshot or touch it: stop and report it",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("snapshot rule missing %q", want)
+		}
+	}
+}
+
+func TestRepositoryCleanupPromptMergesRemoteOnlyBranches(t *testing.T) {
+	out := renderRepositoryCleanup(repositoryCleanupVars())
+	for _, want := range []string{
+		"every remaining remote branch that has no local counterpart",
+		"Merge a remote-only branch as `origin/<name>`",
+		"skip `origin/HEAD` and `origin/<default>`",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("remote-only merge rule missing %q", want)
+		}
+	}
+	if strings.Contains(out, "you decide to fold in") {
+		t.Error("remote-only merging must not be discretionary")
 	}
 }

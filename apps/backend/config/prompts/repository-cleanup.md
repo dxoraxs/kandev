@@ -17,18 +17,21 @@ Never commit to, merge, delete, or remove a protected branch or worktree, in any
 
 ## Phase 1: Inventory
 
+Do not check out anything in this phase.
+
 1. Run `git fetch --prune`.
-2. Run `git checkout <default>` and then `git pull --ff-only`. If either fails, stop and tell the owner why; change nothing else.
-3. List the local branches with `git branch --format='%(refname:short)'`, the remote branches that have no local counterpart with `git branch -r`, and the worktrees with `git worktree list`.
-4. Drop every protected branch and worktree from the working lists. Everything below applies only to what remains.
+2. List the local branches with `git branch --format='%(refname:short)'`, the remote branches that have no local counterpart with `git branch -r`, and the worktrees with `git worktree list`.
+3. Drop every protected branch and worktree from the working lists. Everything below applies only to what remains.
 
 ## Phase 2: Snapshot
 
-For each remaining worktree with uncommitted changes, and for the main checkout if it is dirty, commit all changes to that worktree's own branch with the message `chore: wip snapshot before cleanup`. Include untracked files that are not ignored. Never snapshot a protected worktree. Switch the main checkout back to `<default>` afterwards.
+Before any checkout, commit the uncommitted changes of every remaining worktree, and of the main checkout if it is dirty, to its own current branch with the message `chore: wip snapshot before cleanup`. Include untracked files that are not ignored. If the main checkout's current branch is protected, do not snapshot or touch it: stop and report it to the owner.
+
+Only after the snapshots, run `git checkout <default>` and then `git pull --ff-only`. If either fails, stop and tell the owner why; change nothing else.
 
 ## Phase 3: Merge
 
-For each remaining local branch (and each remote-only branch you decide to fold in) that has commits not in `<default>`, merge it into `<default>` with `git merge --no-ff <branch>`, one branch at a time.
+Merge into `<default>`, one branch at a time with `git merge --no-ff <branch>`, every remaining local branch and every remaining remote branch that has no local counterpart, when it has commits not in `<default>`. Merge a remote-only branch as `origin/<name>`; skip `origin/HEAD` and `origin/<default>`.
 
 - Resolve conflicts yourself. After a conflicted merge, find the project's test command in AGENTS.md, CLAUDE.md, README, Makefile, or package scripts, and run it.
 - If you are not confident in a conflict resolution, or the tests fail, run `git merge --abort` (or, once the merge commit exists, `git reset --hard <pre-merge commit>`), keep the branch, and note it with the reason for the report. Then continue with the next branch.
