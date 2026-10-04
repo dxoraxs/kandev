@@ -1,9 +1,5 @@
 // Values only, mirroring the pattern in `lib/tasks/tasks-list-options.ts`.
-export const KANBAN_SORT_OPTIONS = [
-  { value: "created_desc" },
-  { value: "priority_desc" },
-  { value: "position_asc" },
-] as const;
+export const KANBAN_SORT_OPTIONS = [{ value: "created_desc" }, { value: "priority_desc" }] as const;
 
 export type KanbanSort = (typeof KANBAN_SORT_OPTIONS)[number]["value"];
 
@@ -14,7 +10,6 @@ export const DEFAULT_KANBAN_SORT: KanbanSort = "created_desc";
 export const KANBAN_SORT_LABEL_KEYS: Record<KanbanSort, string> = {
   created_desc: "kanban:boardSortCreatedDesc",
   priority_desc: "kanban:boardSortPriorityDesc",
-  position_asc: "kanban:boardSortPositionAsc",
 };
 
 /**

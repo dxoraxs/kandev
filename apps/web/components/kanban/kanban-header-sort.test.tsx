@@ -32,23 +32,22 @@ describe("KanbanHeaderSort", () => {
   it("is visible, named by what it selects, and shows the current sort", () => {
     render(<KanbanHeaderSort />);
     const trigger = screen.getByRole("combobox", { name: "Board sort" });
-    expect(trigger.textContent).toContain("Newest first");
+    expect(trigger.textContent).toContain("Board order");
   });
 
-  it("offers the three sort variants", () => {
+  it("offers the board order and priority variants", () => {
     render(<KanbanHeaderSort />);
     openSelect();
     expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
-      "Newest first",
-      "Priority",
       "Board order",
+      "Priority",
     ]);
   });
 
   it("changes the sort through the shared display-settings handler", () => {
     render(<KanbanHeaderSort />);
     openSelect();
-    fireEvent.click(screen.getByRole("option", { name: "Board order" }));
-    expect(onBoardSortChange).toHaveBeenCalledWith("position_asc");
+    fireEvent.click(screen.getByRole("option", { name: "Priority" }));
+    expect(onBoardSortChange).toHaveBeenCalledWith("priority_desc");
   });
 });

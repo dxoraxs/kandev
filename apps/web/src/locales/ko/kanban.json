@@ -128,7 +128,6 @@
   "boardSort": "보드 정렬",
   "boardSortCreatedDesc": "최신순",
   "boardSortPriorityDesc": "우선순위순",
-  "boardSortPositionAsc": "보드 순서",
   "priorityFilter": "우선순위 필터",
   "bulkSelected_one": "{{count}}개 선택됨",
   "bulkSelected_other": "{{count}}개 선택됨",

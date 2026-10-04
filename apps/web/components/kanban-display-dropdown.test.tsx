@@ -24,7 +24,7 @@ function defaultMockSettings() {
     eligibleWorkflows: [],
     snapshots: {},
     hiddenWorkflowStepIds: {},
-    boardSort: "created_desc" as "created_desc" | "priority_desc" | "position_asc",
+    boardSort: "created_desc" as "created_desc" | "priority_desc",
     priorityFilterTokens: [] as string[],
     onWorkflowChange: vi.fn(),
     onRepositoryChange: vi.fn(),

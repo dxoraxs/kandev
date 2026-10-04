@@ -28,8 +28,6 @@ func TestNormalizeKanbanSort(t *testing.T) {
 	}{
 		{"created_desc", "created_desc"},
 		{"priority_desc", "priority_desc"},
-		{"position_asc", "position_asc"},
-		{" position_asc ", "position_asc"},
 		{" priority_desc", "priority_desc"},
 		{"", KanbanSortDefault},
 		{"priority_asc", KanbanSortDefault},
