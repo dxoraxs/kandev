@@ -17,7 +17,7 @@ type EnsureSessionResponse struct {
 	SessionID             string `json:"session_id,omitempty"`
 	State                 string `json:"state"`
 	AgentProfileID        string `json:"agent_profile_id,omitempty"`
-	Source                string `json:"source"`                   // existing_primary | existing_newest | created_prepare | created_start | skipped_terminal_pr
+	Source                string `json:"source"`                   // existing_primary | existing_newest | created_prepare | created_start | skipped_terminal_pr | queued | existing_queued | no_agent_profile
 	NewlyCreated          bool   `json:"newly_created"`            // true when a new session was created by this call
 	WorkspacePath         string `json:"workspace_path,omitempty"` // effective workspace path (for quick-chat sessions without worktrees)
 	ActivationDisposition string `json:"activation_disposition,omitempty"`
@@ -111,6 +111,12 @@ func (s *Service) EnsureSession(ctx context.Context, taskID string, opts ...Ensu
 	}
 
 	agentProfileID, step := s.resolveTaskAgentProfile(ctx, task)
+	if agentProfileID == "" && o.ActivationSource == LaunchActivationSourceSessionOpen {
+		// A passive open of a task with no resolvable agent profile is an
+		// expected state, not a launch failure: nothing is created.
+		s.logger.Debug("ensure session: no agent profile resolved", zap.String("task_id", taskID))
+		return &EnsureSessionResponse{Success: true, TaskID: taskID, Source: "no_agent_profile"}, nil
+	}
 	autoStart := stepAllowsAutoStart(step)
 	if o.AutoStart != nil {
 		autoStart = *o.AutoStart
