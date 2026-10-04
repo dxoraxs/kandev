@@ -113,7 +113,7 @@ Phone (below 768px): rows stack.
 
 ### UI-02: Offer after adding a repository
 
-Desktop dialog; phone bottom sheet (shared `Dialog` below 640px).
+Desktop dialog (shared `Dialog`); phone bottom sheet (shared `Drawer` when `isMobile`).
 
 ```text
 +-- Plans found in beaver-blocks -----------------------------+

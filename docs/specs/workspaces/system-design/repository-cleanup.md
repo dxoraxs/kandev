@@ -147,8 +147,8 @@ environment. The frontend reads it with `useFeature("repositoryCleanup")`.
   repositories when the flag is on, and not in read-only mode.
 - Desktop size follows the 28px control rule; on phones and coarse pointers the
   button is 44px.
-- `RepositoryCleanupDialog` uses the shared `Dialog` (bottom sheet below
-  640px): title, the step list, a note that the agent works in the main
+- `RepositoryCleanupDialog` uses the shared `Dialog` on desktop and the shared
+  `Drawer` (bottom sheet) when `isMobile`: title, the step list, a note that the agent works in the main
   checkout, Cancel and Start cleanup. On phones the actions stack full width
   with 44px targets.
 - Copy goes through `t("workspaces:…")` in English, pseudo, and the seven
