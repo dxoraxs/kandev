@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/kandev/kandev/internal/common/logger"
 	taskmodels "github.com/kandev/kandev/internal/task/models"
 	"github.com/kandev/kandev/internal/task/repository/repoerrors"
 )
@@ -219,4 +220,20 @@ func TestEnsureBoard_ForeignWorkspaceIsNotFound(t *testing.T) {
 
 	assert.ErrorIs(t, err, repoerrors.ErrWorkspaceNotFound)
 	assert.Empty(t, fake.created)
+}
+
+func TestEnsureBoard_DiscardsCreatedBoardWhenSavingConfigFails(t *testing.T) {
+	fake := newFakeWorkflows(t)
+	store := setupTestStore(t)
+	_, err := store.db.Exec(`CREATE TRIGGER reject_config BEFORE INSERT ON plan_file_configs
+		BEGIN SELECT RAISE(ABORT, 'insert rejected'); END`)
+	require.NoError(t, err)
+	svc := NewService(store, fake, fake, logger.Default())
+
+	created, err := svc.EnsureBoard(context.Background(), "ws-new")
+
+	require.Error(t, err)
+	assert.False(t, created)
+	assert.Equal(t, []string{"created-1"}, fake.deleted, "the board created for the config is removed")
+	assert.NotContains(t, fake.workflows, "created-1")
 }

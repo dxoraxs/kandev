@@ -3,7 +3,7 @@ Clean up the repository "{repository_name}": fold every branch and worktree into
 Repository: {repository_path}
 Default branch: {default_branch}
 
-In every command below, `<default>` stands for the default branch above. If the default branch is empty, resolve it with `git symbolic-ref refs/remotes/origin/HEAD` and use that branch name.
+In every command below, `<default>` stands for the default branch above. If the default branch is empty, resolve it with `git symbolic-ref refs/remotes/origin/HEAD` and use that branch name. If that also fails, stop and ask the owner which branch is the default; never guess it.
 
 You are working in the owner's main checkout (the repository path above), not in a worktree. The owner has authorized the merges, the conflict resolution, and, after one confirmation, the push and the deletions described below. They have authorized nothing else.
 
@@ -54,9 +54,9 @@ Do not push, delete, or remove anything before the owner's explicit confirmation
 Only after the explicit confirmation:
 
 1. Run `git push origin <default>`. If it is rejected, report the rejection and stop; delete nothing on the remote.
-2. Remove the worktrees of merged, non-protected branches with `git worktree remove <path>`.
+2. Before removing any worktree, run `git worktree list` again and skip any worktree that was not in the Phase 1 inventory. Remove the worktrees of merged, non-protected branches with `git worktree remove <path>`.
 3. Delete merged local branches with `git branch -d <branch>`.
-4. Delete remote branches only with `git push origin --delete <branch>`, and only for remote branches listed by `git branch -r --merged origin/<default>`, after the push succeeded.
+4. Delete remote branches only with `git push origin --delete <branch>`, and only for remote branches listed by `git branch -r --merged origin/<default>`, after the push succeeded. Skip any branch that is on the protected list or that is not in the Phase 3/Phase 4 list the owner confirmed.
 
 ## Phase 6: Forbidden operations
 

@@ -163,7 +163,7 @@ settings from the default workspace.
 Use the broom button on a local repository's row in **Settings → Workspaces → _workspace_ → Repositories** to have an agent fold every branch into the default branch and remove what is merged. Remote repositories do not show the button.
 
 1. Select the broom and read the confirmation. Nothing starts until you select **Start cleanup**.
-2. Kandev creates a cleanup task with the workspace **Default Agent Profile** and opens it. If a cleanup task for the repository is already active, that task opens instead.
+2. Kandev creates a cleanup task with the workspace **Default Agent Profile** and opens it. If a maintenance task (cleanup or plan adaptation) for the repository is already active, that task opens instead.
 3. The agent commits uncommitted worktree changes as WIP, merges every branch and worktree into the default branch, and resolves conflicts. It keeps any branch it is unsure about.
 4. The agent posts a summary and waits. Reply in the task conversation to confirm.
 5. After you confirm, it pushes the default branch, deletes merged branches locally and on the remote, and removes merged worktrees.
@@ -174,6 +174,13 @@ Things to know before you confirm:
 - Branches and worktrees that belong to a live Kandev task are left alone.
 - It never force-pushes. If you decline, the local merges and WIP commits stay on local branches and nothing is pushed or deleted.
 - The workspace needs a **Default Agent Profile** and a visible workflow; otherwise a message names the missing setting and no task is created.
+
+Limitations:
+
+- Protection covers tasks with a Kandev worktree. A task running with the local executor directly in the main checkout is not protected, so stop it before cleaning up.
+- The protected list is taken when the task starts. The agent re-checks worktrees before deleting.
+- A finished cleanup task stays active until you archive it. Archive it to start another cleanup; until then the broom opens the existing task.
+- Only one maintenance task (plan adaptation or cleanup) runs per repository at a time.
 
 ## Create a task
 

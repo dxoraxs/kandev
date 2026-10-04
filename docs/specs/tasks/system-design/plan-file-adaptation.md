@@ -1,5 +1,5 @@
 ---
-status: draft
+status: current
 system: tasks
 requirements:
   - REQ-TASKS-PLAN-ADAPT-001
@@ -93,7 +93,7 @@ Responses:
 | Status | Body | When |
 | --- | --- | --- |
 | 201 | `{"task_id", "session_id", "existing": false}` | Task created and launched. |
-| 200 | `{"task_id", "session_id", "existing": true}` | An active task of the same kind exists for the repository. |
+| 200 | `{"task_id", "session_id", "existing": true}` | An active maintenance task of any kind exists for the repository. |
 | 409 | `{"reason": "no_agent_profile"}` | Workspace has no default agent profile. |
 | 409 | `{"reason": "no_workflow"}` | Workspace has no visible workflow other than the plan board. |
 | 409 | `{"reason": "repository_not_local"}` | Repository source type is not `local` or `local_path` is empty. |
@@ -115,7 +115,7 @@ Task metadata on creation:
 2. Check the kind's availability (plan adaptation needs a non-nil
    `PlanFilesSetup`; cleanup needs its own flag).
 3. Active-task guard: find a non-archived task in the repository's workspace
-   whose metadata matches kind and repository and whose latest session is not
+   whose metadata carries any maintenance kind for this repository and whose latest session is not
    in a terminal state (`COMPLETED`, `FAILED`, `CANCELLED`). If found, return
    it with `existing: true`. The lookup and creation run under a
    per-repository mutex in the handler, so two clicks cannot create two tasks.
@@ -198,7 +198,7 @@ asserts each rule's presence.
 | Unadapted scan fails for one repository | That repository is omitted; others are listed. Errors are logged with repository ID only. |
 | `EnsureBoard` fails | No task is created; 500 with a generic localized error. |
 | Agent launch fails after task creation | Task remains with the launch error; owner retries from the task. |
-| Owner adds more plans later | Counts update on the next pass or endpoint read; a new adaptation task can start once the previous one is no longer active. |
+| Owner adds more plans later | Counts update on the next pass or endpoint read; a new adaptation task can start once no maintenance task of the repository (adaptation or cleanup) is active. |
 
 ## Security
 

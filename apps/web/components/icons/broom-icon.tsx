@@ -19,9 +19,9 @@ export function BroomIcon({ className, ...props }: SVGProps<SVGSVGElement>) {
       data-testid="broom-icon"
       {...props}
     >
-      <path d="M12.5 11.5l7.5 -7.5" />
-      <path d="M11 10l3 3l-3 8l-8 -8z" />
-      <path d="M12 14l-4 4" />
+      <path d="M20 3l-6.5 6.5" />
+      <path d="M11 8l5 5l-4.5 7.5l-8 -8z" />
+      <path d="M12 13.5l-3.5 3.5" />
     </svg>
   );
 }

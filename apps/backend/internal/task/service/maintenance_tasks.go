@@ -15,13 +15,13 @@ const (
 
 const maintenanceTaskPageSize = 100
 
-// FindActiveMaintenanceTask returns the non-archived task of the given kind for
-// the repository whose latest session is not terminal, together with that
+// FindActiveMaintenanceTask returns the non-archived maintenance task of any
+// kind for the repository whose latest session is not terminal, together with that
 // session's ID. A task that has no session yet (for example after a failed
 // launch) is active and yields an empty session ID. It returns nil when no
 // such task exists.
 func (s *Service) FindActiveMaintenanceTask(
-	ctx context.Context, workspaceID, repositoryID, kind string,
+	ctx context.Context, workspaceID, repositoryID string,
 ) (*models.Task, string, error) {
 	for page := 1; ; page++ {
 		tasks, total, err := s.ListTasksByWorkspace(
@@ -31,7 +31,7 @@ func (s *Service) FindActiveMaintenanceTask(
 			return nil, "", err
 		}
 		for _, task := range tasks {
-			if !isMaintenanceTask(task, kind, repositoryID) {
+			if !isMaintenanceTask(task, repositoryID) {
 				continue
 			}
 			sessionID, active, err := s.latestSessionActivity(ctx, task.ID)
@@ -48,9 +48,9 @@ func (s *Service) FindActiveMaintenanceTask(
 	}
 }
 
-func isMaintenanceTask(task *models.Task, kind, repositoryID string) bool {
+func isMaintenanceTask(task *models.Task, repositoryID string) bool {
 	return task.Metadata != nil &&
-		models.StringFromAny(task.Metadata[MetaKeyMaintenanceKind]) == kind &&
+		models.StringFromAny(task.Metadata[MetaKeyMaintenanceKind]) != "" &&
 		models.StringFromAny(task.Metadata[MetaKeyMaintenanceRepositoryID]) == repositoryID
 }
 

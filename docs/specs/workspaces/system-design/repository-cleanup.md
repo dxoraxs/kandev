@@ -1,5 +1,5 @@
 ---
-status: draft
+status: current
 system: workspaces
 requirements:
   - REQ-WORKSPACES-REPO-CLEANUP-001

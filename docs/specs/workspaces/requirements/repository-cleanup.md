@@ -1,5 +1,5 @@
 ---
-status: draft
+status: active
 system: workspaces
 created: 2026-10-05
 owners:
@@ -62,8 +62,8 @@ merged.
 - **AC-WORKSPACES-REPO-CLEANUP-001.3:** When the owner confirms, the system shall
   create a cleanup task with the workspace default agent profile, start it on the
   repository's main checkout, and open the task.
-- **AC-WORKSPACES-REPO-CLEANUP-001.4:** When a cleanup task for the same
-  repository is already active, the system shall open the existing task instead
+- **AC-WORKSPACES-REPO-CLEANUP-001.4:** When any maintenance task (cleanup or
+  plan adaptation) for the same repository is already active, the system shall open the existing task instead
   of creating another.
 - **AC-WORKSPACES-REPO-CLEANUP-001.5:** When the workspace has no default agent
   profile or no visible workflow, the system shall not create a task and shall

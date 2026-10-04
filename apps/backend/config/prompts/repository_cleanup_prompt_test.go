@@ -79,6 +79,7 @@ func TestRepositoryCleanupPromptInventoryAndSnapshotCommands(t *testing.T) {
 		"git branch -r",
 		"git worktree list",
 		"git symbolic-ref refs/remotes/origin/HEAD",
+		"If that also fails, stop and ask the owner which branch is the default; never guess it.",
 		"`chore: wip snapshot before cleanup`",
 		"the main checkout",
 	} {
@@ -134,6 +135,8 @@ func TestRepositoryCleanupPromptApplyCommands(t *testing.T) {
 		"git branch -r --merged origin/<default>",
 		"git push origin --delete",
 		"only for remote branches listed by",
+		"run `git worktree list` again and skip any worktree that was not in the Phase 1 inventory",
+		"Skip any branch that is on the protected list or that is not in the Phase 3/Phase 4 list the owner confirmed",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("apply rule missing %q", want)

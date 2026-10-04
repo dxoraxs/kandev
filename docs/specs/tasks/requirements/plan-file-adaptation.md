@@ -1,5 +1,5 @@
 ---
-status: draft
+status: active
 system: tasks
 created: 2026-10-05
 owners:
@@ -102,9 +102,9 @@ an experienced owner would, without manual setup.
 - **AC-TASKS-PLAN-ADAPT-003.3:** When the workspace has no default agent
   profile, the system shall not create a task and shall show a localized error
   that names the missing setting.
-- **AC-TASKS-PLAN-ADAPT-003.4:** When an adaptation task for the same
-  repository is already active, the system shall not create another task and
-  shall open the existing one.
+- **AC-TASKS-PLAN-ADAPT-003.4:** When any maintenance task (plan
+  adaptation or cleanup) for the same repository is already active, the system
+  shall not create another task and shall open the existing one.
 - **AC-TASKS-PLAN-ADAPT-003.5:** When the repository's source is not a local
   path, the action shall not be offered.
 

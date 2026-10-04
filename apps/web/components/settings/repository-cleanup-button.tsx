@@ -13,13 +13,19 @@ type CleanupButtonProps = {
   repository: { id: string; name?: string | null; source_type?: string | null };
   /** Read-only repositories (the dedicated Improve Kandev workspace) offer no actions. */
   readOnly?: boolean;
+  /** Matches the compact Edit and Delete buttons beside it; phones use the touch size. */
+  compact?: boolean;
 };
 
 /**
  * Icon-only broom action on a local repository row. It opens the cleanup
  * confirmation; nothing starts until the owner confirms.
  */
-export function RepositoryCleanupButton({ repository, readOnly = false }: CleanupButtonProps) {
+export function RepositoryCleanupButton({
+  repository,
+  readOnly = false,
+  compact = false,
+}: CleanupButtonProps) {
   const { t } = useTranslation();
   const enabled = useFeature("repositoryCleanup");
   const { isFinePointer } = useResponsiveBreakpoint();
@@ -31,7 +37,7 @@ export function RepositoryCleanupButton({ repository, readOnly = false }: Cleanu
     <Button
       type="button"
       variant="outline"
-      size="icon"
+      size={compact ? "icon-sm" : "icon"}
       className="cursor-pointer"
       aria-label={label}
       data-testid="repository-cleanup-button"
