@@ -39,6 +39,10 @@ describe("feature flag repository contract", () => {
     expect(defaultFeatureFlags.planFiles).toBe(false);
   });
 
+  it("keeps repository cleanup disabled by default", () => {
+    expect(defaultFeatureFlags.repositoryCleanup).toBe(false);
+  });
+
   it("omits the graduated remote executor plugins flag", () => {
     expect(defaultFeatureFlags).not.toHaveProperty("remoteExecutorPlugins");
   });

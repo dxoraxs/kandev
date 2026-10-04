@@ -1,7 +1,7 @@
 ---
 id: "01-runtime-flag"
 title: "Repository cleanup runtime flag"
-status: pending
+status: done
 wave: 1
 depends_on: []
 plan: "plan.md"

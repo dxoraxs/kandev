@@ -522,6 +522,10 @@ type FeaturesConfig struct {
 	// board, and the Plan files settings section. Off in every shipped profile.
 	PlanFiles bool `mapstructure:"plan_files" json:"planFiles"`
 
+	// RepositoryCleanup gates the repository cleanup maintenance task kind and
+	// its web action. Off in every shipped profile.
+	RepositoryCleanup bool `mapstructure:"repository_cleanup" json:"repositoryCleanup"`
+
 	// MultiTenancy gates organizations: a tenant boundary above users, where
 	// every user belongs to exactly one org and cross-org reach is a bug
 	// rather than a permission level. It requires Auth; enabling it without

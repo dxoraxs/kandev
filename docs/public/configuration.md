@@ -542,6 +542,7 @@ Copying this entire file is unnecessary and can freeze old defaults in a deploym
 | `features.canvases`              | `KANDEV_FEATURES_CANVASES`                | off                | Experimental agent-authored isolated web-app canvases for tasks and workspaces. High risk.                                                                                                                                                                                                                                                                                                                     |
 | `features.needsYouInbox`         | `KANDEV_FEATURES_NEEDS_YOU_INBOX`         | off                | Inbox for clarification questions and failed tasks in the active workspace. The Failed tab shows a bounded list with its own count.                                                                                                                                                                                                                                                                            |
 | `features.agentSurvival`         | `KANDEV_FEATURES_AGENT_SURVIVAL`          | off                | Experimental. Lets the `agentctl` control server and its running agents outlive a backend restart or upgrade, for the `local_pc` and worktree executors only. The restarted backend takes the surviving server over and reconnects to the sessions still running on it. **Unavailable on Windows**, where surviving the backend means giving up the Job Object that guarantees agent processes are cleaned up. |
+| `features.repositoryCleanup` | `KANDEV_FEATURES_REPOSITORY_CLEANUP` | off | Experimental. Adds a cleanup action to local repositories that starts an agent task to merge finished branches, delete merged branches, and remove stale worktrees. Restart required. |
 | `features.planFiles` | `KANDEV_FEATURES_PLAN_FILES` | off | Experimental. Shows Markdown plan files from local repositories as tasks on a workflow board and writes board edits back into the files. Restart required. See [Plan Files](plan-files.md). |
 | `debug.devMode`                  | `KANDEV_DEBUG_DEV_MODE`                   | off                | High-risk diagnostic endpoints and ACP frame logging.                                                                                                                                                                                                                                                                                                                                                          |
 
@@ -682,6 +683,7 @@ no public YAML key:
   `KANDEV_FEATURES_MULTI_TENANCY`,
   `KANDEV_FEATURES_NEEDS_YOU_INBOX`,
   `KANDEV_FEATURES_PLAN_FILES`,
+  `KANDEV_FEATURES_REPOSITORY_CLEANUP`,
   `KANDEV_FEATURES_CLAUDE_BACKGROUND_PROMPT_HANDOFF`,
   `KANDEV_FEATURES_CLAUDE_MID_TURN_STEERING`,
   `KANDEV_DEBUG_AGENT_MESSAGES`, `KANDEV_DEBUG_ACP_MAX_FILES`,
