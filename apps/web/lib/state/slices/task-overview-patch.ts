@@ -7,7 +7,15 @@ const renamedFields: Record<string, Array<keyof TaskOverview>> = {
   archived_at: ["isArchived"],
   repository_id: ["repositoryId"],
   repositories: ["repositories", "repositoryId"],
-  metadata: ["metadata", "workspaceMode", "isPRReview", "isIssueWatch", "issueUrl", "issueNumber"],
+  metadata: [
+    "metadata",
+    "cardDisplay",
+    "workspaceMode",
+    "isPRReview",
+    "isIssueWatch",
+    "issueUrl",
+    "issueNumber",
+  ],
 };
 
 /** Preserve wire omission separately from an explicit null or empty collection. */
