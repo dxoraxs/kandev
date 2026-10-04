@@ -1,6 +1,6 @@
 # ADR-2026-10-05-repository-maintenance-agent-tasks: Repository maintenance runs as an agent task on the main checkout
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-10-05
 **Area:** backend
 

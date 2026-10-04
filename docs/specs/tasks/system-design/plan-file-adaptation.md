@@ -1,5 +1,5 @@
 ---
-status: draft
+status: current
 system: tasks
 requirements:
   - REQ-TASKS-PLAN-ADAPT-001
@@ -198,7 +198,7 @@ asserts each rule's presence.
 | Unadapted scan fails for one repository | That repository is omitted; others are listed. Errors are logged with repository ID only. |
 | `EnsureBoard` fails | No task is created; 500 with a generic localized error. |
 | Agent launch fails after task creation | Task remains with the launch error; owner retries from the task. |
-| Owner adds more plans later | Counts update on the next pass or endpoint read; a new adaptation task can start once the previous one is no longer active. |
+| Owner adds more plans later | Counts update on the next pass or endpoint read; a new adaptation task can start once no maintenance task of the repository (adaptation or cleanup) is active. |
 
 ## Security
 
