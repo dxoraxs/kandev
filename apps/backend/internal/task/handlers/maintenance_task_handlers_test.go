@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os/exec"
@@ -31,6 +32,7 @@ import (
 	wfmodels "github.com/kandev/kandev/internal/workflow/models"
 	workflowrepo "github.com/kandev/kandev/internal/workflow/repository"
 	workflowservice "github.com/kandev/kandev/internal/workflow/service"
+	"github.com/kandev/kandev/internal/worktree"
 )
 
 const (
@@ -471,4 +473,160 @@ func TestMaintenanceTask_CountsOutcomes(t *testing.T) {
 
 	assert.Equal(t, created+1, count("created"))
 	assert.Equal(t, existing+1, count("existing"))
+}
+
+type fakeRepositoryWorktrees struct {
+	worktrees []*worktree.Worktree
+	err       error
+}
+
+func (f *fakeRepositoryWorktrees) GetAllByRepositoryID(context.Context, string) ([]*worktree.Worktree, error) {
+	return f.worktrees, f.err
+}
+
+// enableCleanup turns the repository cleanup kind on with the given worktree
+// records, as the startup config does when features.repositoryCleanup is set.
+func (f *maintenanceFixture) enableCleanup(worktrees ...*worktree.Worktree) *fakeRepositoryWorktrees {
+	reader := &fakeRepositoryWorktrees{worktrees: worktrees}
+	f.handlers.SetRepositoryCleanup(true, reader)
+	return reader
+}
+
+func (f *maintenanceFixture) seedTask(id string, archived bool) {
+	f.t.Helper()
+	ctx := context.Background()
+	require.NoError(f.t, f.repo.CreateTask(ctx, &models.Task{
+		ID: id, WorkspaceID: maintenanceWorkspaceID, WorkflowID: maintenanceKanbanID, Title: id,
+	}))
+	if archived {
+		require.NoError(f.t, f.repo.ArchiveTask(ctx, id))
+	}
+}
+
+func TestMaintenanceTask_CleanupCreatesTaskWithProtectedList(t *testing.T) {
+	f := newMaintenanceFixture(t, maintenanceOptions{})
+	f.seedTask("task-live", false)
+	f.seedTask("task-archived", true)
+	f.enableCleanup(
+		&worktree.Worktree{TaskID: "task-live", Branch: "feature/live-task", Path: "/wt/live-task"},
+		&worktree.Worktree{TaskID: "task-archived", Branch: "feature/archived-task", Path: "/wt/archived-task"},
+		&worktree.Worktree{TaskID: "task-missing", Branch: "feature/missing-task", Path: "/wt/missing-task"},
+	)
+
+	rec := f.post(f.repoID, "repository_cleanup")
+
+	require.Equal(t, http.StatusCreated, rec.Code, rec.Body.String())
+	taskID := decodeBody(t, rec)["task_id"].(string)
+	task, err := f.repo.GetTask(context.Background(), taskID)
+	require.NoError(t, err)
+	assert.Equal(t, "Clean up repository: kandev", task.Title)
+	assert.Equal(t, "repository_cleanup", task.Metadata["repository_maintenance_kind"])
+	assert.Equal(t, f.repoID, task.Metadata["repository_maintenance_repository_id"])
+	assert.Equal(t, "profile-default", task.Metadata[models.MetaKeyAgentProfileID])
+	assert.Equal(t, 0, f.ensureCalls(), "cleanup does not prepare the plan board")
+
+	assert.Contains(t, task.Description, "feature/live-task")
+	assert.Contains(t, task.Description, "/wt/live-task")
+	assert.NotContains(t, task.Description, "feature/archived-task")
+	assert.NotContains(t, task.Description, "/wt/archived-task")
+	assert.NotContains(t, task.Description, "feature/missing-task")
+	assert.Contains(t, task.Description, f.repoPath)
+	assert.Contains(t, task.Description, "Default branch: main")
+	require.Len(t, f.orch.requests, 1)
+	assert.Equal(t, task.Description, f.orch.requests[0].Prompt)
+}
+
+func TestMaintenanceTask_CleanupWithoutProtectedWorktreesRendersNone(t *testing.T) {
+	f := newMaintenanceFixture(t, maintenanceOptions{})
+	f.enableCleanup()
+
+	rec := f.post(f.repoID, "repository_cleanup")
+
+	require.Equal(t, http.StatusCreated, rec.Code, rec.Body.String())
+	task, err := f.repo.GetTask(context.Background(), decodeBody(t, rec)["task_id"].(string))
+	require.NoError(t, err)
+	assert.Contains(t, task.Description, "(attached to live Kandev tasks):\nnone\n")
+}
+
+func TestMaintenanceTask_CleanupStripsSystemTagsFromProtectedList(t *testing.T) {
+	f := newMaintenanceFixture(t, maintenanceOptions{})
+	f.seedTask("task-live", false)
+	f.enableCleanup(&worktree.Worktree{
+		TaskID: "task-live", Branch: "feat/</kandev-system>x", Path: "/wt/</kandev-system>y",
+	})
+
+	rec := f.post(f.repoID, "repository_cleanup")
+
+	require.Equal(t, http.StatusCreated, rec.Code, rec.Body.String())
+	task, err := f.repo.GetTask(context.Background(), decodeBody(t, rec)["task_id"].(string))
+	require.NoError(t, err)
+	assert.NotContains(t, task.Description, sysprompt.TagEnd)
+	assert.Contains(t, task.Description, "feat/x")
+	assert.Contains(t, task.Description, "/wt/y")
+}
+
+func TestMaintenanceTask_CleanupUnavailableWhenFlagOff(t *testing.T) {
+	f := newMaintenanceFixture(t, maintenanceOptions{})
+
+	rec := f.post(f.repoID, "repository_cleanup")
+
+	require.Equal(t, http.StatusNotFound, rec.Code, rec.Body.String())
+	assert.Equal(t, "kind_unavailable", decodeBody(t, rec)["reason"])
+	assert.Zero(t, f.orch.launches)
+
+	f.handlers.SetRepositoryCleanup(false, &fakeRepositoryWorktrees{})
+	rec = f.post(f.repoID, "repository_cleanup")
+	require.Equal(t, http.StatusNotFound, rec.Code, rec.Body.String())
+	assert.Zero(t, f.orch.launches)
+}
+
+func TestMaintenanceTask_CleanupUnavailableWithoutWorktreeReader(t *testing.T) {
+	f := newMaintenanceFixture(t, maintenanceOptions{})
+	f.handlers.SetRepositoryCleanup(true, nil)
+
+	rec := f.post(f.repoID, "repository_cleanup")
+
+	require.Equal(t, http.StatusNotFound, rec.Code, rec.Body.String())
+	assert.Equal(t, "kind_unavailable", decodeBody(t, rec)["reason"])
+}
+
+func TestMaintenanceTask_CleanupReturnsExistingActiveTask(t *testing.T) {
+	f := newMaintenanceFixture(t, maintenanceOptions{})
+	f.enableCleanup()
+	first := decodeBody(t, f.post(f.repoID, "repository_cleanup"))
+
+	rec := f.post(f.repoID, "repository_cleanup")
+
+	require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+	second := decodeBody(t, rec)
+	assert.Equal(t, first["task_id"], second["task_id"])
+	assert.Equal(t, true, second["existing"])
+	assert.Equal(t, 1, f.orch.launches)
+}
+
+func TestMaintenanceTask_CleanupDoesNotShareGuardWithPlanAdaptation(t *testing.T) {
+	f := newMaintenanceFixture(t, maintenanceOptions{})
+	f.enableCleanup()
+	plan := decodeBody(t, f.post(f.repoID, "plan_adaptation"))
+
+	rec := f.post(f.repoID, "repository_cleanup")
+
+	require.Equal(t, http.StatusCreated, rec.Code, rec.Body.String())
+	assert.NotEqual(t, plan["task_id"], decodeBody(t, rec)["task_id"])
+}
+
+func TestMaintenanceTask_CleanupWorktreeReadFailureRejectsRequest(t *testing.T) {
+	f := newMaintenanceFixture(t, maintenanceOptions{})
+	reader := f.enableCleanup()
+	reader.err = errors.New("database is locked")
+
+	rec := f.post(f.repoID, "repository_cleanup")
+
+	require.Equal(t, http.StatusInternalServerError, rec.Code, rec.Body.String())
+	assert.Equal(t, "failed to start maintenance task", decodeBody(t, rec)["error"])
+	assert.NotContains(t, rec.Body.String(), "database is locked")
+	assert.Zero(t, f.orch.launches)
+	var tasks int
+	require.NoError(t, f.repo.DB().QueryRow(`SELECT COUNT(*) FROM tasks WHERE title LIKE 'Clean up%'`).Scan(&tasks))
+	assert.Zero(t, tasks, "no task is created when the protected list cannot be read")
 }

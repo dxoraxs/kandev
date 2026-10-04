@@ -246,6 +246,14 @@ func (m *Manager) GetByID(ctx context.Context, worktreeID string) (*Worktree, er
 	return wt, nil
 }
 
+// GetAllByRepositoryID returns every non-deleted worktree record of a repository.
+func (m *Manager) GetAllByRepositoryID(ctx context.Context, repositoryID string) ([]*Worktree, error) {
+	if m.store == nil {
+		return nil, nil
+	}
+	return m.store.GetWorktreesByRepositoryID(ctx, repositoryID)
+}
+
 // GetAllByTaskID returns all worktrees for a task.
 func (m *Manager) GetAllByTaskID(ctx context.Context, taskID string) ([]*Worktree, error) {
 	if m.store == nil {

@@ -89,6 +89,12 @@ var maintenanceKinds = map[string]maintenanceKind{
 		variables:  planAdaptationVariables,
 		title:      func(name string) string { return "Adapt plan files: " + name },
 	},
+	maintenanceKindRepositoryCleanup: {
+		available:  repositoryCleanupAvailable,
+		promptName: "repository-cleanup",
+		variables:  repositoryCleanupVariables,
+		title:      func(name string) string { return "Clean up repository: " + name },
+	},
 }
 
 func preparePlanAdaptation(ctx context.Context, h *TaskHandlers, in maintenanceInput) error {

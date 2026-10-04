@@ -1,7 +1,7 @@
 ---
 id: "02-cleanup-kind-and-prompt"
 title: "Repository cleanup launcher kind and prompt"
-status: pending
+status: done
 wave: 2
 depends_on: ["01-runtime-flag", "../plan-file-adaptation/02-maintenance-launcher"]
 plan: "plan.md"

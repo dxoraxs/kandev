@@ -1658,6 +1658,9 @@ func registerTaskRoutes(p routeParams, planService *taskservice.PlanService, han
 	if p.services.PlanFiles != nil {
 		taskH.SetPlanFilesSetup(p.services.PlanFiles)
 	}
+	if p.services.WorktreeMgr != nil {
+		taskH.SetRepositoryCleanup(p.features.RepositoryCleanup, p.services.WorktreeMgr)
+	}
 	if p.services != nil && p.services.User != nil {
 		taskH.SetTaskCreateLastUsedRecorder(p.services.User)
 		taskH.SetAgentProfileRecentUseRecorder(p.services.User)

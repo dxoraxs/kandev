@@ -34,6 +34,8 @@ type handlerRepo interface {
 type TaskHandlers struct {
 	service                       *service.Service
 	planFiles                     PlanFilesSetup
+	repositoryCleanup             bool
+	repositoryWorktrees           RepositoryWorktreeReader
 	maintenanceLocks              sync.Map
 	orchestrator                  OrchestratorStarter
 	configChatRetirer             ConfigChatSessionRetirer
