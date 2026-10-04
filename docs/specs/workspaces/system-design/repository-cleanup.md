@@ -78,14 +78,15 @@ passed to the prompt; nothing is stored.
 
 The template is organized as phases that map to the acceptance criteria:
 
-1. Inventory (`AC-WORKSPACES-REPO-CLEANUP-002.1`): `git fetch --prune`, checkout default branch,
-   `git pull --ff-only`, list local branches, remote branches without a local
-   counterpart, and `git worktree list`.
+1. Inventory (`AC-WORKSPACES-REPO-CLEANUP-002.1`): `git fetch --prune`, list local branches, remote
+   branches without a local counterpart, and `git worktree list`; no checkout
+   yet.
 2. Snapshot (`AC-WORKSPACES-REPO-CLEANUP-002.2`): for each non-protected dirty worktree and a dirty
    main checkout, commit all changes to its branch with a
-   `chore: wip snapshot before cleanup` message.
-3. Merge (`AC-WORKSPACES-REPO-CLEANUP-002.3`, `002.4`): `git merge --no-ff` per branch with unique
-   commits; on conflict resolve, run the project's test command found in
+   `chore: wip snapshot before cleanup` message, before any checkout; then
+   checkout the default branch and `git pull --ff-only`.
+3. Merge (`AC-WORKSPACES-REPO-CLEANUP-002.3`, `002.4`): `git merge --no-ff` per local branch and per
+   remote-only branch (as `origin/<name>`) with unique commits; on conflict resolve, run the project's test command found in
    `AGENTS.md`, `CLAUDE.md`, `README`, `Makefile`, or package scripts; on doubt or
    failure `git merge --abort` or reset to the pre-merge commit, keep the branch.
 4. Confirmation (`AC-WORKSPACES-REPO-CLEANUP-003.1`): post the summary and end the turn waiting for
