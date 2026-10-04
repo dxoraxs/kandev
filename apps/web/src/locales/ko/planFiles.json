@@ -1,5 +1,6 @@
 {
   "addDirectory": "디렉터리 추가",
+  "addExecutor": "실행자 열 추가",
   "board": "보드",
   "boardPlaceholder": "보드 선택",
   "countArchived_one": "보관 {{count}}개",
@@ -17,9 +18,16 @@
   "directories": "디렉터리",
   "directoryPlaceholder": "디렉터리(예: docs/plans)",
   "enabled": "사용",
+  "executorColumns": "실행자 열",
+  "executorName": "실행자 이름",
+  "executorStep": "실행자 열의 단계",
+  "indexFile": "색인 파일 이름",
+  "indexFilePlaceholder": "예: INDEX.md (비우면 색인 없음)",
   "lastSync": "마지막 동기화 {{when}}",
   "mappingIncomplete": "저장하려면 모든 상태에 단계를 선택하세요.",
   "neverSynced": "아직 동기화가 실행된 적이 없습니다.",
+  "notesHeading": "메모 섹션 제목",
+  "notesHeadingPlaceholder": "예: 소유자 메모",
   "outcomeFailed": "실패",
   "outcomeOk": "성공",
   "outcomePartial": "일부 파일 실패",
@@ -36,7 +44,9 @@
   "reasonWorkflowMissing": "보드가 더 이상 없습니다",
   "reasonWriteFailed": "보드 변경 사항을 파일에 쓸 수 없습니다",
   "removeDirectory": "{{directory}} 제거",
+  "removeExecutor": "실행자 열 제거",
   "save": "저장",
+  "staleAfterDays": "진행 중인 계획을 오래된 것으로 표시할 기간 (일, 0 = 표시 안 함)",
   "statusDeferred": "보류",
   "statusDone": "완료",
   "statusInProgress": "진행 중",
@@ -46,5 +56,6 @@
   "stepPlaceholder": "단계 선택",
   "syncNow": "지금 동기화",
   "syncRunning": "이 워크스페이스에서 이미 동기화가 실행 중입니다. 잠시 후 다시 시도하세요.",
-  "title": "계획 파일"
+  "title": "계획 파일",
+  "wakeOnDate": "날짜가 되면 계획을 '내 응답 대기'로 이동"
 }

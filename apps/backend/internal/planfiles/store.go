@@ -36,6 +36,11 @@ var schemaStatements = []string{
 		workflow_id TEXT NOT NULL DEFAULT '',
 		status_steps TEXT NOT NULL DEFAULT '{}',
 		directories TEXT NOT NULL DEFAULT '[]',
+		executor_steps TEXT NOT NULL DEFAULT '{}',
+		notes_heading TEXT NOT NULL DEFAULT '',
+		wake_on_date INTEGER NOT NULL DEFAULT 1,
+		stale_after_days INTEGER NOT NULL DEFAULT 7,
+		index_file TEXT NOT NULL DEFAULT '',
 		last_pass_at {{timestamp}},
 		last_pass_ok INTEGER NOT NULL DEFAULT 0,
 		last_counts TEXT NOT NULL DEFAULT '{}',
@@ -53,6 +58,7 @@ var schemaStatements = []string{
 		synced_step_id TEXT NOT NULL DEFAULT '',
 		synced_priority TEXT NOT NULL DEFAULT '',
 		synced_order_key TEXT NOT NULL DEFAULT '',
+		synced_depends_on TEXT NOT NULL DEFAULT '[]',
 		notice TEXT NOT NULL DEFAULT '',
 		last_seen_at {{timestamp}} NOT NULL
 	)`,
@@ -70,10 +76,11 @@ func (s *Store) initSchema() error {
 			return err
 		}
 	}
-	return nil
+	return s.addMissingColumns()
 }
 
-const configColumns = `workspace_id, enabled, workflow_id, status_steps, directories, last_pass_at,
+const configColumns = `workspace_id, enabled, workflow_id, status_steps, directories,
+	executor_steps, notes_heading, wake_on_date, stale_after_days, index_file, last_pass_at,
 	last_pass_ok, last_counts, last_file_errors, created_at, updated_at`
 
 type rowScanner interface {
@@ -82,14 +89,16 @@ type rowScanner interface {
 
 func scanConfig(row rowScanner) (*Config, error) {
 	cfg := &Config{}
-	var enabled, lastOK int
+	var enabled, wake, lastOK int
 	var lastPassAt sql.NullTime
-	var statusSteps, directories, counts, fileErrors string
+	var statusSteps, directories, executors, counts, fileErrors string
 	if err := row.Scan(&cfg.WorkspaceID, &enabled, &cfg.WorkflowID, &statusSteps, &directories,
+		&executors, &cfg.NotesHeading, &wake, &cfg.StaleAfterDays, &cfg.IndexFile,
 		&lastPassAt, &lastOK, &counts, &fileErrors, &cfg.CreatedAt, &cfg.UpdatedAt); err != nil {
 		return nil, err
 	}
 	cfg.Enabled = enabled != 0
+	cfg.WakeOnDate = wake != 0
 	cfg.LastPassOK = lastOK != 0
 	if lastPassAt.Valid {
 		t := lastPassAt.Time
@@ -99,10 +108,14 @@ func scanConfig(row rowScanner) (*Config, error) {
 	// the read, so the owner can still open and repair the settings.
 	_ = json.Unmarshal([]byte(statusSteps), &cfg.StatusSteps)
 	_ = json.Unmarshal([]byte(directories), &cfg.Directories)
+	_ = json.Unmarshal([]byte(executors), &cfg.ExecutorSteps)
 	_ = json.Unmarshal([]byte(counts), &cfg.LastCounts)
 	_ = json.Unmarshal([]byte(fileErrors), &cfg.LastFileErrors)
 	if cfg.StatusSteps == nil {
 		cfg.StatusSteps = map[format.BoardStatus]string{}
+	}
+	if cfg.ExecutorSteps == nil {
+		cfg.ExecutorSteps = map[string]string{}
 	}
 	return cfg, nil
 }
@@ -142,8 +155,8 @@ func (s *Store) ListEnabledConfigs(ctx context.Context) ([]*Config, error) {
 }
 
 // UpsertConfig creates or replaces the settings of a workspace's config
-// (enabled, workflow, mapping, directories). The last-pass status columns are
-// left untouched.
+// (enabled, workflow, mapping, directories, operation settings). The last-pass
+// status columns are left untouched.
 func (s *Store) UpsertConfig(ctx context.Context, cfg *Config) (*Config, error) {
 	statusSteps, err := json.Marshal(cfg.StatusSteps)
 	if err != nil {
@@ -153,17 +166,28 @@ func (s *Store) UpsertConfig(ctx context.Context, cfg *Config) (*Config, error) 
 	if err != nil {
 		return nil, err
 	}
+	executors, err := json.Marshal(nonNilExecutors(cfg.ExecutorSteps))
+	if err != nil {
+		return nil, err
+	}
 	now := time.Now().UTC()
 	_, err = s.db.ExecContext(ctx, s.db.Rebind(`
-		INSERT INTO plan_file_configs (workspace_id, enabled, workflow_id, status_steps, directories, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO plan_file_configs (workspace_id, enabled, workflow_id, status_steps, directories,
+			executor_steps, notes_heading, wake_on_date, stale_after_days, index_file, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(workspace_id) DO UPDATE SET
 			enabled = excluded.enabled,
 			workflow_id = excluded.workflow_id,
 			status_steps = excluded.status_steps,
 			directories = excluded.directories,
+			executor_steps = excluded.executor_steps,
+			notes_heading = excluded.notes_heading,
+			wake_on_date = excluded.wake_on_date,
+			stale_after_days = excluded.stale_after_days,
+			index_file = excluded.index_file,
 			updated_at = excluded.updated_at
-	`), cfg.WorkspaceID, boolToInt(cfg.Enabled), cfg.WorkflowID, string(statusSteps), string(directories), now, now)
+	`), cfg.WorkspaceID, boolToInt(cfg.Enabled), cfg.WorkflowID, string(statusSteps), string(directories),
+		string(executors), cfg.NotesHeading, boolToInt(cfg.WakeOnDate), cfg.StaleAfterDays, cfg.IndexFile, now, now)
 	if err != nil {
 		return nil, err
 	}
@@ -213,14 +237,16 @@ func (s *Store) DeleteConfig(ctx context.Context, workspaceID string) error {
 }
 
 const taskColumns = `task_id, workspace_id, repository_id, rel_path, external_id, content_hash,
-	synced_step_id, synced_priority, synced_order_key, notice, last_seen_at`
+	synced_step_id, synced_priority, synced_order_key, synced_depends_on, notice, last_seen_at`
 
 func scanTaskRow(row rowScanner) (*TaskRow, error) {
 	r := &TaskRow{}
+	var dependsOn string
 	if err := row.Scan(&r.TaskID, &r.WorkspaceID, &r.RepositoryID, &r.RelPath, &r.ExternalID, &r.ContentHash,
-		&r.SyncedStepID, &r.SyncedPriority, &r.SyncedOrderKey, &r.Notice, &r.LastSeenAt); err != nil {
+		&r.SyncedStepID, &r.SyncedPriority, &r.SyncedOrderKey, &dependsOn, &r.Notice, &r.LastSeenAt); err != nil {
 		return nil, err
 	}
+	_ = json.Unmarshal([]byte(dependsOn), &r.SyncedDependsOn)
 	return r, nil
 }
 
@@ -262,9 +288,13 @@ func (s *Store) ListTaskRows(ctx context.Context, workspaceID string) ([]*TaskRo
 // (workspace, repository, path) and (workspace, external id) reject a second
 // row for the same file or identifier.
 func (s *Store) UpsertTaskRow(ctx context.Context, r *TaskRow) error {
-	_, err := s.db.ExecContext(ctx, s.db.Rebind(`
+	dependsOn, err := json.Marshal(nonNilStrings(r.SyncedDependsOn))
+	if err != nil {
+		return err
+	}
+	_, err = s.db.ExecContext(ctx, s.db.Rebind(`
 		INSERT INTO plan_file_tasks (`+taskColumns+`)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(task_id) DO UPDATE SET
 			workspace_id = excluded.workspace_id,
 			repository_id = excluded.repository_id,
@@ -274,10 +304,11 @@ func (s *Store) UpsertTaskRow(ctx context.Context, r *TaskRow) error {
 			synced_step_id = excluded.synced_step_id,
 			synced_priority = excluded.synced_priority,
 			synced_order_key = excluded.synced_order_key,
+			synced_depends_on = excluded.synced_depends_on,
 			notice = excluded.notice,
 			last_seen_at = excluded.last_seen_at
 	`), r.TaskID, r.WorkspaceID, r.RepositoryID, r.RelPath, r.ExternalID, r.ContentHash,
-		r.SyncedStepID, r.SyncedPriority, r.SyncedOrderKey, r.Notice, r.LastSeenAt)
+		r.SyncedStepID, r.SyncedPriority, r.SyncedOrderKey, string(dependsOn), r.Notice, r.LastSeenAt)
 	return err
 }
 
@@ -292,4 +323,18 @@ func boolToInt(b bool) int {
 		return 1
 	}
 	return 0
+}
+
+func nonNilExecutors(m map[string]string) map[string]string {
+	if m == nil {
+		return map[string]string{}
+	}
+	return m
+}
+
+func nonNilStrings(v []string) []string {
+	if v == nil {
+		return []string{}
+	}
+	return v
 }

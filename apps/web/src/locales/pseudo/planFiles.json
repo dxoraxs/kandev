@@ -1,5 +1,6 @@
 {
   "addDirectory": "Àďď ďĩŕēćţōŕŷ",
+  "addExecutor": "Àďď ēxēćũţōŕ ćōĺũḿń",
   "board": "Ɓōàŕď",
   "boardPlaceholder": "Ćĥōōśē à ƀōàŕď",
   "countArchived_one": "{{count}} àŕćĥĩvēď",
@@ -17,9 +18,16 @@
   "directories": "Ďĩŕēćţōŕĩēś",
   "directoryPlaceholder": "Ďĩŕēćţōŕŷ, ƒōŕ ēxàḿƥĺē ďōćś/ƥĺàńś",
   "enabled": "Ēńàƀĺēď",
+  "executorColumns": "Ēxēćũţōŕ ćōĺũḿńś",
+  "executorName": "Ēxēćũţōŕ ńàḿē",
+  "executorStep": "Ēxēćũţōŕ ćōĺũḿń śţēƥ",
+  "indexFile": "Ĩńďēx ƒĩĺē ńàḿē",
+  "indexFilePlaceholder": "Ēxàḿƥĺē: ĨŃĎĒX.ḿď (ēḿƥţŷ = ńō ĩńďēx)",
   "lastSync": "Ĺàśţ śŷńć {{when}}",
   "mappingIncomplete": "Ćĥōōśē à śţēƥ ƒōŕ ēvēŕŷ śţàţũś ţō śàvē.",
   "neverSynced": "Ńō śŷńć ĥàś ŕũń ŷēţ.",
+  "notesHeading": "Ńōţēś śēćţĩōń ĥēàďĩńĝ",
+  "notesHeadingPlaceholder": "Ēxàḿƥĺē: Ōŵńēŕ ńōţēś",
   "outcomeFailed": "Ƒàĩĺēď",
   "outcomeOk": "Śũććēēďēď",
   "outcomePartial": "Śōḿē ƒĩĺēś ƒàĩĺēď",
@@ -36,7 +44,9 @@
   "reasonWorkflowMissing": "Ɓōàŕď ńō ĺōńĝēŕ ēxĩśţś",
   "reasonWriteFailed": "Ɓōàŕď ēďĩţ ćōũĺď ńōţ ƀē ŵŕĩţţēń ţō ţĥē ƒĩĺē",
   "removeDirectory": "Ŕēḿōvē {{directory}}",
+  "removeExecutor": "Ŕēḿōvē ēxēćũţōŕ ćōĺũḿń",
   "save": "Śàvē",
+  "staleAfterDays": "Ḿàŕķ ĩń-ƥŕōĝŕēśś ƥĺàńś àś śţàĺē àƒţēŕ (ďàŷś, 0 = ńēvēŕ)",
   "statusDeferred": "Ďēƒēŕŕēď",
   "statusDone": "Ďōńē",
   "statusInProgress": "Ĩń ƥŕōĝŕēśś",
@@ -46,5 +56,6 @@
   "stepPlaceholder": "Ćĥōōśē à śţēƥ",
   "syncNow": "Śŷńć ńōŵ",
   "syncRunning": "À śŷńć ĩś àĺŕēàďŷ ŕũńńĩńĝ ƒōŕ ţĥĩś ŵōŕķśƥàćē. Ţŕŷ àĝàĩń ĩń à ḿōḿēńţ.",
-  "title": "Ƥĺàń ƒĩĺēś"
+  "title": "Ƥĺàń ƒĩĺēś",
+  "wakeOnDate": "Ḿōvē ƥĺàńś ţō Ŵàĩţĩńĝ ƒōŕ ŷōũ ŵĥēń ţĥēĩŕ ďàţē àŕŕĩvēś"
 }

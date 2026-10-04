@@ -57,7 +57,18 @@ type Config struct {
 	// WorkflowID.
 	StatusSteps map[format.BoardStatus]string `json:"status_steps"`
 	// Directories are repository-relative directories scanned for plan files.
-	Directories    []string       `json:"directories"`
+	Directories []string `json:"directories"`
+	// ExecutorSteps maps a step ID of WorkflowID to an executor name. A step
+	// listed here is never a status step.
+	ExecutorSteps map[string]string `json:"executor_steps"`
+	// NotesHeading is the owner-notes heading; empty reads as the default.
+	NotesHeading string `json:"notes_heading"`
+	// WakeOnDate moves a waiting plan to the owner when its date arrives.
+	WakeOnDate bool `json:"wake_on_date"`
+	// StaleAfterDays flags an in-progress plan untouched this long; 0 is off.
+	StaleAfterDays int `json:"stale_after_days"`
+	// IndexFile is the generated index file name; empty is off.
+	IndexFile      string         `json:"index_file"`
 	LastPassAt     *time.Time     `json:"last_pass_at,omitempty"`
 	LastPassOK     bool           `json:"last_pass_ok"`
 	LastCounts     PassCounts     `json:"last_counts"`
@@ -69,25 +80,34 @@ type Config struct {
 // TaskRow records the state the last pass applied to one plan task. A
 // divergence between the live task and the synced_* values marks a board edit.
 type TaskRow struct {
-	TaskID         string    `json:"task_id"`
-	WorkspaceID    string    `json:"workspace_id"`
-	RepositoryID   string    `json:"repository_id"`
-	RelPath        string    `json:"rel_path"`
-	ExternalID     string    `json:"external_id"`
-	ContentHash    string    `json:"content_hash"`
-	SyncedStepID   string    `json:"synced_step_id"`
-	SyncedPriority string    `json:"synced_priority"`
-	SyncedOrderKey string    `json:"synced_order_key"`
-	Notice         string    `json:"notice"`
-	LastSeenAt     time.Time `json:"last_seen_at"`
+	TaskID         string `json:"task_id"`
+	WorkspaceID    string `json:"workspace_id"`
+	RepositoryID   string `json:"repository_id"`
+	RelPath        string `json:"rel_path"`
+	ExternalID     string `json:"external_id"`
+	ContentHash    string `json:"content_hash"`
+	SyncedStepID   string `json:"synced_step_id"`
+	SyncedPriority string `json:"synced_priority"`
+	SyncedOrderKey string `json:"synced_order_key"`
+	// SyncedDependsOn is the sorted blocker task IDs the last pass applied.
+	SyncedDependsOn []string  `json:"synced_depends_on"`
+	Notice          string    `json:"notice"`
+	LastSeenAt      time.Time `json:"last_seen_at"`
 }
 
-// PutConfigRequest is the body of PUT /api/v1/plan-files/config.
+// PutConfigRequest is the body of PUT /api/v1/plan-files/config. The pointer
+// fields are optional: an absent field keeps the stored value, or the default
+// when no config is stored yet.
 type PutConfigRequest struct {
-	Enabled     bool                          `json:"enabled"`
-	WorkflowID  string                        `json:"workflow_id"`
-	StatusSteps map[format.BoardStatus]string `json:"status_steps"`
-	Directories []string                      `json:"directories"`
+	Enabled        bool                          `json:"enabled"`
+	WorkflowID     string                        `json:"workflow_id"`
+	StatusSteps    map[format.BoardStatus]string `json:"status_steps"`
+	Directories    []string                      `json:"directories"`
+	ExecutorSteps  *map[string]string            `json:"executor_steps,omitempty"`
+	NotesHeading   *string                       `json:"notes_heading,omitempty"`
+	WakeOnDate     *bool                         `json:"wake_on_date,omitempty"`
+	StaleAfterDays *int                          `json:"stale_after_days,omitempty"`
+	IndexFile      *string                       `json:"index_file,omitempty"`
 }
 
 // CreateBoardResult is the response of POST /api/v1/plan-files/board.

@@ -1,5 +1,6 @@
 {
   "addDirectory": "Adicionar diretório",
+  "addExecutor": "Adicionar coluna de executor",
   "board": "Quadro",
   "boardPlaceholder": "Escolha um quadro",
   "countArchived_one": "{{count}} arquivada",
@@ -17,9 +18,16 @@
   "directories": "Diretórios",
   "directoryPlaceholder": "Diretório, por exemplo docs/plans",
   "enabled": "Ativado",
+  "executorColumns": "Colunas de executor",
+  "executorName": "Nome do executor",
+  "executorStep": "Etapa da coluna de executor",
+  "indexFile": "Nome do ficheiro de índice",
+  "indexFilePlaceholder": "Exemplo: INDEX.md (vazio = sem índice)",
   "lastSync": "Última sincronização {{when}}",
   "mappingIncomplete": "Escolha uma etapa para cada estado para poder guardar.",
   "neverSynced": "Ainda não foi feita nenhuma sincronização.",
+  "notesHeading": "Título da secção de notas",
+  "notesHeadingPlaceholder": "Exemplo: Notas do dono",
   "outcomeFailed": "Falhou",
   "outcomeOk": "Concluída com sucesso",
   "outcomePartial": "Alguns ficheiros falharam",
@@ -36,7 +44,9 @@
   "reasonWorkflowMissing": "O quadro já não existe",
   "reasonWriteFailed": "Não foi possível gravar a alteração do quadro no ficheiro",
   "removeDirectory": "Remover {{directory}}",
+  "removeExecutor": "Remover coluna de executor",
   "save": "Guardar",
+  "staleAfterDays": "Marcar planos em curso como desatualizados após (dias, 0 = nunca)",
   "statusDeferred": "Adiado",
   "statusDone": "Concluído",
   "statusInProgress": "Em curso",
@@ -46,5 +56,6 @@
   "stepPlaceholder": "Escolha uma etapa",
   "syncNow": "Sincronizar agora",
   "syncRunning": "Já está a decorrer uma sincronização para este espaço de trabalho. Tente novamente dentro de instantes.",
-  "title": "Ficheiros de plano"
+  "title": "Ficheiros de plano",
+  "wakeOnDate": "Mover os planos para À espera de si quando a data chegar"
 }

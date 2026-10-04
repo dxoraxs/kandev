@@ -100,7 +100,8 @@ func (s *Service) EnsureBoard(ctx context.Context, workspaceID string) (bool, er
 		Enabled: true, WorkflowID: board.WorkflowID, StatusSteps: board.StatusSteps,
 		Directories: DefaultDirectories(),
 	}
-	if _, err := s.saveConfig(ctx, workspaceID, req, req.Directories); err != nil {
+	ops := operationSettings{executorSteps: map[string]string{}, wakeOnDate: true, staleAfterDays: DefaultStaleAfterDays}
+	if _, err := s.saveConfig(ctx, workspaceID, req, req.Directories, ops); err != nil {
 		s.discardBoard(ctx, board.WorkflowID)
 		return false, err
 	}

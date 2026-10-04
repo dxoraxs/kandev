@@ -40,6 +40,14 @@ export type PlanFilesConfig = {
   workflow_id: string;
   status_steps: PlanFileStatusSteps;
   directories: string[];
+  /** Step ID to executor name. */
+  executor_steps: Record<string, string>;
+  notes_heading: string;
+  wake_on_date: boolean;
+  /** 0 turns the stale flag off. */
+  stale_after_days: number;
+  /** Empty means no index file. */
+  index_file: string;
   last_pass_at?: string;
   last_pass_ok: boolean;
   last_counts: PlanFilePassCounts;
@@ -53,6 +61,12 @@ export type PutPlanFilesConfigRequest = {
   workflow_id: string;
   status_steps: PlanFileStatusSteps;
   directories: string[];
+  /** Omitted fields keep the stored value. */
+  executor_steps?: Record<string, string>;
+  notes_heading?: string;
+  wake_on_date?: boolean;
+  stale_after_days?: number;
+  index_file?: string;
 };
 
 export type CreatePlanBoardResult = {

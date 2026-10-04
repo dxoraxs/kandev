@@ -119,7 +119,12 @@ func (c *Controller) httpPutConfig(ctx *gin.Context) {
 	}
 	cfg, err := c.service.PutConfig(ctx.Request.Context(), workspaceID, &req)
 	if errors.Is(err, ErrInvalidConfig) {
-		ctx.JSON(http.StatusBadRequest, gin.H{errKey: err.Error()})
+		body := gin.H{errKey: err.Error()}
+		var cfgErr *ConfigError
+		if errors.As(err, &cfgErr) {
+			body["code"] = cfgErr.Code
+		}
+		ctx.JSON(http.StatusBadRequest, body)
 		return
 	}
 	if err != nil {

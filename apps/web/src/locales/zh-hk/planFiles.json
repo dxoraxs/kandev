@@ -1,5 +1,6 @@
 {
   "addDirectory": "新增目錄",
+  "addExecutor": "新增執行者列",
   "board": "看板",
   "boardPlaceholder": "選擇看板",
   "countArchived_one": "已歸檔 {{count}} 個",
@@ -17,9 +18,16 @@
   "directories": "目錄",
   "directoryPlaceholder": "目錄，例如 docs/plans",
   "enabled": "已啓用",
+  "executorColumns": "執行者列",
+  "executorName": "執行者名稱",
+  "executorStep": "執行者列的步驟",
+  "indexFile": "索引檔案名",
+  "indexFilePlaceholder": "例如：INDEX.md（留空表示不產生索引）",
   "lastSync": "上次同步 {{when}}",
   "mappingIncomplete": "請為每個狀態選擇步驟後再儲存。",
   "neverSynced": "尚未執行過同步。",
+  "notesHeading": "備註部分標題",
+  "notesHeadingPlaceholder": "例如：所有者備註",
   "outcomeFailed": "失敗",
   "outcomeOk": "成功",
   "outcomePartial": "部分檔案失敗",
@@ -36,7 +44,9 @@
   "reasonWorkflowMissing": "看板已不存在",
   "reasonWriteFailed": "無法將看板修改寫入檔案",
   "removeDirectory": "移除 {{directory}}",
+  "removeExecutor": "移除執行者列",
   "save": "儲存",
+  "staleAfterDays": "進行中的計劃超過多少天標記為過期（0 = 從不）",
   "statusDeferred": "已推遲",
   "statusDone": "已完成",
   "statusInProgress": "進行中",
@@ -46,5 +56,6 @@
   "stepPlaceholder": "選擇步驟",
   "syncNow": "立即同步",
   "syncRunning": "此工作區已有同步正在執行，請稍後重試。",
-  "title": "計劃檔案"
+  "title": "計劃檔案",
+  "wakeOnDate": "日期到達時將計劃移到「等待你處理」"
 }

@@ -11,6 +11,7 @@ import { settingsActionClassName } from "./settings-control";
 import { SettingsErrorText } from "./settings-typography";
 import { PlanFilesBoardField, PlanFilesMapping } from "./plan-files-mapping";
 import { PlanFilesDirectories } from "./plan-files-directories";
+import { PlanFilesOperations } from "./plan-files-operations";
 import { PlanFilesStatus } from "./plan-files-status";
 
 /**
@@ -62,6 +63,12 @@ function PlanFilesSectionBody({ workspaceId }: { workspaceId: string }) {
                 onChange={state.setStatusStep}
               />
             )}
+            <PlanFilesOperations
+              draft={draft}
+              steps={state.steps}
+              disabled={state.saving}
+              onChange={state.patch}
+            />
             <PlanFilesDirectories
               directories={draft.directories}
               onChange={(directories) => state.patch({ directories })}

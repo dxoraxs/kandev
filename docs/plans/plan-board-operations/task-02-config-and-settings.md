@@ -1,7 +1,7 @@
 ---
 id: "02-config-and-settings"
 title: "Config, storage, and settings fields"
-status: pending
+status: done
 wave: 2
 depends_on: ["01-format-additions"]
 plan: "plan.md"
@@ -100,4 +100,15 @@ Task 01
 
 ## Results
 
-Pending.
+All commands run from the worktree root.
+
+- `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)`: `ok  github.com/kandev/kandev/internal/planfiles/scan  1.404s` (all three packages ok)
+- `make -C apps/backend lint`: `0 issues.`
+- `(cd apps/backend && go run ./cmd/sqlguard ./internal)`: no output, exit 0
+- `(cd apps/backend && go test -race ./internal/persistence/storeconformance ./internal/persistence/requiredstores -count=1)`: `ok  github.com/kandev/kandev/internal/persistence/requiredstores  5.807s` (storeconformance ok too)
+- `(cd apps && pnpm --filter @kandev/web test -- components/settings/plan-files-section.test.tsx)`: `Tests  15 passed (15)`
+- `(cd apps && pnpm --filter @kandev/web test -- lib/api/domains/plan-files-api.test.ts)`: `Tests  7 passed (7)`
+- `(cd apps/web && pnpm run typecheck)`: `tsc --noEmit` with no errors
+- `(cd apps/web && pnpm run i18n:check)`: `no non-JSX copy - 3643 guarded file(s) checked.` (all checks pass)
+- `(cd apps && pnpm --filter @kandev/web lint)`: `eslint --max-warnings 0` with no findings
+

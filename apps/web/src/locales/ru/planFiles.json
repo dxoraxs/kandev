@@ -1,5 +1,6 @@
 {
   "addDirectory": "Добавить каталог",
+  "addExecutor": "Добавить колонку исполнителя",
   "board": "Доска",
   "boardPlaceholder": "Выберите доску",
   "countArchived_few": "В архив: {{count}}",
@@ -27,9 +28,16 @@
   "directories": "Каталоги",
   "directoryPlaceholder": "Каталог, например docs/plans",
   "enabled": "Включено",
+  "executorColumns": "Колонки исполнителей",
+  "executorName": "Имя исполнителя",
+  "executorStep": "Шаг колонки исполнителя",
+  "indexFile": "Имя файла индекса",
+  "indexFilePlaceholder": "Например: INDEX.md (пусто, если индекс не нужен)",
   "lastSync": "Последняя синхронизация {{when}}",
   "mappingIncomplete": "Чтобы сохранить, выберите шаг для каждого статуса.",
   "neverSynced": "Синхронизация ещё не запускалась.",
+  "notesHeading": "Заголовок раздела заметок",
+  "notesHeadingPlaceholder": "Например: Заметки владельца",
   "outcomeFailed": "Ошибка",
   "outcomeOk": "Успешно",
   "outcomePartial": "Часть файлов не обработана",
@@ -46,7 +54,9 @@
   "reasonWorkflowMissing": "Доски больше нет",
   "reasonWriteFailed": "Не удалось записать изменение с доски в файл",
   "removeDirectory": "Удалить {{directory}}",
+  "removeExecutor": "Удалить колонку исполнителя",
   "save": "Сохранить",
+  "staleAfterDays": "Считать планы в работе устаревшими через (дней, 0 = никогда)",
   "statusDeferred": "Отложено",
   "statusDone": "Готово",
   "statusInProgress": "В работе",
@@ -56,5 +66,6 @@
   "stepPlaceholder": "Выберите шаг",
   "syncNow": "Синхронизировать сейчас",
   "syncRunning": "Для этого рабочего пространства синхронизация уже идёт. Повторите попытку через минуту.",
-  "title": "Файлы планов"
+  "title": "Файлы планов",
+  "wakeOnDate": "Переносить планы в «Ждёт вас», когда наступает их дата"
 }

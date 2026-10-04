@@ -1,5 +1,6 @@
 {
   "addDirectory": "Add directory",
+  "addExecutor": "Add executor column",
   "board": "Board",
   "boardPlaceholder": "Choose a board",
   "countArchived_one": "{{count}} archived",
@@ -17,9 +18,16 @@
   "directories": "Directories",
   "directoryPlaceholder": "Directory, for example docs/plans",
   "enabled": "Enabled",
+  "executorColumns": "Executor columns",
+  "executorName": "Executor name",
+  "executorStep": "Executor column step",
+  "indexFile": "Index file name",
+  "indexFilePlaceholder": "Example: INDEX.md (empty = no index)",
   "lastSync": "Last sync {{when}}",
   "mappingIncomplete": "Choose a step for every status to save.",
   "neverSynced": "No sync has run yet.",
+  "notesHeading": "Notes section heading",
+  "notesHeadingPlaceholder": "Example: Owner notes",
   "outcomeFailed": "Failed",
   "outcomeOk": "Succeeded",
   "outcomePartial": "Some files failed",
@@ -36,7 +44,9 @@
   "reasonWorkflowMissing": "Board no longer exists",
   "reasonWriteFailed": "Board edit could not be written to the file",
   "removeDirectory": "Remove {{directory}}",
+  "removeExecutor": "Remove executor column",
   "save": "Save",
+  "staleAfterDays": "Mark in-progress plans as stale after (days, 0 = never)",
   "statusDeferred": "Deferred",
   "statusDone": "Done",
   "statusInProgress": "In progress",
@@ -46,5 +56,6 @@
   "stepPlaceholder": "Choose a step",
   "syncNow": "Sync now",
   "syncRunning": "A sync is already running for this workspace. Try again in a moment.",
-  "title": "Plan files"
+  "title": "Plan files",
+  "wakeOnDate": "Move plans to Waiting for you when their date arrives"
 }

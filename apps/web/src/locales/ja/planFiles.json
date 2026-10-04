@@ -1,5 +1,6 @@
 {
   "addDirectory": "ディレクトリを追加",
+  "addExecutor": "実行者の列を追加",
   "board": "ボード",
   "boardPlaceholder": "ボードを選択",
   "countArchived_one": "アーカイブ {{count}} 件",
@@ -17,9 +18,16 @@
   "directories": "ディレクトリ",
   "directoryPlaceholder": "ディレクトリ(例: docs/plans)",
   "enabled": "有効",
+  "executorColumns": "実行者の列",
+  "executorName": "実行者名",
+  "executorStep": "実行者の列のステップ",
+  "indexFile": "インデックスファイル名",
+  "indexFilePlaceholder": "例: INDEX.md (空欄ならインデックスなし)",
   "lastSync": "前回の同期 {{when}}",
   "mappingIncomplete": "保存するには、すべてのステータスにステップを選択してください。",
   "neverSynced": "まだ同期は実行されていません。",
+  "notesHeading": "メモ欄の見出し",
+  "notesHeadingPlaceholder": "例: オーナーのメモ",
   "outcomeFailed": "失敗",
   "outcomeOk": "成功",
   "outcomePartial": "一部のファイルで失敗",
@@ -36,7 +44,9 @@
   "reasonWorkflowMissing": "ボードが存在しません",
   "reasonWriteFailed": "ボードの変更をファイルに書き込めませんでした",
   "removeDirectory": "{{directory}} を削除",
+  "removeExecutor": "実行者の列を削除",
   "save": "保存",
+  "staleAfterDays": "進行中のプランを古いと見なすまでの日数 (0 = 見なさない)",
   "statusDeferred": "保留",
   "statusDone": "完了",
   "statusInProgress": "進行中",
@@ -46,5 +56,6 @@
   "stepPlaceholder": "ステップを選択",
   "syncNow": "今すぐ同期",
   "syncRunning": "このワークスペースでは既に同期が実行中です。しばらくしてからもう一度お試しください。",
-  "title": "プランファイル"
+  "title": "プランファイル",
+  "wakeOnDate": "日付になったプランを「あなたの対応待ち」に移動する"
 }
