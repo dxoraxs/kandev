@@ -1,7 +1,7 @@
 ---
 id: "01-unadapted-detection"
 title: "Unadapted plan file detection"
-status: pending
+status: done
 wave: 1
 depends_on: []
 plan: "plan.md"

@@ -50,9 +50,11 @@ type pass struct {
 	cfg *Config
 	now time.Time
 
-	counts   PassCounts
-	errs     []FileErrorRow
-	degraded bool
+	counts PassCounts
+	// unadapted tallies files without a board key per repository ID.
+	unadapted map[string]int
+	errs      []FileErrorRow
+	degraded  bool
 
 	rows       []*TaskRow
 	rowsByPath map[string]*TaskRow
@@ -82,6 +84,7 @@ type pass struct {
 func newPass(svc *Service, cfg *Config, now time.Time) *pass {
 	return &pass{
 		svc: svc, cfg: cfg, now: now,
+		unadapted:  map[string]int{},
 		rowsByPath: map[string]*TaskRow{}, rowsByExt: map[string]*TaskRow{}, repoNames: map[string]string{},
 		seen: map[string]struct{}{}, protectedRepos: map[string]struct{}{}, protectedPaths: map[string]struct{}{},
 		claimed: map[string]struct{}{}, pathTask: map[string]string{}, keys: map[string]orderKey{},
@@ -147,8 +150,9 @@ func (p *pass) loadRows(ctx context.Context) error {
 }
 
 // collect scans every local repository and parses its plan files in a stable
-// order. Files that are not plan files are dropped silently; scan problems and
-// parse errors become file errors without stopping the pass.
+// order. Files that are not plan files are counted as unadapted and otherwise
+// dropped; scan problems and parse errors become file errors without stopping
+// the pass.
 func (p *pass) collect(repos []*taskmodels.Repository) []planEntry {
 	var entries []planEntry
 	for _, repo := range repos {
@@ -163,6 +167,8 @@ func (p *pass) collect(repos []*taskmodels.Repository) []planEntry {
 		for _, f := range files {
 			pf, ok := format.Parse(path.Base(f.RelPath), f.Content)
 			if !ok {
+				p.counts.Unadapted++
+				p.unadapted[repo.ID]++
 				continue
 			}
 			entry := planEntry{repo: repo, relPath: f.RelPath, file: pf, extID: pf.ExternalID}

@@ -40,6 +40,7 @@ func RegisterRoutes(router *gin.Engine, svc *Service, log *logger.Logger) {
 	api.GET("/config", ctrl.httpGetConfig)
 	api.PUT("/config", ctrl.httpPutConfig)
 	api.POST("/board", ctrl.httpCreateBoard)
+	api.GET("/unadapted", ctrl.httpUnadapted)
 	ctrl.registerSyncRoutes(api)
 }
 
@@ -139,4 +140,20 @@ func (c *Controller) httpCreateBoard(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, result)
+}
+
+// httpUnadapted lists local repositories with Markdown plan files that have no
+// board key. It needs no sync config and stores nothing.
+func (c *Controller) httpUnadapted(ctx *gin.Context) {
+	workspaceID, ok := c.requireWorkspaceID(ctx)
+	if !ok {
+		return
+	}
+	repos, err := c.service.UnadaptedCounts(
+		ctx.Request.Context(), workspaceID, strings.TrimSpace(ctx.Query("repository_id")))
+	if err != nil {
+		c.failure(ctx, "failed to count unadapted plan files", err)
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"repositories": repos})
 }

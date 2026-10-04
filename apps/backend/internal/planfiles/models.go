@@ -25,6 +25,18 @@ type PassCounts struct {
 	Archived   int `json:"archived"`
 	Unarchived int `json:"unarchived"`
 	Failed     int `json:"failed"`
+	// Unadapted counts Markdown files in scanned directories that carry no
+	// board key. They are neither errors nor tasks.
+	Unadapted int `json:"unadapted"`
+}
+
+// UnadaptedRepo is one local repository holding Markdown files without a board
+// key. Directories are the scanned directories that contain such files.
+type UnadaptedRepo struct {
+	RepositoryID   string   `json:"repository_id"`
+	RepositoryName string   `json:"repository_name"`
+	Count          int      `json:"count"`
+	Directories    []string `json:"directories"`
 }
 
 // FileErrorRow is one file (or repository) that a pass could not process.

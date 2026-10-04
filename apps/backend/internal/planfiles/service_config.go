@@ -118,6 +118,13 @@ func (s *Service) PutConfig(ctx context.Context, workspaceID string, req *PutCon
 	lock := s.workspaceLock(workspaceID)
 	lock.Lock()
 	defer lock.Unlock()
+	return s.saveConfig(ctx, workspaceID, req, directories)
+}
+
+// saveConfig stores a validated config. The caller holds the workspace lock.
+func (s *Service) saveConfig(
+	ctx context.Context, workspaceID string, req *PutConfigRequest, directories []string,
+) (*Config, error) {
 	return s.store.UpsertConfig(ctx, &Config{
 		WorkspaceID: workspaceID,
 		Enabled:     req.Enabled,
