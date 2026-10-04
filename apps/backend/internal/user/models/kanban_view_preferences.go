@@ -8,6 +8,7 @@ import (
 const (
 	KanbanSortCreatedDesc  = "created_desc"
 	KanbanSortPriorityDesc = "priority_desc"
+	KanbanSortPositionAsc  = "position_asc"
 	KanbanSortDefault      = KanbanSortCreatedDesc
 
 	KanbanPriorityFilterTokenCritical = "critical"
@@ -20,6 +21,7 @@ var (
 	kanbanSortValues = []string{
 		KanbanSortCreatedDesc,
 		KanbanSortPriorityDesc,
+		KanbanSortPositionAsc,
 	}
 
 	// kanbanPriorityFilterTokenRank orders the four priority tokens so the

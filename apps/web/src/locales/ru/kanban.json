@@ -139,6 +139,7 @@
   "boardSort": "Сортировка доски",
   "boardSortCreatedDesc": "Сначала новые",
   "boardSortPriorityDesc": "По приоритету",
+  "boardSortPositionAsc": "По порядку на доске",
   "priorityFilter": "Фильтр по приоритету",
   "bulkSelected_one": "Выбран {{count}}",
   "bulkSelected_few": "Выбрано {{count}}",

@@ -42,6 +42,7 @@
   "sortCreatedOldest": "Created oldest",
   "sortTitleAZ": "Title A-Z",
   "sortTitleZA": "Title Z-A",
+  "sortPositionAsc": "Board order",
   "sortUpdatedNewest": "Updated newest",
   "sortUpdatedOldest": "Updated oldest",
   "taskArchived": "Task archived",

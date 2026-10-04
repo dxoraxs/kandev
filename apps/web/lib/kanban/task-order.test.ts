@@ -5,6 +5,7 @@ import {
   compareTasksByCreatedDesc,
   compareTasksByPriorityThenCreatedDesc,
   compareTasksByPriorityThenPositionAsc,
+  compareTasksByPositionThenNativeOrder,
   pickKanbanColumnComparator,
   sortIdsByCreatedDesc,
   sortIdsByDisplayOrder,
@@ -190,6 +191,55 @@ describe("pickKanbanColumnComparator", () => {
       "first",
       "second",
     ]);
+  });
+});
+
+describe("position_asc board order", () => {
+  const tasks = [
+    { id: "c", position: 2, priority: "critical" as const, createdAt: BASE_CREATED_AT },
+    { id: "a", position: 0, priority: "low" as const, createdAt: BASE_CREATED_AT },
+    { id: "b", position: 1, priority: "high" as const, createdAt: BASE_CREATED_AT },
+  ];
+
+  it("orders strictly by position, ignoring priority", () => {
+    const comparator = pickKanbanColumnComparator("position_asc");
+    expect(comparator).toBe(compareTasksByPositionThenNativeOrder);
+    expect([...tasks].sort(comparator).map((t) => t.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("breaks position ties with the native order (priority, then id)", () => {
+    const tied = [
+      { id: "low", position: 3, priority: "low" as const, createdAt: BASE_CREATED_AT },
+      { id: "crit", position: 3, priority: "critical" as const, createdAt: BASE_CREATED_AT },
+    ];
+    expect([...tied].sort(compareTasksByPositionThenNativeOrder).map((t) => t.id)).toEqual([
+      "crit",
+      "low",
+    ]);
+  });
+
+  it("keeps step index outermost in the pipeline view", () => {
+    const steps = [{ id: "todo" }, { id: "done" }];
+    const pipeline = [
+      { id: "done-0", workflowStepId: "done", position: 0, priority: "critical" as const },
+      { id: "todo-5", workflowStepId: "todo", position: 5, priority: "low" as const },
+      { id: "todo-4", workflowStepId: "todo", position: 4, priority: "low" as const },
+    ];
+    expect(sortTasksForPipelineView(pipeline, steps, "position_asc").map((t) => t.id)).toEqual([
+      "todo-4",
+      "todo-5",
+      "done-0",
+    ]);
+  });
+
+  it("sorts selected ids by position in the non-pipeline display order", () => {
+    const byId = new Map(tasks.map((task) => [task.id, task]));
+    expect(
+      sortIdsByDisplayOrder(["c", "a", "b"], byId, {
+        sortToken: "position_asc",
+        isPipelineView: false,
+      }),
+    ).toEqual(["a", "b", "c"]);
   });
 });
 

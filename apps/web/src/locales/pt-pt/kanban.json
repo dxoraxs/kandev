@@ -127,6 +127,7 @@
   "boardSort": "Ordenação do quadro",
   "boardSortCreatedDesc": "Mais recentes primeiro",
   "boardSortPriorityDesc": "Prioridade",
+  "boardSortPositionAsc": "Ordem do quadro",
   "priorityFilter": "Filtro de prioridade",
   "bulkSelected_one": "{{count}} selecionada",
   "bulkSelected_other": "{{count}} selecionadas",

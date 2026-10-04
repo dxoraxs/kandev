@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_KANBAN_SORT, KANBAN_SORT_OPTIONS, parseKanbanSort } from "./kanban-sort";
 
 describe("parseKanbanSort", () => {
-  it("accepts the two defined tokens verbatim", () => {
+  it("accepts the defined tokens verbatim", () => {
     expect(parseKanbanSort("created_desc")).toBe("created_desc");
     expect(parseKanbanSort("priority_desc")).toBe("priority_desc");
+    expect(parseKanbanSort("position_asc")).toBe("position_asc");
+    expect(parseKanbanSort(" position_asc ")).toBe("position_asc");
   });
 
   it("resolves undefined, null and empty to the default", () => {
@@ -30,10 +32,11 @@ describe("parseKanbanSort", () => {
 });
 
 describe("KANBAN_SORT_OPTIONS", () => {
-  it("presents exactly the two defined tokens", () => {
+  it("presents exactly the defined tokens", () => {
     expect(KANBAN_SORT_OPTIONS.map((option) => option.value)).toEqual([
       "created_desc",
       "priority_desc",
+      "position_asc",
     ]);
   });
 });

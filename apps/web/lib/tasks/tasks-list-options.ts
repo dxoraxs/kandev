@@ -14,6 +14,7 @@ export const TASKS_LIST_SORT_OPTIONS = [
   { value: "created_asc" },
   { value: "title_asc" },
   { value: "title_desc" },
+  { value: "position_asc" },
 ] as const;
 
 export const TASKS_LIST_GROUP_OPTIONS = [
@@ -45,6 +46,7 @@ export const SORT_OPTION_LABEL_KEYS: Record<TasksListSort, string> = {
   created_asc: "tasks:sortCreatedOldest",
   title_asc: "tasks:sortTitleAZ",
   title_desc: "tasks:sortTitleZA",
+  position_asc: "tasks:sortPositionAsc",
 };
 
 export const GROUP_OPTION_LABEL_KEYS: Record<TasksListGroup, string> = {
@@ -75,6 +77,8 @@ export function compareTasksForList(a: Task, b: Task, sort: TasksListSort): numb
   switch (sort) {
     case "updated_asc":
       return compareDate(a.updated_at, b.updated_at) || titleCompare;
+    case "position_asc":
+      return comparePosition(a, b) || titleCompare;
     case "created_desc":
       return compareDate(b.created_at, a.created_at) || titleCompare;
     case "created_asc":
@@ -87,6 +91,10 @@ export function compareTasksForList(a: Task, b: Task, sort: TasksListSort): numb
     default:
       return compareDate(b.updated_at, a.updated_at) || titleCompare;
   }
+}
+
+function comparePosition(a: Task, b: Task): number {
+  return (a.position ?? 0) - (b.position ?? 0);
 }
 
 function compareDate(a: string, b: string): number {

@@ -62,6 +62,19 @@ export function compareTasksByPriorityThenCreatedDesc(
 }
 
 /**
+ * `position_asc` order: strictly by the persisted board position, ties fall
+ * back to the current native step order (priority, queue time, creation, id).
+ * The external plan synchronizer writes one running position across every
+ * column, so this shows the plan's own order regardless of priority.
+ */
+export function compareTasksByPositionThenNativeOrder(
+  a: PriorityRankedTask & CreatedTask,
+  b: PriorityRankedTask & CreatedTask,
+): number {
+  return compareStepOrder(a as StepOrderTask, b as StepOrderTask);
+}
+
+/**
  * Selects the explicit priority/created comparator used by the priority
  * display setting. Responsive surfaces use the native reorder comparator for
  * `created_desc` and this comparator for `priority_desc`.
@@ -69,6 +82,7 @@ export function compareTasksByPriorityThenCreatedDesc(
 export function pickKanbanColumnComparator(
   sortToken: KanbanSort,
 ): (a: PriorityRankedTask & CreatedTask, b: PriorityRankedTask & CreatedTask) => number {
+  if (sortToken === "position_asc") return compareTasksByPositionThenNativeOrder;
   return sortToken === "priority_desc"
     ? compareTasksByPriorityThenCreatedDesc
     : compareTasksByCreatedOrNativeOrder;
@@ -195,10 +209,19 @@ export function sortTasksForPipelineView<
   return [...tasks].sort((a, b) => {
     const stepDiff = indexOf(a) - indexOf(b);
     if (stepDiff !== 0) return stepDiff;
-    return sortToken === "priority_desc"
-      ? comparePriorityThenNativeStepOrder(a, b)
-      : comparePipelineCreatedOrder(a, b);
+    return comparePipelineWithinStep(a, b, sortToken);
   });
+}
+
+function comparePipelineWithinStep(
+  a: StepOrderTask,
+  b: StepOrderTask,
+  sortToken: KanbanSort,
+): number {
+  if (sortToken === "position_asc") return compareStepOrder(a, b);
+  return sortToken === "priority_desc"
+    ? comparePriorityThenNativeStepOrder(a, b)
+    : comparePipelineCreatedOrder(a, b);
 }
 
 /** Sort ids by creation time for lightweight callers without native positions. */
@@ -227,16 +250,9 @@ export function sortIdsByDisplayOrder(
 ): string[] {
   const { sortToken, isPipelineView, stepIndexOf } = options;
   if (!isPipelineView) {
+    const comparator = pickKanbanColumnComparator(sortToken);
     return [...ids].sort((a, b) =>
-      sortToken === "priority_desc"
-        ? compareTasksByPriorityThenCreatedDesc(
-            taskById.get(a) ?? { id: a },
-            taskById.get(b) ?? { id: b },
-          )
-        : compareTasksByCreatedOrNativeOrder(
-            taskById.get(a) ?? { id: a },
-            taskById.get(b) ?? { id: b },
-          ),
+      comparator(taskById.get(a) ?? { id: a }, taskById.get(b) ?? { id: b }),
     );
   }
 
@@ -247,8 +263,6 @@ export function sortIdsByDisplayOrder(
     const stepA = indexOf(taskA.workflowStepId);
     const stepB = indexOf(taskB.workflowStepId);
     if (stepA !== stepB) return stepA - stepB;
-    return sortToken === "priority_desc"
-      ? comparePriorityThenNativeStepOrder(taskA, taskB)
-      : comparePipelineCreatedOrder(taskA, taskB);
+    return comparePipelineWithinStep(taskA, taskB, sortToken);
   });
 }

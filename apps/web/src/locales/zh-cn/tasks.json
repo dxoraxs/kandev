@@ -42,6 +42,7 @@
   "sortCreatedOldest": "创建时间（最早）",
   "sortTitleAZ": "标题 A-Z",
   "sortTitleZA": "标题 Z-A",
+  "sortPositionAsc": "看板顺序",
   "sortUpdatedNewest": "更新时间（最新）",
   "sortUpdatedOldest": "更新时间（最早）",
   "taskArchived": "任务已归档",

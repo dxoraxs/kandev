@@ -43,6 +43,7 @@
   "sortCreatedOldest": "생성일 오래된순",
   "sortTitleAZ": "제목 A-Z",
   "sortTitleZA": "제목 Z-A",
+  "sortPositionAsc": "보드 순서",
   "sortUpdatedNewest": "업데이트 최신순",
   "sortUpdatedOldest": "업데이트 오래된순",
   "taskArchived": "작업 아카이브됨",

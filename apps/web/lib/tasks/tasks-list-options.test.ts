@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
+import type { Task } from "@/lib/types/http";
 import {
   GROUP_OPTION_LABEL_KEYS,
   SORT_OPTION_LABEL_KEYS,
   TASKS_LIST_GROUP_OPTIONS,
   TASKS_LIST_SORT_OPTIONS,
+  compareTasksForList,
   sortTasksByFacet,
+  sortTasksForList,
   parseTasksListGroup,
   DEFAULT_TASKS_LIST_GROUP,
 } from "./tasks-list-options";
@@ -72,5 +75,32 @@ describe("GROUP_OPTION_LABEL_KEYS", () => {
   it("has no stray keys beyond the configured group options", () => {
     const optionValues = new Set(TASKS_LIST_GROUP_OPTIONS.map((option) => option.value));
     expect(Object.keys(GROUP_OPTION_LABEL_KEYS).sort()).toEqual([...optionValues].sort());
+  });
+});
+
+describe("position_asc list sort", () => {
+  const task = (id: string, title: string, position: number) =>
+    ({
+      id,
+      title,
+      position,
+      created_at: "2026-01-01T00:00:00Z",
+      updated_at: "2026-01-01T00:00:00Z",
+    }) as Task;
+
+  it("is offered with a tasks: label key", () => {
+    expect(TASKS_LIST_SORT_OPTIONS.map((option) => option.value)).toContain("position_asc");
+    expect(SORT_OPTION_LABEL_KEYS.position_asc).toBe("tasks:sortPositionAsc");
+  });
+
+  it("orders by position ascending and breaks ties by title", () => {
+    const sorted = sortTasksForList(
+      [task("c", "Gamma", 2), task("b2", "Beta", 1), task("b1", "Alpha", 1), task("a", "Zed", 0)],
+      "position_asc",
+    );
+    expect(sorted.map((t) => t.id)).toEqual(["a", "b1", "b2", "c"]);
+    expect(compareTasksForList(task("x", "A", 1), task("y", "A", 2), "position_asc")).toBeLessThan(
+      0,
+    );
   });
 });

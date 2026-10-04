@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { PageTopbar } from "@/components/page-topbar";
 import { KanbanDisplayDropdown } from "../kanban-display-dropdown";
+import { KanbanHeaderSort } from "./kanban-header-sort";
 import { usePluginTaskFilters } from "@/hooks/use-plugin-task-filters";
 import { ReleaseNotesDialog } from "../release-notes/release-notes-dialog";
 import { HealthIndicatorButton, HealthIssuesDialog } from "../system-health/health-indicator";
@@ -274,6 +275,7 @@ function TabletHeader({
           <TooltipProvider>
             <ViewToggleGroup toggleValue={toggleValue} onValueChange={handleViewChange} size="lg" />
           </TooltipProvider>
+          {currentPage === "kanban" && <KanbanHeaderSort />}
           {currentPage !== "threads" && (
             <KanbanDisplayDropdown
               triggerSize="icon-lg"
@@ -365,6 +367,7 @@ function DesktopHeader({
           <TooltipProvider>
             <ViewToggleGroup toggleValue={toggleValue} onValueChange={handleViewChange} size="lg" />
           </TooltipProvider>
+          {currentPage === "kanban" && !isNarrow && <KanbanHeaderSort />}
           <KanbanDisplayDropdown
             triggerSize="icon-lg"
             currentPage={currentPage}
