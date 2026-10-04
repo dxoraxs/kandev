@@ -109,6 +109,26 @@ describe("toKanbanTask — HTTP DTO / WS payload parity", () => {
     expect(toKanbanTask(wsPayload({ metadata }))).toEqual(out);
   });
 
+  it("card_display metadata maps to cardDisplay identically from both shapes", () => {
+    const metadata = {
+      card_display: {
+        date: "2026-10-05",
+        progress: { done: 1, total: 3 },
+        executor: { name: "Ann" },
+      },
+    };
+    const http = toKanbanTask(httpDTO({ metadata }));
+    expect(http.cardDisplay).toEqual({
+      date: { iso: "2026-10-05", kind: "due" },
+      progress: { done: 1, total: 3 },
+      executor: { name: "Ann", kind: "agent" },
+    });
+    expect(toKanbanTask(wsPayload({ metadata }))).toEqual(http);
+    expect(
+      toKanbanTask(httpDTO({ metadata: { card_display: "bad" } })).cardDisplay,
+    ).toBeUndefined();
+  });
+
   it("issue watch task: issue_watch_id + issue_url/issue_number mirrored on both shapes", () => {
     const metadata = {
       issue_watch_id: "watch-9",

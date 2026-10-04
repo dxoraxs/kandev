@@ -107,6 +107,14 @@ async function openCard() {
 }
 
 describe("CardTitle", () => {
+  it("clamps the title at two lines and breaks long words", () => {
+    renderCardTitle(makeTask());
+    const cls = screen.getByTestId("task-card-title").className;
+    expect(cls).toContain("line-clamp-2");
+    expect(cls).toContain("break-words");
+    expect(cls).not.toContain("line-clamp-1");
+  });
+
   it("passes the task's description into the hover card", async () => {
     renderCardTitle(makeTask({ description: "A task description" }));
 

@@ -1,4 +1,5 @@
 import type { TaskDependencyRef } from "@/lib/state/slices/kanban/types";
+import type { CardDisplayHints } from "@/lib/kanban/card-display";
 import type { TaskStatusSummary } from "@/lib/types/task-status-summary";
 import {
   type ForegroundActivity,
@@ -96,6 +97,7 @@ export interface Task {
   issueUrl?: string;
   issueNumber?: number;
   statusSummary?: TaskStatusSummary | null;
+  cardDisplay?: CardDisplayHints;
 }
 
 export type RepositoryChip = {

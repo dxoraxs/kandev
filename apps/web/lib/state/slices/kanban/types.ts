@@ -1,3 +1,4 @@
+import type { CardDisplayHints } from "@/lib/kanban/card-display";
 import type {
   ForegroundActivity,
   ReorderBand,
@@ -205,6 +206,8 @@ export type KanbanState = {
     /** A launch intent is waiting on dependency resolution. */
     startWhenUnblocked?: boolean;
     isPRReview?: boolean;
+    /** Validated `metadata.card_display`; parsed once in toKanbanTask. */
+    cardDisplay?: CardDisplayHints;
     isIssueWatch?: boolean;
     metadata?: Record<string, unknown> | null;
     isArchived?: boolean;

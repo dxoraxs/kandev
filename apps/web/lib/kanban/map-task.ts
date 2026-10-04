@@ -1,3 +1,4 @@
+import { cardDisplayFromMetadata } from "@/lib/kanban/card-display";
 import {
   isPRReviewFromMetadata,
   isIssueWatchFromMetadata,
@@ -320,6 +321,7 @@ export function toKanbanTask(source: TaskLike): KanbanTask {
     ...dependencyProjection(source),
     statusSummary: source.status_summary,
     metadata: source.metadata,
+    cardDisplay: cardDisplayFromMetadata(source.metadata),
     isArchived: source.archived_at != null,
     isPRReview: isPRReviewFromMetadata(source.metadata),
     isIssueWatch: isIssueWatchFromMetadata(source.metadata),

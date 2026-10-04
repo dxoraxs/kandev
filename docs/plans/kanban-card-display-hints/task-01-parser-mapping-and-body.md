@@ -1,7 +1,7 @@
 ---
 id: "01-parser-mapping-and-body"
 title: "Parser, mapping, and title-first body"
-status: planned
+status: done
 wave: 1
 depends_on: []
 plan: "plan.md"

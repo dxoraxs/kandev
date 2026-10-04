@@ -11,7 +11,7 @@ export function CardTitle({ task, enableTitleHover }: { task: Task; enableTitleH
     <p
       ref={ref}
       data-testid="task-card-title"
-      className="text-sm font-medium leading-tight line-clamp-1 min-w-0"
+      className="text-sm font-medium leading-tight line-clamp-2 break-words min-w-0"
     >
       {task.title}
     </p>
