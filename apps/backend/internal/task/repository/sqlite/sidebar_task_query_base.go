@@ -91,6 +91,8 @@ func sidebarBaseCandidateFields(driver string, needs sidebarBaseNeeds) []string 
 		fields[0] = "t.id AS projection_id"
 		fields = append(fields[:5], fields[6:]...)
 	}
+	// Board position drives the `position` sort; it is an alias-free base column.
+	fields = append(fields, "t.position AS task_position")
 	fields = append(fields, sidebarStateFields(driver, needs)...)
 	fields = append(fields, sidebarActivityFields(driver, needs)...)
 	fields = append(fields, sidebarWorkflowFields(needs)...)

@@ -132,3 +132,17 @@ func TestSidebarTaskViewQueryScalarBoundaries(t *testing.T) {
 		}
 	}
 }
+
+func TestSidebarTaskViewQueryAcceptsPositionSort(t *testing.T) {
+	query := SidebarTaskViewQuery{
+		Sort:  SidebarTaskViewSort{Key: "position", Direction: "asc"},
+		Group: "none", Page: 1, PageSize: 100, Locale: "en",
+	}
+	if err := query.Validate(); err != nil {
+		t.Fatalf("position sort rejected: %v", err)
+	}
+	query.Sort.Key = "positions"
+	if err := query.Validate(); err == nil {
+		t.Fatal("unknown sort key accepted")
+	}
+}

@@ -393,6 +393,8 @@ func sidebarSortExpression(driver, key, direction string, orderIDs []string) (st
 		return "CASE WHEN v.activity_at IS NULL OR activity.tree_activity_at > v.activity_at THEN activity.tree_activity_at ELSE v.activity_at END " + order, nil
 	case "createdAt":
 		return "v.created_at " + order, nil
+	case sidebarPositionSortKey:
+		return "v.task_position " + order + ", " + taskTitleOrder(driver, "v.", "ASC"), nil
 	case "title":
 		return taskTitleOrder(driver, "v.", order), nil
 	case sidebarCustomSortKey:

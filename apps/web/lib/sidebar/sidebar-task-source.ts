@@ -10,7 +10,7 @@ export function sidebarTaskSource(
   view: SidebarView,
 ) {
   if (
-    !["state", "updatedAt", "lastActivityAt", "createdAt", "title", "custom"].includes(
+    !["state", "updatedAt", "lastActivityAt", "createdAt", "title", "custom", "position"].includes(
       view.sort.key,
     ) ||
     !["asc", "desc"].includes(view.sort.direction) ||

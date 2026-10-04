@@ -167,6 +167,7 @@ export function buildSidebarItem(
     remoteExecutorType: task.primaryExecutorType ?? undefined,
     remoteExecutorName: task.primaryExecutorName ?? undefined,
     createdAt: task.createdAt,
+    position: task.position,
     isArchived: task.isArchived === true,
     isPendingRemoval: isPendingRemoval(task, context),
     isFromOffice: task.isFromOffice,

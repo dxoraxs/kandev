@@ -62,6 +62,7 @@ export function projectLocalSidebarTasks(
       repositories: names,
       repositoryPath: names[0],
       createdAt: task.createdAt,
+      position: task.position,
       updatedAt: task.updatedAt,
       lastActivityAt: summary?.last_activity_at || task.updatedAt || task.createdAt,
     };

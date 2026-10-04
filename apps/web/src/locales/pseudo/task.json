@@ -1777,6 +1777,8 @@
   "sortCreatedDescription": "Ŵĥēń ţĥē ţàśķ ŵàś ćŕēàţēď.",
   "sortCustom": "Ćũśţōḿ",
   "sortCustomDescription": "Ţĥē ḿàńũàĺ ōŕďēŕ ŷōũ śēţ ƒōŕ ţàśķś.",
+  "sortPosition": "Ɓōàŕď ōŕďēŕ",
+  "sortPositionDescription": "Ţĥē ōŕďēŕ ōƒ ţàśķś ōń ţĥē ƀōàŕď.",
   "sortDirection": "Śōŕţ ďĩŕēćţĩōń {{direction}}",
   "sortSummary": "{{sort}}, {{direction}}",
   "sortLastActivity": "Ĺàśţ àćţĩvĩţŷ",

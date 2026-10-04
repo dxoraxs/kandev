@@ -71,6 +71,7 @@ export const KNOWN_SORT_KEYS = new Set<string>([
   "createdAt",
   "title",
   "custom",
+  "position",
 ]);
 
 /**

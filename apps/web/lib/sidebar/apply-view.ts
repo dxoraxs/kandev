@@ -141,6 +141,8 @@ const SORT_COMPARATORS: Record<Exclude<SortKey, "custom">, SortComparator> = {
     compareActivityTimestamps(taskActivitySortValue(a), taskActivitySortValue(b)),
   createdAt: (a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? ""),
   title: (a, b) => (a.title ?? "").localeCompare(b.title ?? ""),
+  position: (a, b) =>
+    (a.position ?? 0) - (b.position ?? 0) || (a.title ?? "").localeCompare(b.title ?? ""),
 };
 
 function customComparator(orderedTaskIds: string[]): SortComparator {

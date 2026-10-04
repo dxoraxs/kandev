@@ -27,6 +27,7 @@ const (
 	sidebarNotMatchesOp      = "not_matches"
 	sidebarNotInOp           = "not_in"
 	sidebarCustomSortKey     = "custom"
+	sidebarPositionSortKey   = "position"
 	sidebarSQLNull           = "NULL"
 )
 

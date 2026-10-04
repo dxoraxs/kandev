@@ -24,7 +24,14 @@ export type FilterClause = {
   value: FilterValue;
 };
 
-export type SortKey = "state" | "updatedAt" | "lastActivityAt" | "createdAt" | "title" | "custom";
+export type SortKey =
+  | "state"
+  | "updatedAt"
+  | "lastActivityAt"
+  | "createdAt"
+  | "title"
+  | "custom"
+  | "position";
 export type SortDirection = "asc" | "desc";
 export type SortSpec = { key: SortKey; direction: SortDirection };
 

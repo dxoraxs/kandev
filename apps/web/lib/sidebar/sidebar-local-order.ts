@@ -50,6 +50,11 @@ export function idOrder(ids: string[]): (id: string) => number {
   return (id) => positions.get(id) ?? ids.length;
 }
 
+// Mirrors the server's `position` sort: board position, then title.
+function comparePosition(a: TaskSwitcherItem, b: TaskSwitcherItem): number {
+  return (a.position ?? 0) - (b.position ?? 0) || sqliteNoCase(a.title, b.title);
+}
+
 export function localTaskComparator(
   sort: SortSpec,
   orderedIds: string[],
@@ -72,6 +77,8 @@ export function localTaskComparator(
         return sqliteBinary(sqliteTaskTime(a.updatedAt), sqliteTaskTime(b.updatedAt));
       case "lastActivityAt":
         return sqliteBinary(activities.get(a.id) ?? "", activities.get(b.id) ?? "");
+      case "position":
+        return comparePosition(a, b);
       case "custom":
         return (
           order(a.id) - order(b.id) ||

@@ -1717,6 +1717,8 @@
   "sortCreatedDescription": "Quando a tarefa foi criada.",
   "sortCustom": "Personalizada",
   "sortCustomDescription": "A ordem manual que definiu para as tarefas.",
+  "sortPosition": "Ordem do quadro",
+  "sortPositionDescription": "A ordem das tarefas no quadro.",
   "sortDirection": "Sentido da ordenação {{direction}}",
   "sortSummary": "{{sort}}: {{direction}}",
   "sortLastActivity": "Última atividade",

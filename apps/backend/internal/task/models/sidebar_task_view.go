@@ -104,7 +104,7 @@ func (q SidebarTaskViewQuery) Validate() error {
 	if q.PageSize < 1 || q.PageSize > MaxSidebarTaskPageSize {
 		return sidebarValidationError("page_bounds", "unsupported page size", MaxSidebarTaskPageSize)
 	}
-	if !oneOf(q.Sort.Key, "state", "updatedAt", "lastActivityAt", "createdAt", "title", "custom") {
+	if !oneOf(q.Sort.Key, "state", "updatedAt", "lastActivityAt", "createdAt", "title", "custom", "position") {
 		return sidebarValidationError("sorting", "unsupported sort key", 0)
 	}
 	if !oneOf(q.Sort.Direction, "asc", "desc") {

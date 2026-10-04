@@ -1777,6 +1777,8 @@
   "sortCreatedDescription": "When the task was created.",
   "sortCustom": "Custom",
   "sortCustomDescription": "The manual order you set for tasks.",
+  "sortPosition": "Board order",
+  "sortPositionDescription": "The order of tasks on the board.",
   "sortDirection": "Sort direction {{direction}}",
   "sortSummary": "{{sort}}, {{direction}}",
   "sortLastActivity": "Last activity",

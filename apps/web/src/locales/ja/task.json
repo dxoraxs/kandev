@@ -1816,6 +1816,8 @@
   "sortCreatedDescription": "タスク作成日時。",
   "sortCustom": "カスタム",
   "sortCustomDescription": "タスクに設定した手動順。",
+  "sortPosition": "ボード順",
+  "sortPositionDescription": "ボード上のタスクの順序。",
   "sortDirection": "並べ替え方向 {{direction}}",
   "sortSummary": "{{sort}}、{{direction}}",
   "sortLastActivity": "最終アクティビティ",

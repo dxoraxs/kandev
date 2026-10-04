@@ -34,6 +34,11 @@ const SORT_OPTIONS: Array<{ key: SortKey; labelKey: string; descriptionKey: stri
     descriptionKey: "task:sortTitleDescription",
   },
   {
+    key: "position",
+    labelKey: "task:sortPosition",
+    descriptionKey: "task:sortPositionDescription",
+  },
+  {
     key: "custom",
     labelKey: "task:sortCustom",
     descriptionKey: "task:sortCustomDescription",

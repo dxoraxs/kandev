@@ -1716,6 +1716,8 @@
   "sortCreatedDescription": "任务创建的时间。",
   "sortCustom": "自定义",
   "sortCustomDescription": "你为任务设置的手动顺序。",
+  "sortPosition": "看板顺序",
+  "sortPositionDescription": "任务在看板上的顺序。",
   "sortDirection": "排序方向 {{direction}}",
   "sortSummary": "{{sort}}，{{direction}}",
   "sortLastActivity": "最后活动",

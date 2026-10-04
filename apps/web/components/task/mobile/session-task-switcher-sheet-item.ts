@@ -109,6 +109,7 @@ export function toSheetItem(
     autopilot: task.autopilot,
     priority: task.priority,
     createdAt: task.createdAt,
+    position: task.position,
     lastActivityAt: sheetLastActivity(task),
     parentTaskId: task.parentTaskId ?? undefined,
     workspaceMode: task.workspaceMode,

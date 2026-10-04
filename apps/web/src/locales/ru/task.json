@@ -1927,6 +1927,8 @@
   "sortCreatedDescription": "Когда задача была создана.",
   "sortCustom": "Вручную",
   "sortCustomDescription": "Порядок задач, заданный вручную.",
+  "sortPosition": "По порядку на доске",
+  "sortPositionDescription": "Порядок задач на доске.",
   "sortDirection": "Направление сортировки: {{direction}}",
   "sortSummary": "{{sort}}, {{direction}}",
   "sortLastActivity": "Последняя активность",

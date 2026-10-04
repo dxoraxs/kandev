@@ -1777,6 +1777,8 @@
   "sortCreatedDescription": "작업이 생성된 시점.",
   "sortCustom": "사용자 지정",
   "sortCustomDescription": "작업에 대해 설정한 수동 순서.",
+  "sortPosition": "보드 순서",
+  "sortPositionDescription": "보드에 표시되는 작업 순서.",
   "sortDirection": "정렬 방향 {{direction}}",
   "sortSummary": "{{sort}}, {{direction}}",
   "sortLastActivity": "마지막 활동",

@@ -62,6 +62,8 @@ export type TaskSwitcherItem = {
   updatedAt?: string;
   lastActivityAt?: string;
   createdAt?: string;
+  /** Persisted board position (one running order across columns); drives the `position` sort. */
+  position?: number;
   isArchived?: boolean;
   /** True while an accepted archive or delete request is still in flight. */
   isPendingRemoval?: boolean;

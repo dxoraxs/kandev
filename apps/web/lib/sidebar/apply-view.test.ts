@@ -301,6 +301,23 @@ describe("applySort", () => {
   });
 });
 
+describe("applySort — position", () => {
+  const first = task({ id: "first", title: "Zulu", position: 0 });
+  const tieB = task({ id: "tie-b", title: "Beta", position: 1 });
+  const tieA = task({ id: "tie-a", title: "Alpha", position: 1 });
+  const last = task({ id: "last", title: "Alpha", position: 9 });
+
+  it("orders by board position ascending and breaks ties by title", () => {
+    const out = applySort([last, tieB, first, tieA], { key: "position", direction: "asc" });
+    expect(out.map((t) => t.id)).toEqual(["first", "tie-a", "tie-b", "last"]);
+  });
+
+  it("reverses on desc", () => {
+    const out = applySort([first, tieA, last], { key: "position", direction: "desc" });
+    expect(out.map((t) => t.id)).toEqual(["last", "tie-a", "first"]);
+  });
+});
+
 describe("applyGroup — state", () => {
   it("groups by real task state instead of the action bucket", () => {
     const tasks = [
