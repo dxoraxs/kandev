@@ -51,7 +51,7 @@ Execution model: [ADR 2026-10-05 repository maintenance agent tasks](../../../de
 | `planfiles.Service.UnadaptedCounts` | Scans one or all local repositories of a workspace with configured or default directories and returns counts, independent of the sync config. |
 | `planfiles.Service.EnsureBoard` | Creates the Plans board and saves an enabled config with default directories when the workspace has none. Idempotent. |
 | `task/handlers` maintenance handler | `POST /api/v1/repositories/:id/maintenance-tasks`; validates kind and repository, resolves defaults, applies the active-task guard, creates and launches the task. |
-| `task/service` maintenance helpers | Active-task lookup by metadata; default workflow and start step resolution. |
+| `task/service` maintenance helpers | Active-task lookup by metadata; default workflow resolution; the step is the auto-start step chosen by `CreateTask`. |
 | `config/prompts/plan-file-adaptation.md` | Built-in adaptation prompt template. |
 | Web `PlanFilesUnadaptedRows` | Per-repository rows with Adapt with agent in the Plan files section. |
 | Web `AdaptPlansOfferDialog` | Offer shown after a repository is added. |
@@ -121,8 +121,9 @@ Task metadata on creation:
    per-repository mutex in the handler, so two clicks cannot create two tasks.
 4. Resolve the agent profile: `workspace.DefaultAgentProfileID`, else reject.
 5. Resolve the workflow: the first workflow of the workspace by sort order that
-   is not hidden and is not the configured plan board; its start step comes
-   from `workflow/service.ResolveStartStep`.
+   is not hidden and is not the configured plan board; the task is created with `StartAgent`, so
+   `CreateTask` places it on the workflow's auto-start step
+   (`ResolveAutoStartStep`, falling back to the start step).
 6. Resolve the base branch with `RepositoryCurrentBranch(repoID)`, so
    `LocalPreparer` performs no checkout.
 7. Run the kind's preparation hook (plan adaptation: `EnsureBoard`).
