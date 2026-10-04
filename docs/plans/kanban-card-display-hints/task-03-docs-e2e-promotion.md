@@ -1,7 +1,7 @@
 ---
 id: "03-docs-e2e-promotion"
 title: "Docs, E2E, and spec promotion"
-status: planned
+status: done
 wave: 3
 depends_on:
   - "02-hint-row"

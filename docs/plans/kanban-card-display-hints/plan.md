@@ -1,6 +1,6 @@
 ---
 created: 2026-10-05
-status: planned
+status: implemented
 requirements:
   - REQ-TASKS-KANBAN-CARD-DISPLAY-HINTS-001
   - REQ-TASKS-KANBAN-CARD-DISPLAY-HINTS-002
