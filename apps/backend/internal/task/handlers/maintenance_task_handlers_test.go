@@ -604,15 +604,26 @@ func TestMaintenanceTask_CleanupReturnsExistingActiveTask(t *testing.T) {
 	assert.Equal(t, 1, f.orch.launches)
 }
 
-func TestMaintenanceTask_CleanupDoesNotShareGuardWithPlanAdaptation(t *testing.T) {
-	f := newMaintenanceFixture(t, maintenanceOptions{})
-	f.enableCleanup()
-	plan := decodeBody(t, f.post(f.repoID, "plan_adaptation"))
+func TestMaintenanceTask_ActiveTaskOfAnyKindIsReturned(t *testing.T) {
+	cases := []struct{ first, second string }{
+		{"plan_adaptation", "repository_cleanup"},
+		{"repository_cleanup", "plan_adaptation"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.first+"_then_"+tc.second, func(t *testing.T) {
+			f := newMaintenanceFixture(t, maintenanceOptions{})
+			f.enableCleanup()
+			first := decodeBody(t, f.post(f.repoID, tc.first))
 
-	rec := f.post(f.repoID, "repository_cleanup")
+			rec := f.post(f.repoID, tc.second)
 
-	require.Equal(t, http.StatusCreated, rec.Code, rec.Body.String())
-	assert.NotEqual(t, plan["task_id"], decodeBody(t, rec)["task_id"])
+			require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+			second := decodeBody(t, rec)
+			assert.Equal(t, first["task_id"], second["task_id"])
+			assert.Equal(t, true, second["existing"])
+			assert.Equal(t, 1, f.orch.launches)
+		})
+	}
 }
 
 func TestMaintenanceTask_CleanupWorktreeReadFailureRejectsRequest(t *testing.T) {

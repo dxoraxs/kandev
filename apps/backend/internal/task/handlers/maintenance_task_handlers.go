@@ -203,7 +203,8 @@ func (h *TaskHandlers) recordMaintenanceOutcome(kind, outcome string) {
 }
 
 // httpStartMaintenanceTask creates and starts an agent task on a repository's
-// main checkout, or returns the active task of the same kind.
+// main checkout, or returns the active maintenance task of the
+// repository, whatever its kind.
 func (h *TaskHandlers) httpStartMaintenanceTask(c *gin.Context) {
 	var body maintenanceTaskRequest
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -245,7 +246,7 @@ func (h *TaskHandlers) runMaintenanceTask(
 		return maintenanceRejection(http.StatusNotFound, maintenanceReasonKindUnavailable)
 	}
 	workspaceID := repository.WorkspaceID
-	existing, sessionID, err := h.service.FindActiveMaintenanceTask(ctx, workspaceID, repository.ID, kindName)
+	existing, sessionID, err := h.service.FindActiveMaintenanceTask(ctx, workspaceID, repository.ID)
 	if err != nil {
 		h.logger.Error("maintenance task guard lookup failed", zap.Error(err))
 		return maintenanceFailure("failed to start maintenance task")

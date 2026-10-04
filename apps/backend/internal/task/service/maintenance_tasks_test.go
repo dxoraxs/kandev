@@ -86,7 +86,7 @@ func TestFindActiveMaintenanceTask_ReturnsMatchingActiveTask(t *testing.T) {
 	f.workflow(t, "wf-1", 0, false)
 	f.task(t, "task-a", "repo-1", "plan_adaptation", models.TaskSessionStateRunning, true)
 
-	task, sessionID, err := f.svc.FindActiveMaintenanceTask(context.Background(), "ws-1", "repo-1", "plan_adaptation")
+	task, sessionID, err := f.svc.FindActiveMaintenanceTask(context.Background(), "ws-1", "repo-1")
 	if err != nil {
 		t.Fatalf("FindActiveMaintenanceTask: %v", err)
 	}
@@ -95,19 +95,32 @@ func TestFindActiveMaintenanceTask_ReturnsMatchingActiveTask(t *testing.T) {
 	}
 }
 
-func TestFindActiveMaintenanceTask_IgnoresOtherKindRepositoryAndPlainTasks(t *testing.T) {
+func TestFindActiveMaintenanceTask_MatchesAnyKindButIgnoresOtherRepositoryAndPlainTasks(t *testing.T) {
 	f := newMaintenanceFixture(t)
 	f.workflow(t, "wf-1", 0, false)
-	f.task(t, "task-kind", "repo-1", "repository_cleanup", models.TaskSessionStateRunning, true)
 	f.task(t, "task-repo", "repo-2", "plan_adaptation", models.TaskSessionStateRunning, true)
 	f.task(t, "task-plain", "repo-1", "", models.TaskSessionStateRunning, true)
 
-	task, _, err := f.svc.FindActiveMaintenanceTask(context.Background(), "ws-1", "repo-1", "plan_adaptation")
+	task, _, err := f.svc.FindActiveMaintenanceTask(context.Background(), "ws-1", "repo-1")
 	if err != nil {
 		t.Fatalf("FindActiveMaintenanceTask: %v", err)
 	}
 	if task != nil {
 		t.Fatalf("got %s, want no active task", task.ID)
+	}
+}
+
+func TestFindActiveMaintenanceTask_ReturnsTaskOfAnyKind(t *testing.T) {
+	f := newMaintenanceFixture(t)
+	f.workflow(t, "wf-1", 0, false)
+	f.task(t, "task-clean", "repo-1", "repository_cleanup", models.TaskSessionStateRunning, true)
+
+	task, _, err := f.svc.FindActiveMaintenanceTask(context.Background(), "ws-1", "repo-1")
+	if err != nil {
+		t.Fatalf("FindActiveMaintenanceTask: %v", err)
+	}
+	if task == nil || task.ID != "task-clean" {
+		t.Fatalf("got %v, want task-clean", task)
 	}
 }
 
@@ -119,7 +132,7 @@ func TestFindActiveMaintenanceTask_TerminalSessionIsNotActive(t *testing.T) {
 		f.workflow(t, "wf-1", 0, false)
 		f.task(t, "task-done", "repo-1", "plan_adaptation", state, true)
 
-		task, _, err := f.svc.FindActiveMaintenanceTask(context.Background(), "ws-1", "repo-1", "plan_adaptation")
+		task, _, err := f.svc.FindActiveMaintenanceTask(context.Background(), "ws-1", "repo-1")
 		if err != nil {
 			t.Fatalf("%s: FindActiveMaintenanceTask: %v", state, err)
 		}
@@ -134,7 +147,7 @@ func TestFindActiveMaintenanceTask_TaskWithoutSessionIsActive(t *testing.T) {
 	f.workflow(t, "wf-1", 0, false)
 	f.task(t, "task-nosession", "repo-1", "plan_adaptation", "", false)
 
-	task, sessionID, err := f.svc.FindActiveMaintenanceTask(context.Background(), "ws-1", "repo-1", "plan_adaptation")
+	task, sessionID, err := f.svc.FindActiveMaintenanceTask(context.Background(), "ws-1", "repo-1")
 	if err != nil {
 		t.Fatalf("FindActiveMaintenanceTask: %v", err)
 	}

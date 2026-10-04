@@ -32,8 +32,10 @@ worktree, and both are rare, owner-initiated, and repository-scoped.
   with source type `local` qualify.
 - The agent profile is the workspace default agent profile. Without one, the
   action is refused with a typed reason; the backend never guesses a profile.
-- At most one active maintenance task of a kind exists per repository. A second
-  request returns the existing task instead of creating another.
+- At most one active maintenance task of any kind exists per repository, so plan
+  adaptation and cleanup never run at once on the same checkout. A second
+  request, whatever its kind, returns the existing task instead of creating
+  another.
 - Irreversible remote effects (remote branch deletion, push) happen only after
   the owner confirms a summary inside the task conversation. The prompt owns
   that contract; the backend does not grant or revoke git permissions.
