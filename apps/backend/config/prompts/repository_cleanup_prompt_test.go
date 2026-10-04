@@ -79,6 +79,7 @@ func TestRepositoryCleanupPromptInventoryAndSnapshotCommands(t *testing.T) {
 		"git branch -r",
 		"git worktree list",
 		"git symbolic-ref refs/remotes/origin/HEAD",
+		"If that also fails, stop and ask the owner which branch is the default; never guess it.",
 		"`chore: wip snapshot before cleanup`",
 		"the main checkout",
 	} {

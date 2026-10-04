@@ -3,7 +3,7 @@ Clean up the repository "{repository_name}": fold every branch and worktree into
 Repository: {repository_path}
 Default branch: {default_branch}
 
-In every command below, `<default>` stands for the default branch above. If the default branch is empty, resolve it with `git symbolic-ref refs/remotes/origin/HEAD` and use that branch name.
+In every command below, `<default>` stands for the default branch above. If the default branch is empty, resolve it with `git symbolic-ref refs/remotes/origin/HEAD` and use that branch name. If that also fails, stop and ask the owner which branch is the default; never guess it.
 
 You are working in the owner's main checkout (the repository path above), not in a worktree. The owner has authorized the merges, the conflict resolution, and, after one confirmation, the push and the deletions described below. They have authorized nothing else.
 
