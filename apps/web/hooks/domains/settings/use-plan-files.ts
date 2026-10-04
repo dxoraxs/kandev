@@ -60,11 +60,14 @@ function draftFromConfig(config: PlanFilesConfig | null): PlanFilesDraft {
     workflowId: config.workflow_id,
     statusSteps: { ...config.status_steps },
     directories: [...config.directories],
-    executorRows: Object.entries(config.executor_steps).map(([stepId, name]) => ({ stepId, name })),
-    notesHeading: config.notes_heading,
-    wakeOnDate: config.wake_on_date,
-    staleAfterDays: String(config.stale_after_days),
-    indexFile: config.index_file,
+    executorRows: Object.entries(config.executor_steps ?? {}).map(([stepId, name]) => ({
+      stepId,
+      name,
+    })),
+    notesHeading: config.notes_heading ?? "",
+    wakeOnDate: config.wake_on_date ?? true,
+    staleAfterDays: String(config.stale_after_days ?? 7),
+    indexFile: config.index_file ?? "",
   };
 }
 

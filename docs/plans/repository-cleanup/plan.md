@@ -98,7 +98,7 @@ accessible name and no tooltip dependency.
 
 ### UI-02: Confirmation
 
-Desktop dialog; phone bottom sheet (shared `Dialog` below 640px).
+Desktop dialog (shared `Dialog`); phone bottom sheet (shared `Drawer` when `isMobile`).
 
 ```text
 +-- Clean up city_companion? ---------------------------------+

@@ -8,6 +8,7 @@ import { CardContent } from "@kandev/ui/card";
 import { Button } from "@kandev/ui/button";
 import { UnsavedChangesBadge } from "@/components/settings/unsaved-indicator";
 import { SettingsCard } from "@/components/settings/settings-card";
+import { RepositoryCleanupButton } from "@/components/settings/repository-cleanup-button";
 import type { Repository, RepositoryScript } from "@/lib/types/http";
 
 type RepositoryWithScripts = Repository & { scripts: RepositoryScript[] };
@@ -18,6 +19,8 @@ type RepositoryPreviewProps = {
   deleteLoading: boolean;
   onOpenDelete: () => void;
   open: () => void;
+  /** Read-only repositories offer no cleanup action. */
+  readOnly?: boolean;
 };
 
 // These two build every string in the collapsed card, and neither holds JSX, so
@@ -76,6 +79,7 @@ export function RepositoryPreview({
   deleteLoading,
   onOpenDelete,
   open,
+  readOnly = false,
 }: RepositoryPreviewProps) {
   const { t } = useTranslation();
   const {
@@ -93,7 +97,7 @@ export function RepositoryPreview({
   return (
     <SettingsCard isDirty={isDirty}>
       <CardContent className="py-4 cursor-pointer" onClick={open}>
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex items-start gap-3 min-w-0">
             <div className="p-2 bg-muted rounded-md">
               <IconGitBranch className="h-4 w-4 text-muted-foreground" />
@@ -119,11 +123,11 @@ export function RepositoryPreview({
               ) : null}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2">
+            <RepositoryCleanupButton repository={repository} readOnly={readOnly} />
             <Button
               type="button"
               variant="outline"
-              size="sm"
               className="cursor-pointer"
               onClick={(event) => {
                 event.stopPropagation();
@@ -136,7 +140,6 @@ export function RepositoryPreview({
             <Button
               type="button"
               variant="outline"
-              size="sm"
               className="cursor-pointer"
               onClick={(event) => {
                 event.stopPropagation();

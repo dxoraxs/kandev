@@ -92,6 +92,16 @@ When a workspace already tracks plans as tasks, set `external_id` in each plan f
 
 If two plan files resolve to the same identifier, neither is synced, and both are reported as a conflict.
 
+## Adapting existing plans
+
+Plan files whose header is not in the board format do not appear on the board. The **Plan files** section lists each local repository that has some, with the number of files and an **Adapt with agent** button. The same count shows in the status line as "not adapted". Adding a repository that has such files also offers the adaptation once; choose **Not now** to skip it.
+
+**Adapt with agent** creates a task in the workspace's default agent profile and opens it. The agent reads the repository history, sets each plan's status, and commits only the plan files, working in the repository's checkout. Starting it again while that task is still active opens the same task instead of creating another.
+
+- The workspace needs a default agent profile and at least one workflow besides the plan board. Otherwise the button reports what is missing.
+- If plan sync is not set up yet, starting the adaptation also creates the Plans board and turns sync on.
+- Only repositories on this machine are listed.
+
 ## Limits and errors
 
 - Only regular files inside the repository root are read and written. A symlinked plan file, or a scanned directory that resolves outside the root, is skipped and reported.

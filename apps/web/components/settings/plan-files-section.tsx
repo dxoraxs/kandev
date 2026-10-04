@@ -13,6 +13,7 @@ import { PlanFilesBoardField, PlanFilesMapping } from "./plan-files-mapping";
 import { PlanFilesDirectories } from "./plan-files-directories";
 import { PlanFilesOperations } from "./plan-files-operations";
 import { PlanFilesStatus } from "./plan-files-status";
+import { PlanFilesUnadaptedRows } from "./plan-files-unadapted-rows";
 
 /**
  * Plan files settings on the workspace Workflows tab. Renders nothing, and
@@ -81,6 +82,13 @@ function PlanFilesSectionBody({ workspaceId }: { workspaceId: string }) {
             {state.config && <PlanFilesStatus config={state.config} />}
           </>
         )}
+        {!state.loading && (
+          <PlanFilesUnadaptedRows
+            workspaceId={workspaceId}
+            boardWillBeCreated={state.config === null}
+            refreshKey={state.config?.last_pass_at}
+          />
+        )}
         {state.syncNotice === "running" && (
           <Alert data-testid="plan-files-sync-running">
             <AlertDescription>{t("planFiles:syncRunning")}</AlertDescription>
@@ -89,37 +97,45 @@ function PlanFilesSectionBody({ workspaceId }: { workspaceId: string }) {
         {state.error && (
           <SettingsErrorText data-testid="plan-files-error">{state.error}</SettingsErrorText>
         )}
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-          {draft.enabled && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={!state.canSync}
-              onClick={state.syncNow}
-              className={settingsActionClassName("w-full cursor-pointer sm:w-auto")}
-              data-testid="plan-files-sync-now"
-            >
-              {state.syncing ? (
-                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <IconRefresh className="mr-2 h-4 w-4" />
-              )}
-              {t("planFiles:syncNow")}
-            </Button>
-          )}
-          <Button
-            type="button"
-            size="sm"
-            disabled={!state.canSave}
-            onClick={state.save}
-            className={settingsActionClassName("w-full cursor-pointer sm:w-auto")}
-            data-testid="plan-files-save"
-          >
-            {t("planFiles:save")}
-          </Button>
-        </div>
+        <PlanFilesActions state={state} />
       </div>
+    </div>
+  );
+}
+
+function PlanFilesActions({ state }: { state: ReturnType<typeof usePlanFiles> }) {
+  const { t } = useTranslation();
+  const { draft } = state;
+  return (
+    <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+      {draft.enabled && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={!state.canSync}
+          onClick={state.syncNow}
+          className={settingsActionClassName("w-full cursor-pointer sm:w-auto")}
+          data-testid="plan-files-sync-now"
+        >
+          {state.syncing ? (
+            <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <IconRefresh className="mr-2 h-4 w-4" />
+          )}
+          {t("planFiles:syncNow")}
+        </Button>
+      )}
+      <Button
+        type="button"
+        size="sm"
+        disabled={!state.canSave}
+        onClick={state.save}
+        className={settingsActionClassName("w-full cursor-pointer sm:w-auto")}
+        data-testid="plan-files-save"
+      >
+        {t("planFiles:save")}
+      </Button>
     </div>
   );
 }

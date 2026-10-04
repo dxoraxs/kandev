@@ -1,7 +1,7 @@
 ---
 id: "03-broom-button"
 title: "Repository cleanup broom button"
-status: pending
+status: done
 wave: 3
 depends_on: ["02-cleanup-kind-and-prompt"]
 plan: "plan.md"
@@ -73,7 +73,8 @@ cd apps/web && pnpm run typecheck
 cd apps/web && pnpm run i18n:check
 cd apps && pnpm --filter @kandev/web lint
 make build-web build-backend
-cd apps/web && pnpm e2e:run -- tests/settings/repository-cleanup.spec.ts tests/settings/mobile-repository-cleanup.spec.ts
+cd apps/web && pnpm e2e:run -- tests/settings/repository-cleanup.spec.ts
+cd apps/web && pnpm e2e:run -- --project mobile-chrome tests/settings/mobile-repository-cleanup.spec.ts
 ```
 
 ## Files likely touched

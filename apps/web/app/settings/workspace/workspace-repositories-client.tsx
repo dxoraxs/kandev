@@ -9,6 +9,8 @@ import { Button } from "@kandev/ui/button";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { RepositoryCard } from "@/components/settings/repository-card";
 import { settingsActionClassName } from "@/components/settings/settings-control";
+import { AdaptPlansOfferDialog } from "@/components/settings/adapt-plans-offer-dialog";
+import { usePlanAdaptationOffer } from "@/hooks/domains/settings/use-plan-adaptation-offer";
 import { WorkspaceRepositorySetsSection } from "./workspace-repository-sets-section";
 import { AddLocalRepositoryDialog } from "./workspace-add-local-repository-dialog";
 import { generateUUID } from "@/lib/utils";
@@ -99,6 +101,7 @@ type RepoHandlerArgs = {
   setSavedRepositoryItems: React.Dispatch<React.SetStateAction<RepositoryWithScripts[]>>;
   savedRepositoriesById: Map<string, RepositoryWithScripts>;
   clearRepositoryScripts: (id: string) => void;
+  onRepositoryCreated: (repository: Repository) => void;
 };
 
 function selectDiscoveredRepository(
@@ -129,7 +132,7 @@ async function saveNewRepository(
   workspace: Workspace | null,
   setRepositoryItems: React.Dispatch<React.SetStateAction<RepositoryItem[]>>,
   setSavedRepositoryItems: React.Dispatch<React.SetStateAction<RepositoryWithScripts[]>>,
-) {
+): Promise<Repository> {
   const created = await createRepositoryAction({
     workspace_id: workspace?.id ?? repo.workspace_id,
     // i18n-exempt: persisted repository name, same contract as buildDraftRepo above.
@@ -171,6 +174,7 @@ async function saveNewRepository(
     ),
   );
   setSavedRepositoryItems((prev) => [cloneRepository(nextRepo), ...prev]);
+  return created;
 }
 
 type SaveExistingArgs = {
@@ -254,6 +258,7 @@ function useRepositoryHandlers({
   setSavedRepositoryItems,
   savedRepositoriesById,
   clearRepositoryScripts,
+  onRepositoryCreated,
 }: RepoHandlerArgs) {
   const handleUpdateRepository = (repoId: string, updates: Partial<Repository>) => {
     setRepositoryItems((prev) =>
@@ -307,7 +312,14 @@ function useRepositoryHandlers({
     const repo = repositoryItems.find((item) => item.id === repoId);
     if (!repo) return;
     if (repoId.startsWith("temp-repo-")) {
-      await saveNewRepository(repo, repoId, workspace, setRepositoryItems, setSavedRepositoryItems);
+      const created = await saveNewRepository(
+        repo,
+        repoId,
+        workspace,
+        setRepositoryItems,
+        setSavedRepositoryItems,
+      );
+      onRepositoryCreated(created);
       return;
     }
     await saveExistingRepository({
@@ -444,6 +456,7 @@ export function useWorkspaceRepositoriesPage(
     [savedRepositoryItems],
   );
 
+  const planOffer = usePlanAdaptationOffer(workspace?.id ?? null);
   const handlers = useRepositoryHandlers({
     workspace,
     repositoryItems,
@@ -451,6 +464,7 @@ export function useWorkspaceRepositoriesPage(
     setSavedRepositoryItems,
     savedRepositoriesById,
     clearRepositoryScripts,
+    onRepositoryCreated: planOffer.check,
   });
   const {
     handleUpdateRepository,
@@ -495,6 +509,8 @@ export function useWorkspaceRepositoriesPage(
     handleDeleteRepository,
     ...discover,
     handleConfirmLocalRepository,
+    planOffer: planOffer.offer,
+    dismissPlanOffer: planOffer.dismiss,
   };
 }
 
@@ -518,6 +534,8 @@ export function WorkspaceRepositoriesClient({
     handleSaveRepository,
     handleDeleteRepository,
     openDialog,
+    planOffer,
+    dismissPlanOffer,
   } = state;
 
   if (!workspace)
@@ -577,6 +595,7 @@ export function WorkspaceRepositoriesClient({
         readOnly={isImproveWorkspace}
       />
       {!isImproveWorkspace && <AddLocalRepositoryDialog state={state} />}
+      <AdaptPlansOfferDialog offer={planOffer} onDismiss={dismissPlanOffer} />
     </div>
   );
 }

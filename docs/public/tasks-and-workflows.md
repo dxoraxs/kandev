@@ -155,6 +155,26 @@ The initial database bootstrap can include a **Default Workspace** and a **Devel
 Later user-created workspaces receive **Kanban** instead; they do not inherit other workflows or
 settings from the default workspace.
 
+## Clean up a repository
+
+> [!EXPERIMENTAL]
+> Repository cleanup is feature-flagged. Enable `features.repositoryCleanup` (`KANDEV_FEATURES_REPOSITORY_CLEANUP`) in **Settings → System → Feature Toggles** and restart Kandev; until then the cleanup button is hidden.
+
+Use the broom button on a local repository's row in **Settings → Workspaces → _workspace_ → Repositories** to have an agent fold every branch into the default branch and remove what is merged. Remote repositories do not show the button.
+
+1. Select the broom and read the confirmation. Nothing starts until you select **Start cleanup**.
+2. Kandev creates a cleanup task with the workspace **Default Agent Profile** and opens it. If a cleanup task for the repository is already active, that task opens instead.
+3. The agent commits uncommitted worktree changes as WIP, merges every branch and worktree into the default branch, and resolves conflicts. It keeps any branch it is unsure about.
+4. The agent posts a summary and waits. Reply in the task conversation to confirm.
+5. After you confirm, it pushes the default branch, deletes merged branches locally and on the remote, and removes merged worktrees.
+
+Things to know before you confirm:
+
+- The agent works in the repository's main checkout, not in a separate worktree, so avoid editing that checkout while the task runs.
+- Branches and worktrees that belong to a live Kandev task are left alone.
+- It never force-pushes. If you decline, the local merges and WIP commits stay on local branches and nothing is pushed or deleted.
+- The workspace needs a **Default Agent Profile** and a visible workflow; otherwise a message names the missing setting and no task is created.
+
 ## Create a task
 
 Use **New Task** in the sidebar. In an open task, the **Task** split button also opens task creation.

@@ -185,8 +185,8 @@ asserts each rule's presence.
   `saveNewRepository` get the same behavior.
 - On success both entry points navigate with `linkToTask(task_id)`; on
   `existing: true` they navigate to the existing task and show an info toast.
-- Phone: the offer uses the shared `Dialog`, which renders as a bottom sheet
-  below 640px; actions stack full width with 44px touch targets. Settings rows
+- Phone: the offer uses the shared `Drawer` (bottom sheet) when `isMobile`,
+  and the shared `Dialog` otherwise; actions stack full width with 44px touch targets. Settings rows
   stack name and count over a full-width action button.
 - All copy goes through `t()` in English, pseudo, and the seven translated
   catalogs; no em dash.
