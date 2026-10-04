@@ -7,7 +7,9 @@ import {
   CENTER_GROUP,
   isCenterCandidateGroupId,
   RIGHT_TOP_GROUP,
+  TASK_DESCRIPTION_PANEL_ID,
 } from "@/lib/state/layout-manager";
+import { panelTitle } from "@/lib/state/layout-manager/panel-title";
 import { useAppStore, useAppStoreApi } from "@/components/state-provider";
 import { sessionId as toSessionId } from "@/lib/types/ids";
 import { createDebugLogger, isDebug } from "@/lib/debug/log";
@@ -272,7 +274,7 @@ export function ensureSessionTabPrecedesNonSessionTabs(api: DockviewApi, session
   const groupPanels = panel?.group?.panels;
   if (!panel || !groupPanels) return;
 
-  const firstNonSessionIndex = groupPanels.findIndex((p) => !p.id.startsWith("session:"));
+  const firstNonSessionIndex = groupPanels.findIndex((p) => !isLeadingTaskTab(p.id));
   if (firstNonSessionIndex === -1) return;
 
   const sessionPanelsToMove = groupPanels
@@ -289,11 +291,54 @@ export function ensureSessionTabPrecedesNonSessionTabs(api: DockviewApi, session
   }
 }
 
+/** Session tabs and the description tab lead their group, in that relative order. */
+function isLeadingTaskTab(panelId: string): boolean {
+  return panelId.startsWith("session:") || panelId === TASK_DESCRIPTION_PANEL_ID;
+}
+
 type AutoSessionTabRefs = {
   sessionTabCreatedRef: MutableRefObject<Set<string>>;
   prevTaskIdRef: MutableRefObject<string | null>;
   prevSessionIdRef: MutableRefObject<string | null>;
+  /** Task observed with a loaded, empty session list; its placeholder shows the description. */
+  sessionlessTaskIdRef: MutableRefObject<string | null>;
 };
+
+function trackSessionlessTask(
+  refs: AutoSessionTabRefs,
+  tid: string | null,
+  currentSessionIds: string[],
+  sessionListLoaded: boolean,
+): void {
+  if (refs.sessionlessTaskIdRef.current !== tid) refs.sessionlessTaskIdRef.current = null;
+  if (tid && sessionListLoaded && currentSessionIds.length === 0) {
+    refs.sessionlessTaskIdRef.current = tid;
+  }
+}
+
+/**
+ * The chat placeholder of a sessionless task shows its description. When the
+ * first session replaces that placeholder, keep the description as its own tab
+ * ahead of the new Agent tab.
+ */
+function keepDescriptionTabForFirstSession(
+  api: DockviewApi,
+  refs: AutoSessionTabRefs,
+  tid: string | null,
+): void {
+  const wasSessionless = tid !== null && refs.sessionlessTaskIdRef.current === tid;
+  refs.sessionlessTaskIdRef.current = null;
+  if (!wasSessionless || useDockviewStore.getState().preMaximizeLayout) return;
+  const chatGroupId = api.getPanel("chat")?.group?.id;
+  if (!chatGroupId || api.getPanel(TASK_DESCRIPTION_PANEL_ID)) return;
+  api.addPanel({
+    id: TASK_DESCRIPTION_PANEL_ID,
+    component: TASK_DESCRIPTION_PANEL_ID,
+    title: panelTitle(TASK_DESCRIPTION_PANEL_ID),
+    inactive: true,
+    position: { referenceGroup: chatGroupId, index: 0 },
+  });
+}
 
 /**
  * Activate the newly-ensured session panel and update the center-group store
@@ -558,6 +603,7 @@ export function runAutoSessionTabEffect(
 
   reconcileLoadedSessionPanels(api, refs, currentSessionIds, effectiveSessionId, sessionListLoaded);
   pruneHiddenSessionIds(api, appStore.getState);
+  trackSessionlessTask(refs, tid, currentSessionIds, sessionListLoaded);
 
   if (!effectiveSessionId) {
     if (isDebug()) debug("useAutoSessionTab: no effectiveSessionId, returning");
@@ -620,6 +666,7 @@ export function runAutoSessionTabEffect(
   // anchored during task switching already has its restored selection, which
   // must not be overwritten here.
   activateChatReplacement(api, effectiveSessionId, chatWasSelected && !sessionPanelExistedBefore);
+  keepDescriptionTabForFirstSession(api, refs, tid);
 
   // Now that the session panel occupies the center group, drop the generic
   // "chat" placeholder. Order matters: removing chat first would empty and
@@ -672,6 +719,7 @@ export function useAutoSessionTab(effectiveSessionId: string | null) {
   const sessionTabCreatedRef = useRef<Set<string>>(new Set());
   const prevTaskIdRef = useRef<string | null>(null);
   const prevSessionIdRef = useRef<string | null>(null);
+  const sessionlessTaskIdRef = useRef<string | null>(null);
   const appStore = useAppStoreApi();
   const dockviewApi = useDockviewStore((state) => state.api);
 
@@ -701,6 +749,7 @@ export function useAutoSessionTab(effectiveSessionId: string | null) {
       sessionTabCreatedRef,
       prevTaskIdRef,
       prevSessionIdRef,
+      sessionlessTaskIdRef,
     });
   }, [
     appStore,

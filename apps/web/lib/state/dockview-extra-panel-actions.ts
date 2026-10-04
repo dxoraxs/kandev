@@ -9,6 +9,7 @@ import {
 } from "./dockview-panel-actions";
 import { buildTerminalPanelActions } from "./dockview-terminal-panel-actions";
 import { panelTitle } from "./layout-manager/panel-title";
+import { TASK_DESCRIPTION_PANEL_ID } from "./layout-manager/constants";
 import {
   parsePluginPanelId,
   pluginPanelId,
@@ -123,6 +124,20 @@ function buildSidePanelActions(get: StoreGet) {
       api.panels
         .filter((panel) => parsePluginPanelId(panel.id)?.pluginId === pluginId)
         .forEach((panel) => api.removePanel(panel));
+    },
+    addDescriptionPanel: (opts?: SidePanelOpts) => {
+      const { api, centerGroupId } = get();
+      if (!api) return;
+      addSidePanel(
+        api,
+        centerGroupId,
+        {
+          id: TASK_DESCRIPTION_PANEL_ID,
+          component: TASK_DESCRIPTION_PANEL_ID,
+          title: panelTitle(TASK_DESCRIPTION_PANEL_ID),
+        },
+        opts,
+      );
     },
     addTodosPanel: (opts?: SidePanelOpts) => {
       const { api, centerGroupId } = get();

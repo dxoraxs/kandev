@@ -14,6 +14,25 @@ afterEach(() => {
 });
 
 describe("SessionMobileBottomNav", () => {
+  // @covers AC-TASKS-TASK-DESCRIPTION-VIEW-004.1
+  it.each([
+    { sessionless: true, label: "Description" },
+    { sessionless: false, label: "Chat" },
+  ])("labels the first item $label when sessionless is $sessionless", ({ sessionless, label }) => {
+    const onPanelChange = vi.fn();
+    render(
+      <SessionMobileBottomNav
+        activePanel="chat"
+        onPanelChange={onPanelChange}
+        showStatus={false}
+        onOpenStatus={vi.fn()}
+        sessionless={sessionless}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: label }));
+    expect(onPanelChange).toHaveBeenCalledWith("chat");
+  });
+
   it("offers a touch-sized review route for linked merge requests", () => {
     const onPanelChange = vi.fn();
     render(

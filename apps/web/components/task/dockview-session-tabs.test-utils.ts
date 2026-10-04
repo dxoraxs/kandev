@@ -117,6 +117,7 @@ export function makeReorderingAutoSessionApi(globalActivePanelId: "chat" | "file
   api: DockviewApi;
   activePanelId: () => string | null;
   centerActivePanelId: () => string | null;
+  centerPanelIds: () => string[];
   activationSequence: string[];
 } {
   const panels: ReorderingPanel[] = [];
@@ -206,6 +207,7 @@ export function makeReorderingAutoSessionApi(globalActivePanelId: "chat" | "file
     api,
     activePanelId: () => activePanel?.id ?? null,
     centerActivePanelId: () => group.activePanel?.id ?? null,
+    centerPanelIds: () => group.panels.map((panel) => panel.id),
     activationSequence,
   };
 }

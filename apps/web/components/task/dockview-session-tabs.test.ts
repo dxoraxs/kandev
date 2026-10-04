@@ -43,6 +43,7 @@ const CENTER_POSITION = "center";
 const SIBLING_PANEL = "session:sibling";
 const AUTO_TASK_ID = "task-A";
 const PENDING_EFFECT_SESSION_ID = "session-pending";
+const TASK_DESCRIPTION_PANEL_ID = "task-description";
 
 /**
  * Builds a fake DockviewApi where `panel.api.close()` mutates the underlying
@@ -94,6 +95,7 @@ function makeAutoSessionRefs(
     sessionTabCreatedRef: { current: new Set<string>() },
     prevTaskIdRef: { current: prevTaskId as string | null },
     prevSessionIdRef: { current: prevSessionId },
+    sessionlessTaskIdRef: { current: null as string | null },
   };
 }
 
@@ -704,5 +706,44 @@ describe("runAutoSessionTabEffect", () => {
 
     expect(refs.prevTaskIdRef.current).toBe(AUTO_TASK_ID);
     expect(refs.prevSessionIdRef.current).toBeNull();
+  });
+});
+
+describe("runAutoSessionTabEffect description tab", () => {
+  // @covers AC-TASKS-TASK-DESCRIPTION-VIEW-002.1, 002.2
+  it("keeps a Description tab when the first session replaces a sessionless placeholder", () => {
+    const sessionId = "session-first";
+    const { api, centerActivePanelId, centerPanelIds } = makeReorderingAutoSessionApi();
+    const refs = makeAutoSessionRefs();
+
+    withDockviewState({ api, preMaximizeLayout: null }, () => {
+      runAutoSessionTabEffect(
+        null,
+        makeAutoSessionAppStore(AUTO_TASK_ID, []) as never,
+        refs as never,
+      );
+      runAutoSessionTabEffect(
+        sessionId,
+        makeAutoSessionAppStore(AUTO_TASK_ID, [sessionId]) as never,
+        refs as never,
+      );
+    });
+
+    expect({ panels: centerPanelIds(), active: centerActivePanelId() }).toEqual({
+      panels: [TASK_DESCRIPTION_PANEL_ID, `session:${sessionId}`, "plan"],
+      active: `session:${sessionId}`,
+    });
+  });
+
+  it("adds no Description tab when the task already had a session at open", () => {
+    const sessionId = "session-current";
+    const { api, centerPanelIds } = makeReorderingAutoSessionApi();
+    const appStore = makeAutoSessionAppStore(AUTO_TASK_ID, [sessionId]);
+
+    withDockviewState({ api, preMaximizeLayout: null }, () => {
+      runAutoSessionTabEffect(sessionId, appStore as never, makeAutoSessionRefs() as never);
+    });
+
+    expect(centerPanelIds()).toEqual([`session:${sessionId}`, "plan"]);
   });
 });

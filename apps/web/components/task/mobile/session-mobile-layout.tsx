@@ -15,6 +15,7 @@ import { PassthroughToolbar } from "../passthrough-toolbar";
 import { MobileTerminalKeybar, KEYBAR_HEIGHT_PX } from "./mobile-terminal-keybar";
 import { MobileTerminalPane } from "./mobile-terminal-pane";
 import { MobileSessionsPicker } from "./mobile-sessions-section";
+import { SessionlessTaskView, useSessionlessTaskView } from "../sessionless-task-view";
 import { SessionPanelContent } from "@kandev/ui/pannel-session";
 import { useSessionLayoutState } from "@/hooks/use-session-layout-state";
 import { useVisualViewportOffset } from "@/hooks/use-visual-viewport-offset";
@@ -38,6 +39,7 @@ import { parsePluginPanelId } from "@/lib/state/layout-manager/plugin-panels";
 import { useEffectiveMobilePanel, type MobileReviewSource } from "./mobile-plugin-panel-lifecycle";
 import { useTranslation } from "react-i18next";
 import { useTaskStatusSummary } from "@/hooks/domains/task/use-task-status-summary";
+import { statusSummaryTaskError } from "@/lib/task-status-summary";
 import { LaunchQueueStatus } from "../launch-queue-status";
 import { WipQueueStatus } from "../wip-queue-status";
 import type { TaskTopbarRepository } from "../task-page-content-helpers";
@@ -139,10 +141,22 @@ function MobileChatPanelContent({
 }) {
   const { t } = useTranslation();
   const launchStatusSummary = useTaskStatusSummary(activeTaskId, undefined);
+  const sessionlessView = useSessionlessTaskView({
+    taskId: activeTaskId,
+    hasSession: Boolean(effectiveSessionId),
+    launchErrorOwned: Boolean(statusSummaryTaskError(launchStatusSummary)),
+  });
   if (!activeTaskId) {
     return (
       <div className="flex-1 flex items-center justify-center text-muted-foreground">
         {t("task:noTaskSelected")}
+      </div>
+    );
+  }
+  if (sessionlessView) {
+    return (
+      <div className="flex-1 min-h-0 flex flex-col">
+        <SessionlessTaskView {...sessionlessView} presentation="mobile" />
       </div>
     );
   }
@@ -606,6 +620,9 @@ function SessionMobileFooter({
   taskCanvases,
   onOpenCanvas,
 }: SessionMobileFooterProps) {
+  const sessionless =
+    useSessionlessTaskView({ taskId, hasSession: Boolean(sessionId), launchErrorOwned: false }) !==
+    null;
   return (
     <>
       <MobileTerminalKeybar
@@ -627,6 +644,7 @@ function SessionMobileFooter({
         taskId={taskId}
         sessionId={sessionId}
         sessionKind={sessionKind}
+        sessionless={sessionless}
       />
     </>
   );

@@ -3,6 +3,7 @@
 import {
   IconBrandVscode,
   IconDeviceDesktop,
+  IconFileDescription,
   IconFileText,
   IconFolder,
   IconGitBranch,
@@ -319,6 +320,7 @@ export function AddPanelMenuItems({
   const addVscodePanel = useDockviewStore((s) => s.addVscodePanel);
   const addPlanPanel = useDockviewStore((s) => s.addPlanPanel);
   const addTodosPanel = useDockviewStore((s) => s.addTodosPanel);
+  const addDescriptionPanel = useDockviewStore((s) => s.addDescriptionPanel);
   const addFilesPanel = useDockviewStore((s) => s.addFilesPanel);
   const addChangesPanel = useDockviewStore((s) => s.addChangesPanel);
   const api = useDockviewStore((s) => s.api);
@@ -349,6 +351,14 @@ export function AddPanelMenuItems({
           {t("task:plan")}
         </DropdownMenuItem>
       )}
+      <DropdownMenuItem
+        onClick={() => addDescriptionPanel({ groupId })}
+        className={MENU_ITEM_CLASS}
+        data-testid="add-panel-description"
+      >
+        <IconFileDescription className={MENU_ICON_CLASS} />
+        {t("task:panelDescription")}
+      </DropdownMenuItem>
       {state.portForwarding && (
         <DropdownMenuCheckboxItem
           checked={state.portForwarding.enabled}

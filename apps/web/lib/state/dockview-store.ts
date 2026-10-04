@@ -273,6 +273,7 @@ type DockviewStore = {
   /** Close every currently-open panel contributed by pluginId (disable/uninstall — AC4). */
   closePluginPanels: (pluginId: string) => void;
   addTodosPanel: (opts?: { groupId?: string; quiet?: boolean; inCenter?: boolean }) => void;
+  addDescriptionPanel: (opts?: { groupId?: string; quiet?: boolean; inCenter?: boolean }) => void;
   addBackgroundWorkPanel: (opts?: {
     groupId?: string;
     quiet?: boolean;

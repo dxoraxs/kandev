@@ -30,6 +30,9 @@ import { PassthroughToolbar } from "./passthrough-toolbar";
 import { PluginTaskPanel } from "./plugin-task-panel";
 import { TaskChangesPanel } from "./task-changes-panel";
 import { TaskChatPanel } from "./task-chat-panel";
+import { TaskDescriptionPanel } from "./task-description-panel";
+import { useSessionlessTaskView } from "./sessionless-task-view";
+import { TASK_DESCRIPTION_PANEL_ID } from "@/lib/state/layout-manager";
 import { TaskPlanPanel } from "./task-plan-panel";
 import { TerminalPanel } from "./terminal-panel";
 import { TodosContent } from "./todos-panel-content";
@@ -38,17 +41,20 @@ import { BackgroundWorkPanel } from "./chat/background-work/background-work-pane
 import { useTranslation } from "react-i18next";
 
 /** Resolve the chat panel's tab title: the session's agent label when present,
- *  otherwise the translated default label. */
+ *  "Description" while the placeholder shows a sessionless task, otherwise the
+ *  translated default label. */
 export function resolveChatPanelTitle(
   agentLabel: string | null | undefined,
   translate: (key: string) => string,
+  options: { sessionless?: boolean } = {},
 ): string {
-  return agentLabel || translate("task:panelAgent");
+  if (agentLabel) return agentLabel;
+  return translate(options.sessionless ? "task:panelDescription" : "task:panelAgent");
 }
 
 /** Derive the chat session's label (user session name, then profile label)
  *  and push it as the panel title, re-running on locale changes. */
-function useChatSessionTitle(panelId: string, sessionId: string | null) {
+function useChatSessionTitle(panelId: string, sessionId: string | null, sessionless: boolean) {
   const { t } = useTranslation();
   const agentLabel = useAppStore((state) => {
     if (!sessionId) return null;
@@ -67,8 +73,8 @@ function useChatSessionTitle(panelId: string, sessionId: string | null) {
   // `t` is a dependency: a locale switch changes the title with no change to
   // the panel or the label, and without it the tab keeps the old language.
   useEffect(() => {
-    setPanelTitle(panelId, resolveChatPanelTitle(agentLabel, t));
-  }, [panelId, agentLabel, t]);
+    setPanelTitle(panelId, resolveChatPanelTitle(agentLabel, t, { sessionless }));
+  }, [panelId, agentLabel, sessionless, t]);
 }
 
 /** Render the chat panel for the session from `params` or the active session,
@@ -82,7 +88,10 @@ function ChatContent({ panelId, params }: { panelId: string; params: Record<stri
   const isPassthrough = useAppStore((state) =>
     sessionId ? state.taskSessions.items[sessionId]?.is_passthrough === true : false,
   );
-  useChatSessionTitle(panelId, sessionId);
+  const sessionless =
+    useSessionlessTaskView({ taskId, hasSession: Boolean(sessionId), launchErrorOwned: false }) !==
+    null;
+  useChatSessionTitle(panelId, sessionId, sessionless);
   const isVisible = usePanelActive(panelId);
 
   if (isPassthrough) {
@@ -304,6 +313,7 @@ const PANEL_RENDERERS: Record<string, PanelRenderer> = {
     />
   ),
   "background-work": (panelId, params) => <BackgroundWorkPanel panelId={panelId} params={params} />,
+  [TASK_DESCRIPTION_PANEL_ID]: () => <TaskDescriptionPanel />,
 };
 
 /** Render a dockview panel's portal content by looking up its (alias-resolved)

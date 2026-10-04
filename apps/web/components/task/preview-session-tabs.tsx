@@ -10,6 +10,7 @@ import { SessionTabs, type SessionTab } from "@/components/session-tabs";
 import { useAppStore } from "@/components/state-provider";
 import { findTaskInSnapshots } from "@/lib/kanban/find-task";
 import { useSessionResumption } from "@/hooks/domains/session/use-session-resumption";
+import { SessionlessTaskView } from "@/components/task/sessionless-task-view";
 import { useTaskSessions } from "@/hooks/use-task-sessions";
 import { useTaskStatusSummary } from "@/hooks/domains/task/use-task-status-summary";
 import type { UseEnsureTaskSessionResult } from "@/hooks/domains/session/use-ensure-task-session";
@@ -380,6 +381,7 @@ export function PreviewSessionTabs({
         resumption={resumption}
       >
         <PreviewNoSessionsState
+          taskId={taskId}
           ensureSession={ensureSession}
           resumption={resumption}
           workspaceId={workspaceId}
@@ -634,35 +636,18 @@ function PreviewLoadingState({ label }: { label: string }) {
   return <PanelLoadingState testId="preview-loading-state" label={label} />;
 }
 
-function PreviewEmptyState() {
-  const { t } = useTranslation();
-  return (
-    <div className="flex h-full flex-col">
-      <div
-        className="flex flex-1 items-center justify-center text-sm text-muted-foreground"
-        data-testid="preview-empty-state"
-      >
-        {t("task:noAgentsYet2")}
-      </div>
-    </div>
-  );
-}
-
-/** Sessionless state: preparing/error/empty, per `ensureSession`. */
+/** Sessionless state: the ensure error, otherwise the task description view. */
 function PreviewNoSessionsState({
+  taskId,
   ensureSession,
   resumption,
   workspaceId,
 }: {
+  taskId: string;
   ensureSession?: UseEnsureTaskSessionResult;
   resumption: ReturnType<typeof useSessionResumption>;
   workspaceId?: string | null;
 }) {
-  const { t } = useTranslation();
-
-  if (ensureSession?.status === "preparing") {
-    return <PreviewLoadingState label={t("task:preparingWorkspace2")} />;
-  }
   if (ensureSession?.status === "error") {
     return (
       <>
@@ -684,5 +669,11 @@ function PreviewNoSessionsState({
       </>
     );
   }
-  return <PreviewEmptyState />;
+  return (
+    <SessionlessTaskView
+      taskId={taskId}
+      workspaceId={workspaceId ?? null}
+      status={ensureSession?.status ?? "idle"}
+    />
+  );
 }

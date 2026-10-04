@@ -2080,4 +2080,6 @@ export const i18nGuardFiles = [
   "lib/ws/handlers/notifications.ts",
   "lib/ws/handlers/quick-chat.ts",
   "lib/ws/use-websocket.tsx",
+  "components/task/sessionless-task-view.tsx",
+  "components/task/sessionless-task-view-model.ts",
 ];

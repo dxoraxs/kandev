@@ -30,6 +30,7 @@ export const RENDERABLE_COMPONENT_NAMES = [
   "review-detail",
   "plugin-panel",
   "canvas",
+  "task-description",
   // Backwards compat aliases for saved layouts
   "diff-files",
   "all-files",

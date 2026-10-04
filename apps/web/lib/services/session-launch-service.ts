@@ -94,7 +94,8 @@ export type EnsureSessionResponse = {
     | "created_start"
     | "skipped_terminal_pr"
     | "queued"
-    | "existing_queued";
+    | "existing_queued"
+    | "no_agent_profile";
   newly_created: boolean;
   workspace_path?: string;
   activation_disposition?: "queued" | "suppressed";

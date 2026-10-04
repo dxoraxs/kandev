@@ -19,6 +19,8 @@ import { t } from "@/lib/i18n";
 
 // Panel components (rendered via portals, not directly by dockview)
 import { TaskChatPanel } from "./task-chat-panel";
+import { TaskDescriptionPanel } from "./task-description-panel";
+import { TASK_DESCRIPTION_PANEL_ID } from "@/lib/state/layout-manager";
 import { TaskChangesPanel } from "./task-changes-panel";
 import { ChangesPanel } from "./changes-panel";
 import { FilesPanel } from "./files-panel";
@@ -129,6 +131,7 @@ export const dockviewComponents: Record<string, React.FunctionComponent<IDockvie
   "mr-detail": PortalSlot,
   "review-detail": PortalSlot,
   "background-work": PortalSlot,
+  [TASK_DESCRIPTION_PANEL_ID]: PortalSlot,
   // Generic component every plugin-contributed task panel shares (Approach
   // A1) — panel identity lives in params.pluginId/params.panelKey, resolved
   // by PluginTaskPanel. See lib/state/layout-manager/plugin-panels.ts.
@@ -442,6 +445,7 @@ const PANEL_RENDERERS: Record<string, PanelRenderer> = {
     />
   ),
   "background-work": (panelId, params) => <BackgroundWorkPanel panelId={panelId} params={params} />,
+  [TASK_DESCRIPTION_PANEL_ID]: () => <TaskDescriptionPanel />,
 };
 
 /** Render a dockview panel's portal content by looking up its (alias-resolved)

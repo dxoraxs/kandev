@@ -43,7 +43,8 @@ export function isFinalWorkflowStep(
   return terminal?.id === current.id;
 }
 
-export type EnsureTaskSessionStatus = "idle" | "preparing" | "error";
+/** `unassigned`: no agent profile resolves for the task, so no session was created. */
+export type EnsureTaskSessionStatus = "idle" | "preparing" | "unassigned" | "error";
 
 export type UseEnsureTaskSessionResult = {
   status: EnsureTaskSessionStatus;
@@ -205,8 +206,10 @@ export function useEnsureTaskSession(
     if (launchedKeyRef.current === key) return;
     launchedKeyRef.current = key;
 
-    // Cancel guard so a stale resolution can't overwrite a switched-away task.
-    let cancelled = false;
+    // The latch key owns the result: a task switch or retry() replaces it, so a
+    // stale resolution is dropped. A same-task dependency rerender keeps the key,
+    // and the in-flight outcome still applies (the latch blocks a second ensure).
+    const isCurrent = () => launchedKeyRef.current === key;
     setStatus("preparing");
     setError(null);
     const ensurePromise = isFinalStep
@@ -216,23 +219,23 @@ export function useEnsureTaskSession(
         })
       : ensureTaskSession(taskId, { activationSource: "session_open" });
     ensurePromise
-      .then(async () => {
-        if (cancelled || launchedKeyRef.current !== key) return;
+      .then(async (response) => {
+        if (!isCurrent()) return;
+        if (response?.source === "no_agent_profile") {
+          setStatus("unassigned");
+          return;
+        }
         // Force-reload: backend may have returned an existing_* source our initial list missed.
         await loadSessions(true);
-        if (cancelled || launchedKeyRef.current !== key) return;
+        if (!isCurrent()) return;
         setStatus("idle");
       })
       .catch((err: unknown) => {
-        if (cancelled || launchedKeyRef.current !== key) return;
+        if (!isCurrent()) return;
         setStatus("error");
         setError(err instanceof Error ? err : new Error(String(err)));
         // Keep the key latched. The retry token or a task change owns the next attempt.
       });
-
-    return () => {
-      cancelled = true;
-    };
   }, [
     enabled,
     taskId,

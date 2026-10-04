@@ -39,6 +39,9 @@ export const REUSABLE_PANEL_IDS = [
 ] as const;
 export type ReusablePanelId = (typeof REUSABLE_PANEL_IDS)[number];
 
+/** The task description document panel; also its component name. */
+export const TASK_DESCRIPTION_PANEL_ID = "task-description";
+
 /** Fixed panel IDs that can be saved in layout configs. */
 export const KNOWN_PANEL_IDS = new Set([
   "chat",
@@ -52,6 +55,7 @@ export const KNOWN_PANEL_IDS = new Set([
   "mr-detail",
   "todos",
   "background-work",
+  TASK_DESCRIPTION_PANEL_ID,
   DEV_SERVER_PANEL_ID,
 ]);
 
@@ -68,6 +72,7 @@ export const STRUCTURAL_COMPONENTS = new Set([
   "pr-detail",
   "mr-detail",
   "background-work",
+  TASK_DESCRIPTION_PANEL_ID,
   // Every plugin-contributed task panel shares this one generic component
   // name (see lib/state/layout-manager/plugin-panels.ts) — structural
   // regardless of which plugin registered it.
@@ -147,6 +152,11 @@ export const PANEL_REGISTRY: Record<string, Omit<LayoutPanel, "id"> & { titleKey
     component: "background-work",
     title: "Background Work",
     titleKey: "task:panelBackgroundWork",
+  },
+  [TASK_DESCRIPTION_PANEL_ID]: {
+    component: TASK_DESCRIPTION_PANEL_ID,
+    title: "Description",
+    titleKey: "task:panelDescription",
   },
 };
 

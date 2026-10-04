@@ -15,6 +15,7 @@ const {
   mockAddPRPanel,
   mockAddReviewPanel,
   mockAddTodosPanel,
+  mockAddDescriptionPanel,
   mockListTaskCanvases,
   mockAddCanvasPanel,
 } = vi.hoisted(() => ({
@@ -22,6 +23,7 @@ const {
   mockAddPRPanel: vi.fn(),
   mockAddReviewPanel: vi.fn(),
   mockAddTodosPanel: vi.fn(),
+  mockAddDescriptionPanel: vi.fn(),
   mockListTaskCanvases: vi.fn(),
   mockAddCanvasPanel: vi.fn(),
 }));
@@ -38,6 +40,7 @@ const mockDockviewStore = vi.hoisted(() => ({
   addPlanPanel: vi.fn(),
   addPluginPanel: vi.fn(),
   addTodosPanel: mockAddTodosPanel,
+  addDescriptionPanel: mockAddDescriptionPanel,
   addChangesPanel: vi.fn(),
   addFilesPanel: vi.fn(),
   addPRPanel: mockAddPRPanel,
@@ -618,5 +621,14 @@ describe("AddPanelMenuItems — Todos", () => {
     renderMenu({ isPassthrough: true });
     expect(screen.queryByText("Todos")).toBeNull();
     expect(screen.queryByText("Plan")).toBeNull();
+  });
+});
+
+describe("AddPanelMenuItems — Description", () => {
+  // @covers AC-TASKS-TASK-DESCRIPTION-VIEW-001.2
+  it("opens the Description panel in the invoking group for a task with sessions", () => {
+    renderMenu();
+    fireEvent.click(screen.getByTestId("add-panel-description"));
+    expect(mockAddDescriptionPanel).toHaveBeenCalledWith({ groupId: INVOKING_GROUP });
   });
 });

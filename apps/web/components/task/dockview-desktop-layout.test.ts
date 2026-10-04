@@ -70,6 +70,11 @@ describe("resolveChatPanelTitle", () => {
     expect(resolveChatPanelTitle("", t)).toBe(FALLBACK());
   });
 
+  // @covers AC-TASKS-TASK-DESCRIPTION-VIEW-001.1
+  it("names a sessionless placeholder Description instead of Agent", () => {
+    expect(resolveChatPanelTitle(null, t, { sessionless: true })).toBe(t("task:panelDescription"));
+  });
+
   it("uses the agent label verbatim — does not coerce or relabel valid names", () => {
     for (const name of ["Mock", "Claude Code", "GPT-5", "amp"]) {
       expect(resolveChatPanelTitle(name, t)).toBe(name);

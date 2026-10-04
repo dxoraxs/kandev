@@ -14,7 +14,14 @@ import { useSessionAgentctl } from "@/hooks/domains/session/use-session-agentctl
 import { useTaskFocus } from "@/hooks/domains/session/use-task-focus";
 import { useAppStore, useAppStoreApi } from "@/components/state-provider";
 import { useTaskRouteSessionHydrated } from "@/components/task/task-route-session-hydration";
-import { useEnsureTaskSession } from "@/hooks/domains/session/use-ensure-task-session";
+import {
+  useEnsureTaskSession,
+  type EnsureTaskSessionStatus,
+} from "@/hooks/domains/session/use-ensure-task-session";
+import {
+  SessionlessTaskContext,
+  type SessionlessTaskContextValue,
+} from "@/components/task/sessionless-task-view";
 import { useExternalVcsFileLinkHydration } from "@/hooks/domains/workspace/use-external-vcs-file-link";
 import { linkToTaskOverview } from "@/lib/links";
 import { readTaskNavigationIdentity } from "@/lib/state/task-navigation-reads";
@@ -405,6 +412,7 @@ function TaskPageContentLive({
   );
   const merged = useMergedAgentState(agent, resumption, sessionPanel, effectiveSessionId, task);
   const archivedValue = useMemo(() => buildArchivedValue(task, repository), [task, repository]);
+  const sessionlessValue = useSessionlessTaskValue(task, ensureSession.status);
   // Mark this session as actively focused so the backend lifts polling to fast.
   // Sidebar cards subscribe but never focus, so they stay on the cheap slow tier.
   useTaskFocus(effectiveSessionId);
@@ -424,30 +432,44 @@ function TaskPageContentLive({
   if (!task) return <TaskLoadErrorState />;
 
   return (
-    <TaskPageInner
-      task={task}
-      effectiveSessionId={effectiveSessionId ?? null}
-      repository={repository}
-      merged={merged}
-      resumption={resumption}
-      sessionPanel={sessionPanel}
-      agentctlStatus={agentctlStatus}
-      connectionStatus={connectionStatus}
-      workflowSteps={workflowSteps}
-      archivedValue={archivedValue}
-      isMobile={isMobile}
-      showDebugOverlay={showDebugOverlay}
-      onToggleDebugOverlay={() => setShowDebugOverlay((prev) => !prev)}
-      initialScripts={initialScripts}
-      initialTerminals={initialTerminals}
-      defaultLayouts={defaultLayouts}
-      initialLayout={initialLayout}
-      officeTaskHref={officeTaskHref}
-      ensureSession={ensureSession}
-      onTaskUnarchived={onTaskUnarchived}
-      taskCanvases={taskCanvasesState.canvases}
-      taskCanvasesStatus={taskCanvasesState.status}
-    />
+    <SessionlessTaskContext.Provider value={sessionlessValue}>
+      <TaskPageInner
+        task={task}
+        effectiveSessionId={effectiveSessionId ?? null}
+        repository={repository}
+        merged={merged}
+        resumption={resumption}
+        sessionPanel={sessionPanel}
+        agentctlStatus={agentctlStatus}
+        connectionStatus={connectionStatus}
+        workflowSteps={workflowSteps}
+        archivedValue={archivedValue}
+        isMobile={isMobile}
+        showDebugOverlay={showDebugOverlay}
+        onToggleDebugOverlay={() => setShowDebugOverlay((prev) => !prev)}
+        initialScripts={initialScripts}
+        initialTerminals={initialTerminals}
+        defaultLayouts={defaultLayouts}
+        initialLayout={initialLayout}
+        officeTaskHref={officeTaskHref}
+        ensureSession={ensureSession}
+        onTaskUnarchived={onTaskUnarchived}
+        taskCanvases={taskCanvasesState.canvases}
+        taskCanvasesStatus={taskCanvasesState.status}
+      />
+    </SessionlessTaskContext.Provider>
+  );
+}
+
+function useSessionlessTaskValue(
+  task: { id: string; workspace_id?: string | null } | null,
+  status: EnsureTaskSessionStatus,
+): SessionlessTaskContextValue | null {
+  const taskId = task?.id ?? null;
+  const workspaceId = task?.workspace_id ?? null;
+  return useMemo(
+    () => (taskId ? { taskId, workspaceId, status } : null),
+    [taskId, workspaceId, status],
   );
 }
 

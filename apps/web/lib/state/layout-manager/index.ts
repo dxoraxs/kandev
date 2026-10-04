@@ -25,6 +25,7 @@ export {
   SIDEBAR_LOCK,
   KNOWN_PANEL_IDS,
   PANEL_REGISTRY,
+  TASK_DESCRIPTION_PANEL_ID,
   panel,
 } from "./constants";
 export type { ReusablePanelId } from "./constants";

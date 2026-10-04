@@ -292,6 +292,60 @@ describe("useEnsureTaskSession — task changes", () => {
   });
 });
 
+// @covers AC-TASKS-TASK-OPEN-WITHOUT-AGENT-001.1, AC-TASKS-TASK-DESCRIPTION-VIEW-003.1
+const NO_AGENT_PROFILE_RESPONSE = {
+  success: true,
+  task_id: "task-1",
+  state: "",
+  source: "no_agent_profile",
+  newly_created: false,
+};
+
+describe("useEnsureTaskSession — no agent profile", () => {
+  beforeEach(resetEnsureTaskSessionMocks);
+
+  it("reports unassigned without an error and skips the forced session reload", async () => {
+    mockEnsureTaskSession.mockResolvedValueOnce(NO_AGENT_PROFILE_RESPONSE);
+    const { result } = renderHook(() => useEnsureTaskSession(TASK));
+    await flushMicrotasks();
+    await flushMicrotasks();
+    expect(result.current.status).toBe("unassigned");
+    expect(result.current.error).toBeNull();
+    expect(mockLoadSessions).not.toHaveBeenCalled();
+  });
+
+  it("applies the in-flight outcome after a same-task dependency rerender", async () => {
+    let resolveEnsure: (value: typeof NO_AGENT_PROFILE_RESPONSE) => void = () => {};
+    mockEnsureTaskSession.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveEnsure = resolve;
+      }),
+    );
+    const { result, rerender } = renderHook(() => useEnsureTaskSession(TASK));
+    expect(result.current.status).toBe("preparing");
+
+    // A new loadSessions identity re-runs the effect for the same task.
+    mockSessionsResult = { ...mockSessionsResult, loadSessions: vi.fn() };
+    rerender();
+    resolveEnsure(NO_AGENT_PROFILE_RESPONSE);
+    await flushMicrotasks();
+
+    expect(mockEnsureTaskSession).toHaveBeenCalledTimes(1);
+    expect(result.current.status).toBe("unassigned");
+  });
+
+  it("stays latched across re-renders and re-ensures on retry", async () => {
+    mockEnsureTaskSession.mockResolvedValueOnce(NO_AGENT_PROFILE_RESPONSE);
+    const { result, rerender } = renderHook(() => useEnsureTaskSession(TASK));
+    await flushMicrotasks();
+    rerender();
+    expect(mockEnsureTaskSession).toHaveBeenCalledTimes(1);
+    act(() => result.current.retry());
+    await flushMicrotasks();
+    expect(mockEnsureTaskSession).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe("isFinalWorkflowStep", () => {
   const steps = [
     { id: "a", position: 0 },

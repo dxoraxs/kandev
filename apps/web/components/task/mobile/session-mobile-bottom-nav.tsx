@@ -10,6 +10,7 @@ import {
   IconGitMerge,
   IconActivity,
   IconLayoutGrid,
+  IconFileDescription,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,8 @@ type SessionMobileBottomNavProps = {
   taskId?: string | null;
   sessionId?: string | null;
   sessionKind?: "managed" | "passthrough" | null;
+  /** The task has no session: the first item shows the description, not a chat. */
+  sessionless?: boolean;
 };
 
 type NavItem = {
@@ -76,9 +79,11 @@ function buildMobileNavItems({
   hasTaskCanvases,
   mobilePluginPanelsAvailable,
   connectionIssueSeverity,
+  sessionless,
   t,
 }: {
   activePanel: MobileSessionPanel;
+  sessionless: boolean;
   planBadge: boolean;
   changesBadge: number;
   hasReview: boolean;
@@ -93,8 +98,12 @@ function buildMobileNavItems({
   return [
     {
       panel: "chat",
-      label: t("task:chat"),
-      icon: <IconMessage className="h-5 w-5" />,
+      label: t(sessionless ? "task:panelDescription" : "task:chat"),
+      icon: sessionless ? (
+        <IconFileDescription className="h-5 w-5" />
+      ) : (
+        <IconMessage className="h-5 w-5" />
+      ),
     },
     {
       panel: "plan",
@@ -174,6 +183,7 @@ export function SessionMobileBottomNav({
   taskId = null,
   sessionId = null,
   sessionKind = null,
+  sessionless = false,
 }: SessionMobileBottomNavProps) {
   const { t } = useTranslation();
   usePluginRegistry();
@@ -193,9 +203,11 @@ export function SessionMobileBottomNav({
         hasTaskCanvases: taskCanvases.length > 0,
         mobilePluginPanelsAvailable,
         connectionIssueSeverity,
+        sessionless,
         t,
       }),
     [
+      sessionless,
       planBadge,
       changesBadge,
       hasReview,
