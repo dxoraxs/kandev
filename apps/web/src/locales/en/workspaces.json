@@ -284,5 +284,16 @@
   "maintenanceNoAgentProfile": "Set a default agent profile for this workspace first.",
   "maintenanceNoWorkflow": "This workspace has no workflow to put the task on.",
   "maintenanceRepositoryNotFound": "This repository no longer exists.",
-  "maintenanceRepositoryNotLocal": "Only repositories on this machine can be handled by an agent."
+  "maintenanceRepositoryNotLocal": "Only repositories on this machine can be handled by an agent.",
+  "cleanupRepository": "Clean up repository",
+  "cleanupTitle": "Clean up {{name}}?",
+  "cleanupIntro": "An agent will work in this repository's main checkout:",
+  "cleanupStepCommit": "Commit uncommitted worktree changes as WIP.",
+  "cleanupStepMerge": "Merge every branch and worktree into the default branch, resolving conflicts. Branches it is unsure about are kept.",
+  "cleanupStepConfirm": "Show you a summary and wait for your confirmation.",
+  "cleanupStepFinish": "After you confirm, push the default branch, delete merged branches locally and on the remote, and remove worktrees.",
+  "cleanupProtectedNote": "Branches and worktrees of active Kandev tasks are not touched.",
+  "cleanupCancel": "Cancel",
+  "cleanupStart": "Start cleanup",
+  "cleanupStarting": "Starting the cleanup task"
 }

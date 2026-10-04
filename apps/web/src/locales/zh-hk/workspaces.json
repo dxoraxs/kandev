@@ -284,5 +284,16 @@
   "maintenanceNoAgentProfile": "請先為此工作區設定預設代理程式設定檔。",
   "maintenanceNoWorkflow": "此工作區沒有可放置該任務的工作流程。",
   "maintenanceRepositoryNotFound": "此儲存庫已不存在。",
-  "maintenanceRepositoryNotLocal": "代理程式只能處理本機上的儲存庫。"
+  "maintenanceRepositoryNotLocal": "代理程式只能處理本機上的儲存庫。",
+  "cleanupRepository": "清理儲存庫",
+  "cleanupTitle": "清理 {{name}}？",
+  "cleanupIntro": "代理將在此儲存庫的主檢出目錄中工作：",
+  "cleanupStepCommit": "將工作樹中未提交的更改作為 WIP 提交。",
+  "cleanupStepMerge": "把所有分支和工作樹合併到預設分支並解決衝突，不確定的分支會保留。",
+  "cleanupStepConfirm": "向你展示摘要並等待你的確認。",
+  "cleanupStepFinish": "你確認後，推送預設分支，在本地和遠端刪除已合併的分支，並移除工作樹。",
+  "cleanupProtectedNote": "活躍 Kandev 任務的分支和工作樹不會被改動。",
+  "cleanupCancel": "取消",
+  "cleanupStart": "開始清理",
+  "cleanupStarting": "正在啓動清理任務"
 }

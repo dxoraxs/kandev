@@ -284,5 +284,16 @@
   "maintenanceNoAgentProfile": "请先为此工作区设置默认智能体配置。",
   "maintenanceNoWorkflow": "此工作区没有可放置该任务的工作流。",
   "maintenanceRepositoryNotFound": "此仓库已不存在。",
-  "maintenanceRepositoryNotLocal": "智能体只能处理本机上的仓库。"
+  "maintenanceRepositoryNotLocal": "智能体只能处理本机上的仓库。",
+  "cleanupRepository": "清理仓库",
+  "cleanupTitle": "清理 {{name}}？",
+  "cleanupIntro": "代理将在此仓库的主检出目录中工作：",
+  "cleanupStepCommit": "将工作树中未提交的更改作为 WIP 提交。",
+  "cleanupStepMerge": "把所有分支和工作树合并到默认分支并解决冲突，不确定的分支会保留。",
+  "cleanupStepConfirm": "向你展示摘要并等待你的确认。",
+  "cleanupStepFinish": "你确认后，推送默认分支，在本地和远程删除已合并的分支，并移除工作树。",
+  "cleanupProtectedNote": "活跃 Kandev 任务的分支和工作树不会被改动。",
+  "cleanupCancel": "取消",
+  "cleanupStart": "开始清理",
+  "cleanupStarting": "正在启动清理任务"
 }

@@ -1,7 +1,7 @@
 ---
 id: "03-broom-button"
 title: "Repository cleanup broom button"
-status: pending
+status: done
 wave: 3
 depends_on: ["02-cleanup-kind-and-prompt"]
 plan: "plan.md"
