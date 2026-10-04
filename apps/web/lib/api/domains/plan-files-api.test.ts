@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../client";
 import {
+  commitPlanFiles,
   createPlanFilesBoard,
   decidePlan,
+  getPlanGitStatus,
+  planCommitError,
   planDecisionErrorCode,
   getPlanFilesConfig,
   getUnadaptedPlanFiles,
@@ -200,5 +203,62 @@ describe("plan-files-api decision", () => {
     const other = await decidePlan("t", { action: "accept" }).catch((e) => e);
     expect(planDecisionErrorCode(other)).toBeNull();
     expect(planDecisionErrorCode(new Error("x"))).toBeNull();
+  });
+});
+
+describe("plan-files-api git", () => {
+  let fetchSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchSpy = vi.fn();
+    global.fetch = fetchSpy as unknown as typeof fetch;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  it("getPlanGitStatus reads the repositories with an encoded workspace_id", async () => {
+    const rows = [{ repository_id: "r1", repository_name: "dmhive", files: ["docs/plans/a.md"] }];
+    fetchSpy.mockResolvedValueOnce(json({ repositories: rows }));
+    await expect(getPlanGitStatus(WS)).resolves.toEqual(rows);
+    expect(fetchSpy.mock.calls[0]![0] as string).toContain(
+      `/api/v1/plan-files/git-status?${WS_PARAM}`,
+    );
+  });
+
+  it("getPlanGitStatus resolves an empty list for a null repositories field", async () => {
+    fetchSpy.mockResolvedValueOnce(json({ repositories: null }));
+    await expect(getPlanGitStatus(WS)).resolves.toEqual([]);
+  });
+
+  it("commitPlanFiles POSTs the repository and message to /commit", async () => {
+    fetchSpy.mockResolvedValueOnce(json({ commit: "abc123", files: ["docs/plans/a.md"] }));
+    const res = await commitPlanFiles({ repository_id: "r1", message: "plans: tidy" }, WS);
+    const [url, init] = fetchSpy.mock.calls[0]! as [string, RequestInit];
+    expect(url).toContain(`/api/v1/plan-files/commit?${WS_PARAM}`);
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual({
+      repository_id: "r1",
+      message: "plans: tidy",
+    });
+    expect(res.commit).toBe("abc123");
+  });
+
+  it("planCommitError reads the typed code and output of a rejected commit", async () => {
+    fetchSpy
+      .mockResolvedValueOnce(json({ error: "busy", code: "repository_busy" }, 409))
+      .mockResolvedValueOnce(
+        json({ error: "failed", code: "commit_failed", output: "hook said no" }, 422),
+      )
+      .mockResolvedValueOnce(json({ error: "boom" }, 500));
+    const busy = await commitPlanFiles({ repository_id: "r" }, WS).catch((e) => e);
+    expect(planCommitError(busy)).toEqual({ code: "repository_busy", output: "" });
+    const failed = await commitPlanFiles({ repository_id: "r" }, WS).catch((e) => e);
+    expect(planCommitError(failed)).toEqual({ code: "commit_failed", output: "hook said no" });
+    const other = await commitPlanFiles({ repository_id: "r" }, WS).catch((e) => e);
+    expect(planCommitError(other)).toBeNull();
+    expect(planCommitError(new Error("x"))).toBeNull();
   });
 });

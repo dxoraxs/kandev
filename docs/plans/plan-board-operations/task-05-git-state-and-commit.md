@@ -1,7 +1,7 @@
 ---
 id: "05-git-state-and-commit"
 title: "Git state and commit"
-status: pending
+status: done
 wave: 5
 depends_on: ["02-config-and-settings"]
 plan: "plan.md"
@@ -90,4 +90,24 @@ Task 02
 
 ## Results
 
-Pending.
+Backend: `gitstate.Dirty`, `Busy`, `CommitPaths` (all through `subproc.NewGitCommand` with
+`RunGit*Class`, `--literal-pathspecs`, `--` before paths), `Service.GitStatus`,
+`Service.CommitPlans`, `GET /git-status`, `POST /commit`, metric `plan_files_commit_total`,
+and `pass.dirty` filled once per repository per pass. Web: API clients, `usePlanGitStatus`,
+the git block and commit dialog (drawer on phones) in the settings section, copy in every locale.
+
+| Command | Result |
+| --- | --- |
+| `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)` | `ok  github.com/kandev/kandev/internal/planfiles/scan  1.501s` (all four packages ok) |
+| `make -C apps/backend lint` | `0 issues.` |
+| `(cd apps && pnpm --filter @kandev/web test -- components/settings/plan-files-git.test.tsx)` | `Tests  10 passed (10)` |
+| `(cd apps && pnpm --filter @kandev/web test -- lib/api/domains/plan-files-api.test.ts)` | `Tests  15 passed (15)` |
+| `(cd apps/web && pnpm run typecheck)` | `tsc --noEmit`, no errors |
+| `(cd apps/web && pnpm run i18n:check)` | `no non-JSX copy - 3662 guarded file(s) checked.` (all checks pass) |
+| `(cd apps && pnpm --filter @kandev/web lint)` | `eslint --max-warnings 0`, no findings |
+
+Also run: `gofmt -l apps/backend/internal/planfiles` (no output),
+`(cd apps/backend && golangci-lint run ./internal/planfiles/...)` (`0 issues.`),
+`pnpm run i18n:ratchet` (`19 added + 20 modified file(s) clean`),
+`go test ./internal/common/subproc/` (`ok`, includes the raw git guard), and the web suites
+`components/settings`, `hooks/domains/plans`, `plan-files-api.test.ts` (238 files, 1589 tests passed).

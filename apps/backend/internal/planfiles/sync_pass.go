@@ -79,6 +79,10 @@ type pass struct {
 	// volatile holds the tasks whose position on the board this pass cannot
 	// read as a person's reorder: new, changed, moved, or moved by a person.
 	volatile map[string]struct{}
+	// dirty holds, per local repository ID, the paths under the scanned
+	// directories that are modified, staged, or untracked. A repository that
+	// is not a git working tree has no entry.
+	dirty map[string]map[string]struct{}
 }
 
 func newPass(svc *Service, cfg *Config, now time.Time) *pass {
@@ -88,7 +92,7 @@ func newPass(svc *Service, cfg *Config, now time.Time) *pass {
 		rowsByPath: map[string]*TaskRow{}, rowsByExt: map[string]*TaskRow{}, repoNames: map[string]string{},
 		seen: map[string]struct{}{}, protectedRepos: map[string]struct{}{}, protectedPaths: map[string]struct{}{},
 		claimed: map[string]struct{}{}, pathTask: map[string]string{}, keys: map[string]orderKey{},
-		roots: map[string]string{}, volatile: map[string]struct{}{},
+		roots: map[string]string{}, volatile: map[string]struct{}{}, dirty: map[string]map[string]struct{}{},
 	}
 }
 
@@ -126,6 +130,7 @@ func (p *pass) run(ctx context.Context) error {
 		return &passFailure{reason: ReasonTaskService, err: err}
 	}
 	entries := p.collect(repos)
+	p.loadDirty(ctx)
 	entries = p.rejectDuplicates(entries)
 	tracked := p.resolveAll(ctx, entries)
 	for _, tr := range tracked {

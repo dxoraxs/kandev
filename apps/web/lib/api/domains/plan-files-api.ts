@@ -217,3 +217,73 @@ export function decidePlan(
     withMethod(options, "POST", body),
   );
 }
+
+export type PlanGitRepository = {
+  repository_id: string;
+  repository_name: string;
+  /** Plan files and plan indexes with uncommitted changes. */
+  files: string[];
+};
+
+export type PlanCommitBody = {
+  repository_id: string;
+  /** The server defaults to its plan-files commit message when empty. */
+  message?: string;
+};
+
+export type PlanCommitResult = { commit: string; files: string[] };
+
+export type PlanCommitErrorCode =
+  | "repository_busy"
+  | "nothing_to_commit"
+  | "commit_failed"
+  | "repository_not_found"
+  | "invalid_commit";
+
+const PLAN_COMMIT_ERROR_CODES: readonly string[] = [
+  "repository_busy",
+  "nothing_to_commit",
+  "commit_failed",
+  "repository_not_found",
+  "invalid_commit",
+];
+
+// i18n-exempt: commit message data sent to git, not user-facing copy.
+export const DEFAULT_PLAN_COMMIT_MESSAGE = "docs(plans): update plan files";
+
+/** Local repositories of the workspace with the plan files that have uncommitted changes. */
+export async function getPlanGitStatus(options: PlanFilesApiOptions): Promise<PlanGitRepository[]> {
+  const res = await fetchJson<{ repositories: PlanGitRepository[] | null }>(
+    planFilesUrl("git-status", options.workspaceId),
+    requestOptions(options),
+  );
+  return res.repositories ?? [];
+}
+
+/** Commits the repository's uncommitted plan files; the server never pushes. */
+export function commitPlanFiles(
+  body: PlanCommitBody,
+  options: PlanFilesApiOptions,
+): Promise<PlanCommitResult> {
+  return fetchJson<PlanCommitResult>(
+    planFilesUrl("commit", options.workspaceId),
+    withMethod(options, "POST", body),
+  );
+}
+
+/**
+ * The typed code and the last lines of git output a rejected `commitPlanFiles`
+ * carries, or null for any other failure.
+ */
+export function planCommitError(
+  err: unknown,
+): { code: PlanCommitErrorCode; output: string } | null {
+  if (!(err instanceof ApiError)) return null;
+  const body = err.body as { code?: unknown; output?: unknown } | null;
+  const code = body?.code;
+  if (typeof code !== "string" || !PLAN_COMMIT_ERROR_CODES.includes(code)) return null;
+  return {
+    code: code as PlanCommitErrorCode,
+    output: typeof body?.output === "string" ? body.output : "",
+  };
+}

@@ -2088,4 +2088,7 @@ export const i18nGuardFiles = [
   "components/task/plan-decision-dialog.tsx",
   "components/task/plan-decision-drawer.tsx",
   "hooks/domains/plans/use-plan-decision.ts",
+  "components/settings/plan-files-git.tsx",
+  "components/settings/plan-files-git-commit.tsx",
+  "hooks/domains/plans/use-plan-git-status.ts",
 ];

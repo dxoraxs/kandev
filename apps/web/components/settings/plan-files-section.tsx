@@ -11,6 +11,7 @@ import { settingsActionClassName } from "./settings-control";
 import { SettingsErrorText } from "./settings-typography";
 import { PlanFilesBoardField, PlanFilesMapping } from "./plan-files-mapping";
 import { PlanFilesDirectories } from "./plan-files-directories";
+import { PlanFilesGit } from "./plan-files-git";
 import { PlanFilesOperations } from "./plan-files-operations";
 import { PlanFilesStatus } from "./plan-files-status";
 import { PlanFilesUnadaptedRows } from "./plan-files-unadapted-rows";
@@ -70,6 +71,9 @@ function PlanFilesSectionBody({ workspaceId }: { workspaceId: string }) {
               disabled={state.saving}
               onChange={state.patch}
             />
+            {state.config?.enabled && (
+              <PlanFilesGit workspaceId={workspaceId} refreshKey={state.config.last_pass_at} />
+            )}
             <PlanFilesDirectories
               directories={draft.directories}
               onChange={(directories) => state.patch({ directories })}
