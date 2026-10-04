@@ -277,5 +277,12 @@
   "idlePolicyTitle": "节省资源",
   "idleSuspensionEnabled": "挂起空闲 ACP 代理",
   "idleTimeoutMinutes": "空闲超时（分钟）",
-  "idleTimeoutMustBePositive": "请输入大于零的整数。"
+  "idleTimeoutMustBePositive": "请输入大于零的整数。",
+  "maintenanceExisting": "此操作的任务已在运行。正在打开该任务。",
+  "maintenanceFailed": "无法启动任务，请重试。",
+  "maintenanceKindUnavailable": "此操作目前不可用。",
+  "maintenanceNoAgentProfile": "请先为此工作区设置默认智能体配置。",
+  "maintenanceNoWorkflow": "此工作区没有可放置该任务的工作流。",
+  "maintenanceRepositoryNotFound": "此仓库已不存在。",
+  "maintenanceRepositoryNotLocal": "智能体只能处理本机上的仓库。"
 }

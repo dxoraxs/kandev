@@ -76,6 +76,9 @@ export function PlanFilesStatus({ config }: { config: PlanFilesConfig }) {
           t("planFiles:countMoved", { count: counts.moved }),
           t("planFiles:countArchived", { count: counts.archived }),
           t("planFiles:countFailed", { count: counts.failed }),
+          ...(counts.unadapted > 0
+            ? [t("planFiles:countUnadapted", { count: counts.unadapted })]
+            : []),
         ].join(" · ")}
       </p>
       {errors.length > 0 && (

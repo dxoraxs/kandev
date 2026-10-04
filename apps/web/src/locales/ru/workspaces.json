@@ -283,5 +283,12 @@
   "idlePolicyTitle": "Экономия ресурсов",
   "idleSuspensionEnabled": "Приостанавливать простаивающих агентов ACP",
   "idleTimeoutMinutes": "Время простоя (минуты)",
-  "idleTimeoutMustBePositive": "Введите целое число больше нуля."
+  "idleTimeoutMustBePositive": "Введите целое число больше нуля.",
+  "maintenanceExisting": "Задача для этого уже выполняется. Открываю её.",
+  "maintenanceFailed": "Не удалось запустить задачу. Попробуйте ещё раз.",
+  "maintenanceKindUnavailable": "Это действие сейчас недоступно.",
+  "maintenanceNoAgentProfile": "Сначала задайте для этого рабочего пространства профиль агента по умолчанию.",
+  "maintenanceNoWorkflow": "В этом рабочем пространстве нет воркфлоу, на который можно поставить задачу.",
+  "maintenanceRepositoryNotFound": "Этого репозитория больше нет.",
+  "maintenanceRepositoryNotLocal": "Агент может работать только с репозиториями на этом компьютере."
 }

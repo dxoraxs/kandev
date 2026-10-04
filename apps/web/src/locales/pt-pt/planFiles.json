@@ -1,7 +1,10 @@
 {
+  "adaptStarting": "A iniciar o agente",
+  "adaptWithAgent": "Adaptar com agente",
   "addDirectory": "Adicionar diretório",
   "board": "Quadro",
   "boardPlaceholder": "Escolha um quadro",
+  "boardWillBeCreated": "Será criado um quadro Plans e a sincronização será ativada.",
   "countArchived_one": "{{count}} arquivada",
   "countArchived_other": "{{count}} arquivadas",
   "countCreated_one": "{{count}} criada",
@@ -10,6 +13,8 @@
   "countFailed_other": "{{count}} com falha",
   "countMoved_one": "{{count}} movida",
   "countMoved_other": "{{count}} movidas",
+  "countUnadapted_one": "{{count}} não adaptado",
+  "countUnadapted_other": "{{count}} não adaptados",
   "countUpdated_one": "{{count}} atualizada",
   "countUpdated_other": "{{count}} atualizadas",
   "createBoard": "Criar quadro Plans",
@@ -20,6 +25,10 @@
   "lastSync": "Última sincronização {{when}}",
   "mappingIncomplete": "Escolha uma etapa para cada estado para poder guardar.",
   "neverSynced": "Ainda não foi feita nenhuma sincronização.",
+  "notNow": "Agora não",
+  "offerBody_one": "{{count}} ficheiro de plano não está no formato do quadro, por isso não aparece no quadro. Um agente pode ler o histórico do repositório, definir o estado de cada plano e fazer commit apenas dos ficheiros de plano. Trabalha no checkout deste repositório.",
+  "offerBody_other": "{{count}} ficheiros de plano não estão no formato do quadro, por isso não aparecem no quadro. Um agente pode ler o histórico do repositório, definir o estado de cada plano e fazer commit apenas dos ficheiros de plano. Trabalha no checkout deste repositório.",
+  "offerTitle": "Planos encontrados em {{name}}",
   "outcomeFailed": "Falhou",
   "outcomeOk": "Concluída com sucesso",
   "outcomePartial": "Alguns ficheiros falharam",
@@ -46,5 +55,8 @@
   "stepPlaceholder": "Escolha uma etapa",
   "syncNow": "Sincronizar agora",
   "syncRunning": "Já está a decorrer uma sincronização para este espaço de trabalho. Tente novamente dentro de instantes.",
-  "title": "Ficheiros de plano"
+  "title": "Ficheiros de plano",
+  "unadaptedCount_one": "{{count}} ficheiro sem estado no quadro",
+  "unadaptedCount_other": "{{count}} ficheiros sem estado no quadro",
+  "unadaptedTitle": "Ficheiros de plano fora do quadro"
 }

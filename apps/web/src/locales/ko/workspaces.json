@@ -277,5 +277,12 @@
   "idlePolicyTitle": "리소스 절약",
   "idleSuspensionEnabled": "쉬는 ACP 에이전트 일시 중지",
   "idleTimeoutMinutes": "유휴 시간 제한(분)",
-  "idleTimeoutMustBePositive": "0보다 큰 정수를 입력하세요."
+  "idleTimeoutMustBePositive": "0보다 큰 정수를 입력하세요.",
+  "maintenanceExisting": "이 작업의 태스크가 이미 실행 중입니다. 해당 태스크를 엽니다.",
+  "maintenanceFailed": "태스크를 시작하지 못했습니다. 다시 시도하세요.",
+  "maintenanceKindUnavailable": "지금은 이 작업을 사용할 수 없습니다.",
+  "maintenanceNoAgentProfile": "먼저 이 워크스페이스의 기본 에이전트 프로필을 설정하세요.",
+  "maintenanceNoWorkflow": "이 워크스페이스에는 태스크를 올릴 워크플로가 없습니다.",
+  "maintenanceRepositoryNotFound": "이 저장소는 더 이상 존재하지 않습니다.",
+  "maintenanceRepositoryNotLocal": "에이전트는 이 컴퓨터에 있는 저장소만 처리할 수 있습니다."
 }

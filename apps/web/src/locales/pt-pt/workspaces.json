@@ -277,5 +277,12 @@
   "idlePolicyTitle": "Poupar recursos",
   "idleSuspensionEnabled": "Suspender agentes ACP inativos",
   "idleTimeoutMinutes": "Tempo limite de inatividade (minutos)",
-  "idleTimeoutMustBePositive": "Introduza um número inteiro superior a zero."
+  "idleTimeoutMustBePositive": "Introduza um número inteiro superior a zero.",
+  "maintenanceExisting": "Já existe uma tarefa em curso para isto. A abri-la.",
+  "maintenanceFailed": "Não foi possível iniciar a tarefa. Tente novamente.",
+  "maintenanceKindUnavailable": "Esta ação não está disponível neste momento.",
+  "maintenanceNoAgentProfile": "Defina primeiro um perfil de agente predefinido para este espaço de trabalho.",
+  "maintenanceNoWorkflow": "Este espaço de trabalho não tem um fluxo de trabalho onde colocar a tarefa.",
+  "maintenanceRepositoryNotFound": "Este repositório já não existe.",
+  "maintenanceRepositoryNotLocal": "Um agente só pode tratar repositórios que estejam nesta máquina."
 }

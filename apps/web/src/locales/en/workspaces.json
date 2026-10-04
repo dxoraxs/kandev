@@ -277,5 +277,12 @@
   "idlePolicyTitle": "Resource saving",
   "idleSuspensionEnabled": "Suspend idle ACP agents",
   "idleTimeoutMinutes": "Idle timeout (minutes)",
-  "idleTimeoutMustBePositive": "Enter a whole number greater than zero."
+  "idleTimeoutMustBePositive": "Enter a whole number greater than zero.",
+  "maintenanceExisting": "A task for this is already running. Opening it.",
+  "maintenanceFailed": "Could not start the task. Try again.",
+  "maintenanceKindUnavailable": "This action is not available right now.",
+  "maintenanceNoAgentProfile": "Set a default agent profile for this workspace first.",
+  "maintenanceNoWorkflow": "This workspace has no workflow to put the task on.",
+  "maintenanceRepositoryNotFound": "This repository no longer exists.",
+  "maintenanceRepositoryNotLocal": "Only repositories on this machine can be handled by an agent."
 }

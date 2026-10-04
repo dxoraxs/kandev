@@ -12,6 +12,7 @@ import { SettingsErrorText } from "./settings-typography";
 import { PlanFilesBoardField, PlanFilesMapping } from "./plan-files-mapping";
 import { PlanFilesDirectories } from "./plan-files-directories";
 import { PlanFilesStatus } from "./plan-files-status";
+import { PlanFilesUnadaptedRows } from "./plan-files-unadapted-rows";
 
 /**
  * Plan files settings on the workspace Workflows tab. Renders nothing, and
@@ -73,6 +74,13 @@ function PlanFilesSectionBody({ workspaceId }: { workspaceId: string }) {
             )}
             {state.config && <PlanFilesStatus config={state.config} />}
           </>
+        )}
+        {!state.loading && (
+          <PlanFilesUnadaptedRows
+            workspaceId={workspaceId}
+            boardWillBeCreated={state.config === null}
+            refreshKey={state.config?.last_pass_at}
+          />
         )}
         {state.syncNotice === "running" && (
           <Alert data-testid="plan-files-sync-running">

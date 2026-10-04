@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/api/client";
 const getPlanFilesConfig = vi.fn();
 const putPlanFilesConfig = vi.fn();
 const createPlanFilesBoard = vi.fn();
+const getUnadaptedPlanFiles = vi.fn();
 const syncPlanFilesNow = vi.fn();
 const listWorkflows = vi.fn();
 const listWorkflowSteps = vi.fn();
@@ -17,6 +18,7 @@ vi.mock("@/lib/api/domains/plan-files-api", async (importActual) => ({
   putPlanFilesConfig: (...a: unknown[]) => putPlanFilesConfig(...a),
   createPlanFilesBoard: (...a: unknown[]) => createPlanFilesBoard(...a),
   syncPlanFilesNow: (...a: unknown[]) => syncPlanFilesNow(...a),
+  getUnadaptedPlanFiles: (...a: unknown[]) => getUnadaptedPlanFiles(...a),
 }));
 vi.mock("@/lib/api/domains/kanban-api", () => ({
   listWorkflows: (...a: unknown[]) => listWorkflows(...a),
@@ -24,6 +26,9 @@ vi.mock("@/lib/api/domains/kanban-api", () => ({
 vi.mock("@/lib/api/domains/workflow-api", () => ({
   listWorkflowSteps: (...a: unknown[]) => listWorkflowSteps(...a),
 }));
+
+vi.mock("@/components/toast-provider", () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock("@/lib/routing/client-router", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 import { PlanFilesSection } from "./plan-files-section";
 
@@ -43,7 +48,15 @@ function config(overrides: Record<string, unknown> = {}) {
     directories: ["docs/plans", "docs/superpowers/plans"],
     last_pass_at: "2026-10-04T13:42:00Z",
     last_pass_ok: false,
-    last_counts: { created: 2, updated: 1, moved: 0, archived: 0, unarchived: 0, failed: 1 },
+    last_counts: {
+      created: 2,
+      updated: 1,
+      moved: 0,
+      archived: 0,
+      unarchived: 0,
+      failed: 1,
+      unadapted: 0,
+    },
     last_file_errors: [
       {
         repository_id: "r1",
@@ -78,11 +91,13 @@ beforeEach(() => {
     putPlanFilesConfig,
     createPlanFilesBoard,
     syncPlanFilesNow,
+    getUnadaptedPlanFiles,
     listWorkflows,
     listWorkflowSteps,
   ]) {
     fn.mockReset();
   }
+  getUnadaptedPlanFiles.mockResolvedValue([]);
   listWorkflows.mockResolvedValue({
     workflows: [
       { id: "wf-1", name: "Plans", style: "kanban" },
@@ -215,7 +230,15 @@ describe("PlanFilesSection status and sync", () => {
       config({
         last_pass_ok: true,
         last_file_errors: [],
-        last_counts: { created: 5, updated: 0, moved: 0, archived: 0, unarchived: 0, failed: 0 },
+        last_counts: {
+          created: 5,
+          updated: 0,
+          moved: 0,
+          archived: 0,
+          unarchived: 0,
+          failed: 0,
+          unadapted: 0,
+        },
       }),
     );
     fireEvent.click(button);

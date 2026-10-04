@@ -277,5 +277,12 @@
   "idlePolicyTitle": "リソースを節約",
   "idleSuspensionEnabled": "アイドル状態の ACP エージェントを一時停止",
   "idleTimeoutMinutes": "アイドルタイムアウト（分）",
-  "idleTimeoutMustBePositive": "0 より大きい整数を入力してください。"
+  "idleTimeoutMustBePositive": "0 より大きい整数を入力してください。",
+  "maintenanceExisting": "この作業のタスクはすでに実行中です。開きます。",
+  "maintenanceFailed": "タスクを開始できませんでした。もう一度お試しください。",
+  "maintenanceKindUnavailable": "この操作は現在利用できません。",
+  "maintenanceNoAgentProfile": "先にこのワークスペースの既定のエージェントプロファイルを設定してください。",
+  "maintenanceNoWorkflow": "このワークスペースには、タスクを置くワークフローがありません。",
+  "maintenanceRepositoryNotFound": "このリポジトリは存在しなくなりました。",
+  "maintenanceRepositoryNotLocal": "エージェントが扱えるのは、このマシン上のリポジトリだけです。"
 }

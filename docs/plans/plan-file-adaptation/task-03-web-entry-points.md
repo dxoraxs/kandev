@@ -1,7 +1,7 @@
 ---
 id: "03-web-entry-points"
 title: "Plan adaptation web entry points"
-status: pending
+status: done
 wave: 3
 depends_on: ["01-unadapted-detection", "02-maintenance-launcher"]
 plan: "plan.md"

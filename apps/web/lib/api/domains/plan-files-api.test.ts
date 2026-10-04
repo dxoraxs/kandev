@@ -3,6 +3,7 @@ import { ApiError } from "../client";
 import {
   createPlanFilesBoard,
   getPlanFilesConfig,
+  getUnadaptedPlanFiles,
   putPlanFilesConfig,
   syncPlanFilesNow,
 } from "./plan-files-api";
@@ -94,5 +95,26 @@ describe("plan-files-api", () => {
 
     fetchSpy.mockResolvedValueOnce(json({ error: "a plan file sync is already running" }, 409));
     await expect(syncPlanFilesNow(WS)).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("getUnadaptedPlanFiles reads the rows, scoped to a repository when one is given", async () => {
+    const rows = [
+      { repository_id: "r1", repository_name: "beaver", count: 16, directories: ["docs/plans"] },
+    ];
+    fetchSpy.mockResolvedValueOnce(json({ repositories: rows }));
+    await expect(getUnadaptedPlanFiles(WS)).resolves.toEqual(rows);
+    expect(fetchSpy.mock.calls[0]![0] as string).toContain(
+      `/api/v1/plan-files/unadapted?${WS_PARAM}`,
+    );
+    expect(fetchSpy.mock.calls[0]![0] as string).not.toContain("repository_id");
+
+    fetchSpy.mockResolvedValueOnce(json({ repositories: [] }));
+    await getUnadaptedPlanFiles({ ...WS, repositoryId: "r 1" });
+    expect(fetchSpy.mock.calls[1]![0] as string).toContain("&repository_id=r%201");
+  });
+
+  it("getUnadaptedPlanFiles resolves an empty list for a null repositories field", async () => {
+    fetchSpy.mockResolvedValueOnce(json({ repositories: null }));
+    await expect(getUnadaptedPlanFiles(WS)).resolves.toEqual([]);
   });
 });

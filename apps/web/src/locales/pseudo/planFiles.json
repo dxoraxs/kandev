@@ -1,7 +1,10 @@
 {
+  "adaptStarting": "Śţàŕţĩńĝ ţĥē àĝēńţ",
+  "adaptWithAgent": "Àďàƥţ ŵĩţĥ àĝēńţ",
   "addDirectory": "Àďď ďĩŕēćţōŕŷ",
   "board": "Ɓōàŕď",
   "boardPlaceholder": "Ćĥōōśē à ƀōàŕď",
+  "boardWillBeCreated": "À Ƥĺàńś ƀōàŕď ŵĩĺĺ ƀē ćŕēàţēď àńď śŷńć ţũŕńēď ōń.",
   "countArchived_one": "{{count}} àŕćĥĩvēď",
   "countArchived_other": "{{count}} àŕćĥĩvēď",
   "countCreated_one": "{{count}} ćŕēàţēď",
@@ -10,6 +13,8 @@
   "countFailed_other": "{{count}} ƒàĩĺēď",
   "countMoved_one": "{{count}} ḿōvēď",
   "countMoved_other": "{{count}} ḿōvēď",
+  "countUnadapted_one": "{{count}} ńōţ àďàƥţēď",
+  "countUnadapted_other": "{{count}} ńōţ àďàƥţēď",
   "countUpdated_one": "{{count}} ũƥďàţēď",
   "countUpdated_other": "{{count}} ũƥďàţēď",
   "createBoard": "Ćŕēàţē Ƥĺàńś ƀōàŕď",
@@ -20,6 +25,10 @@
   "lastSync": "Ĺàśţ śŷńć {{when}}",
   "mappingIncomplete": "Ćĥōōśē à śţēƥ ƒōŕ ēvēŕŷ śţàţũś ţō śàvē.",
   "neverSynced": "Ńō śŷńć ĥàś ŕũń ŷēţ.",
+  "notNow": "Ńōţ ńōŵ",
+  "offerBody_one": "{{count}} ƥĺàń ƒĩĺē ĩś ńōţ ĩń ţĥē ƀōàŕď ƒōŕḿàţ, śō ĩţ ďōēś ńōţ àƥƥēàŕ ōń ţĥē ƀōàŕď. Àń àĝēńţ ćàń ŕēàď ţĥē ŕēƥōśĩţōŕŷ ĥĩśţōŕŷ, śēţ ēàćĥ ƥĺàń'ś śţàţũś, àńď ćōḿḿĩţ ōńĺŷ ţĥē ƥĺàń ƒĩĺēś. Ĩţ ŵōŕķś ĩń ţĥĩś ŕēƥōśĩţōŕŷ'ś ćĥēćķōũţ.",
+  "offerBody_other": "{{count}} ƥĺàń ƒĩĺēś àŕē ńōţ ĩń ţĥē ƀōàŕď ƒōŕḿàţ, śō ţĥēŷ ďō ńōţ àƥƥēàŕ ōń ţĥē ƀōàŕď. Àń àĝēńţ ćàń ŕēàď ţĥē ŕēƥōśĩţōŕŷ ĥĩśţōŕŷ, śēţ ēàćĥ ƥĺàń'ś śţàţũś, àńď ćōḿḿĩţ ōńĺŷ ţĥē ƥĺàń ƒĩĺēś. Ĩţ ŵōŕķś ĩń ţĥĩś ŕēƥōśĩţōŕŷ'ś ćĥēćķōũţ.",
+  "offerTitle": "Ƥĺàńś ƒōũńď ĩń {{name}}",
   "outcomeFailed": "Ƒàĩĺēď",
   "outcomeOk": "Śũććēēďēď",
   "outcomePartial": "Śōḿē ƒĩĺēś ƒàĩĺēď",
@@ -46,5 +55,8 @@
   "stepPlaceholder": "Ćĥōōśē à śţēƥ",
   "syncNow": "Śŷńć ńōŵ",
   "syncRunning": "À śŷńć ĩś àĺŕēàďŷ ŕũńńĩńĝ ƒōŕ ţĥĩś ŵōŕķśƥàćē. Ţŕŷ àĝàĩń ĩń à ḿōḿēńţ.",
-  "title": "Ƥĺàń ƒĩĺēś"
+  "title": "Ƥĺàń ƒĩĺēś",
+  "unadaptedCount_one": "{{count}} ƒĩĺē ŵĩţĥōũţ ƀōàŕď śţàţũś",
+  "unadaptedCount_other": "{{count}} ƒĩĺēś ŵĩţĥōũţ ƀōàŕď śţàţũś",
+  "unadaptedTitle": "Ƥĺàń ƒĩĺēś ńōţ ōń ţĥē ƀōàŕď"
 }

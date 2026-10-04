@@ -277,5 +277,12 @@
   "idlePolicyTitle": "Ŕēśōũŕćē śàvĩńĝ",
   "idleSuspensionEnabled": "Śũśƥēńď ĩďĺē ÀĆƤ àĝēńţś",
   "idleTimeoutMinutes": "Ĩďĺē ţĩḿēōũţ (ḿĩńũţēś)",
-  "idleTimeoutMustBePositive": "Ēńţēŕ à ŵĥōĺē ńũḿƀēŕ ĝŕēàţēŕ ţĥàń źēŕō."
+  "idleTimeoutMustBePositive": "Ēńţēŕ à ŵĥōĺē ńũḿƀēŕ ĝŕēàţēŕ ţĥàń źēŕō.",
+  "maintenanceExisting": "À ţàśķ ƒōŕ ţĥĩś ĩś àĺŕēàďŷ ŕũńńĩńĝ. Ōƥēńĩńĝ ĩţ.",
+  "maintenanceFailed": "Ćōũĺď ńōţ śţàŕţ ţĥē ţàśķ. Ţŕŷ àĝàĩń.",
+  "maintenanceKindUnavailable": "Ţĥĩś àćţĩōń ĩś ńōţ àvàĩĺàƀĺē ŕĩĝĥţ ńōŵ.",
+  "maintenanceNoAgentProfile": "Śēţ à ďēƒàũĺţ àĝēńţ ƥŕōƒĩĺē ƒōŕ ţĥĩś ŵōŕķśƥàćē ƒĩŕśţ.",
+  "maintenanceNoWorkflow": "Ţĥĩś ŵōŕķśƥàćē ĥàś ńō ŵōŕķƒĺōŵ ţō ƥũţ ţĥē ţàśķ ōń.",
+  "maintenanceRepositoryNotFound": "Ţĥĩś ŕēƥōśĩţōŕŷ ńō ĺōńĝēŕ ēxĩśţś.",
+  "maintenanceRepositoryNotLocal": "Ōńĺŷ ŕēƥōśĩţōŕĩēś ōń ţĥĩś ḿàćĥĩńē ćàń ƀē ĥàńďĺēď ƀŷ àń àĝēńţ."
 }

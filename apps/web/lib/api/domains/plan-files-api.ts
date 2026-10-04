@@ -25,6 +25,8 @@ export type PlanFilePassCounts = {
   archived: number;
   unarchived: number;
   failed: number;
+  /** Plan files whose header is not in the board format, counted by the last pass. */
+  unadapted: number;
 };
 
 export type PlanFileErrorRow = {
@@ -65,6 +67,13 @@ export type PlanFilePassSummary = {
   at: string;
   counts: PlanFilePassCounts;
   file_errors: PlanFileErrorRow[];
+};
+
+export type UnadaptedPlanFilesRepository = {
+  repository_id: string;
+  repository_name: string;
+  count: number;
+  directories: string[];
 };
 
 type PlanFilesApiOptions = ApiRequestOptions & { workspaceId: string };
@@ -133,4 +142,20 @@ export function syncPlanFilesNow(options: PlanFilesApiOptions): Promise<PlanFile
     planFilesUrl("sync", options.workspaceId),
     withMethod(options, "POST"),
   );
+}
+
+/**
+ * Local repositories of the workspace that hold plan files without board
+ * status, read live and independent of the sync config.
+ */
+export async function getUnadaptedPlanFiles(
+  options: PlanFilesApiOptions & { repositoryId?: string },
+): Promise<UnadaptedPlanFilesRepository[]> {
+  const { repositoryId, ...rest } = options;
+  const scope = repositoryId ? `&repository_id=${encodeURIComponent(repositoryId)}` : "";
+  const res = await fetchJson<{ repositories: UnadaptedPlanFilesRepository[] | null }>(
+    `${planFilesUrl("unadapted", options.workspaceId)}${scope}`,
+    requestOptions(rest),
+  );
+  return res.repositories ?? [];
 }

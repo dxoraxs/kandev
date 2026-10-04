@@ -277,5 +277,12 @@
   "idlePolicyTitle": "節省資源",
   "idleSuspensionEnabled": "掛起空閒 ACP 代理",
   "idleTimeoutMinutes": "空閒超時（分鐘）",
-  "idleTimeoutMustBePositive": "請輸入大於零的整數。"
+  "idleTimeoutMustBePositive": "請輸入大於零的整數。",
+  "maintenanceExisting": "此操作的任務已在執行。正在開啟該任務。",
+  "maintenanceFailed": "無法啓動任務，請重試。",
+  "maintenanceKindUnavailable": "此操作目前不可用。",
+  "maintenanceNoAgentProfile": "請先為此工作區設定預設代理程式設定檔。",
+  "maintenanceNoWorkflow": "此工作區沒有可放置該任務的工作流程。",
+  "maintenanceRepositoryNotFound": "此儲存庫已不存在。",
+  "maintenanceRepositoryNotLocal": "代理程式只能處理本機上的儲存庫。"
 }
