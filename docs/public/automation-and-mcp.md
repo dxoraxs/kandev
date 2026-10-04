@@ -787,9 +787,6 @@ When `create_task_kandev.repositories[].repository_url` is a canonical GitHub pu
 
 The task server runs inside agentctl's local runtime boundary. Its MCP routes do not use a separate bearer token. Do not expose agentctl ports; rely on the executor's process/network isolation and Kandev's session scoping.
 
-<details>
-<summary>Office MCP and runtime CLI</summary>
-
 ### Card display hints
 
 External writers, such as a board synchronizer, can show a date, an executor, and checklist progress on a kanban card by setting `metadata.card_display` when they create or update a task. The card shows the task title on up to two lines and no description preview; the description stays in the title hover card and the task description view.
@@ -821,6 +818,9 @@ Dates are compared with the viewer's local calendar day. The task API stores `me
 ```
 
 Send it as the body of `POST /api/v1/tasks` to create a task, or as the body of `PATCH /api/v1/tasks/:id` (with the full desired `metadata` object) to change the hints.
+
+<details>
+<summary>Office MCP and runtime CLI</summary>
 
 ## Office MCP and runtime CLI
 

@@ -8,6 +8,7 @@ import { registerTasksHandlers } from "./tasks";
 
 const WORKFLOW_ID = "wf1";
 const TASK_ID = "t1";
+const CACHED_DAY = "2030-01-01";
 const STEP_ID = "step1";
 
 function makeStore(initial: Partial<AppState> = {}) {
@@ -77,8 +78,8 @@ describe("task.updated handler: card display hints", () => {
             workflowStepId: STEP_ID,
             title: "Test",
             position: 0,
-            metadata: { card_display: { date: "2030-01-01" } },
-            cardDisplay: { date: { iso: "2030-01-01", kind: "due" } },
+            metadata: { card_display: { date: CACHED_DAY } },
+            cardDisplay: { date: { iso: CACHED_DAY, kind: "due" } },
           },
         ],
       },
@@ -90,5 +91,29 @@ describe("task.updated handler: card display hints", () => {
 
     const task = store.getState().kanban.tasks.find((t) => t.id === TASK_ID);
     expect(task?.cardDisplay?.date?.iso).toBe("2020-01-01");
+  });
+  it("keeps the cached cardDisplay when the payload has no metadata key", () => {
+    const store = makeStore({
+      kanban: {
+        workflowId: WORKFLOW_ID,
+        steps: [],
+        tasks: [
+          {
+            id: TASK_ID,
+            workflowId: WORKFLOW_ID,
+            workflowStepId: STEP_ID,
+            title: "Test",
+            position: 0,
+            metadata: { card_display: { date: CACHED_DAY } },
+            cardDisplay: { date: { iso: CACHED_DAY, kind: "due" } },
+          },
+        ],
+      },
+    });
+
+    registerTasksHandlers(store)["task.updated"]!(makeMessage(basePayload()));
+
+    const task = store.getState().kanban.tasks.find((t) => t.id === TASK_ID);
+    expect(task?.cardDisplay?.date?.iso).toBe(CACHED_DAY);
   });
 });
