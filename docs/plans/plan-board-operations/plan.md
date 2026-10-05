@@ -256,7 +256,7 @@ as warning pills: `Stale`, `Open items`, `Uncommitted`. Same row on phone.
 - [x] [Task 04: Owner decisions](task-04-owner-decisions.md)
 - [x] [Task 05: Git state and commit](task-05-git-state-and-commit.md)
 - [x] [Task 06: Create a plan from the board](task-06-create-plan.md)
-- [ ] [Task 07: Plan index](task-07-plan-index.md)
+- [x] [Task 07: Plan index](task-07-plan-index.md)
 - [ ] [Task 08: Plan dependencies](task-08-dependencies.md)
 - [ ] [Task 09: Progress and card flags](task-09-progress-and-flags.md)
 - [ ] [Task 10: Date wake-up and date sort](task-10-date-wake-up.md)

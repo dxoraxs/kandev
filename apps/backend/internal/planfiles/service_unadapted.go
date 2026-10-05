@@ -28,9 +28,9 @@ func (s *Service) UnadaptedCounts(ctx context.Context, workspaceID, repositoryID
 	if err != nil {
 		return nil, err
 	}
-	dirs := DefaultDirectories()
+	dirs, indexFile := DefaultDirectories(), ""
 	if cfg != nil {
-		dirs = cfg.Directories
+		dirs, indexFile = cfg.Directories, cfg.IndexFile
 	}
 	repos, err := s.tasks.ListRepositories(ctx, workspaceID)
 	if err != nil {
@@ -44,14 +44,14 @@ func (s *Service) UnadaptedCounts(ctx context.Context, workspaceID, repositoryID
 		if repositoryID != "" && repo.ID != repositoryID {
 			continue
 		}
-		if row, ok := s.unadaptedInRepo(repo, dirs); ok {
+		if row, ok := s.unadaptedInRepo(repo, dirs, indexFile); ok {
 			result = append(result, row)
 		}
 	}
 	return result, nil
 }
 
-func (s *Service) unadaptedInRepo(repo *taskmodels.Repository, dirs []string) (UnadaptedRepo, bool) {
+func (s *Service) unadaptedInRepo(repo *taskmodels.Repository, dirs []string, indexFile string) (UnadaptedRepo, bool) {
 	files, scanErrs := scan.ScanRepository(repo.LocalPath, dirs)
 	for _, fe := range scanErrs {
 		if fe.RelPath == "" {
@@ -63,6 +63,9 @@ func (s *Service) unadaptedInRepo(repo *taskmodels.Repository, dirs []string) (U
 	found := map[string]struct{}{}
 	count := 0
 	for _, f := range files {
+		if isIndexFile(indexFile, f.RelPath) {
+			continue
+		}
 		if _, ok := format.Parse(path.Base(f.RelPath), f.Content); ok {
 			continue
 		}

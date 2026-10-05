@@ -83,6 +83,9 @@ type pass struct {
 	// directories that are modified, staged, or untracked. A repository that
 	// is not a git working tree has no entry.
 	dirty map[string]map[string]struct{}
+	// finalStep maps a task to the board step it holds after this pass applied
+	// its file, so the index groups plans by where they are on the board.
+	finalStep map[string]string
 }
 
 func newPass(svc *Service, cfg *Config, now time.Time) *pass {
@@ -93,6 +96,7 @@ func newPass(svc *Service, cfg *Config, now time.Time) *pass {
 		seen: map[string]struct{}{}, protectedRepos: map[string]struct{}{}, protectedPaths: map[string]struct{}{},
 		claimed: map[string]struct{}{}, pathTask: map[string]string{}, keys: map[string]orderKey{},
 		roots: map[string]string{}, volatile: map[string]struct{}{}, dirty: map[string]map[string]struct{}{},
+		finalStep: map[string]string{},
 	}
 }
 
@@ -138,6 +142,7 @@ func (p *pass) run(ctx context.Context) error {
 	}
 	p.archiveMissing(ctx)
 	p.reorder(ctx)
+	p.writeIndexes(ctx, tracked)
 	return nil
 }
 
@@ -170,6 +175,9 @@ func (p *pass) collect(repos []*taskmodels.Repository) []planEntry {
 		files, scanErrs := scan.ScanRepository(repo.LocalPath, p.cfg.Directories)
 		p.recordScanErrors(repo, scanErrs)
 		for _, f := range files {
+			if isIndexFile(p.cfg.IndexFile, f.RelPath) {
+				continue
+			}
 			pf, ok := format.Parse(path.Base(f.RelPath), f.Content)
 			if !ok {
 				p.counts.Unadapted++

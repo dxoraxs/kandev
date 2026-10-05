@@ -17,6 +17,7 @@ var (
 	writebackTotal  = expvar.NewMap("plan_files_writeback_total")
 	decisionTotal   = expvar.NewMap("plan_files_decision_total")
 	commitTotal     = expvar.NewMap("plan_files_commit_total")
+	indexTotal      = expvar.NewMap("plan_files_index_total")
 )
 
 // Write-back outcomes. The set is closed; it is also the label set of
@@ -62,4 +63,16 @@ const (
 func incCommit(log *logger.Logger, outcome string) {
 	commitTotal.Add("outcome="+outcome, 1)
 	log.Info("plan_files.metric.commit", zap.String("outcome", outcome))
+}
+
+// Index outcomes. The set is closed; it is also the label set of
+// plan_files_index_total.
+const (
+	indexWritten  = "written"
+	indexNotOwned = "not_owned"
+)
+
+func incIndex(log *logger.Logger, outcome string) {
+	indexTotal.Add("outcome="+outcome, 1)
+	log.Info("plan_files.metric.index", zap.String("outcome", outcome))
 }

@@ -1,7 +1,7 @@
 ---
 id: "07-plan-index"
 title: "Plan index"
-status: pending
+status: done
 wave: 7
 depends_on: ["02-config-and-settings"]
 plan: "plan.md"
@@ -69,4 +69,8 @@ Task 02
 
 ## Results
 
-Pending.
+- `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)`: `ok  github.com/kandev/kandev/internal/planfiles/scan` (planfiles, format, gitstate, scan all ok).
+- `make -C apps/backend lint`: `0 issues.`
+- `gofmt -l internal/planfiles`: no output.
+
+Notes: `scan.WriteGenerated` returns `(wrote bool, err error)` and skips the write itself when the bytes are equal. The Date column is rendered empty because the `date` frontmatter key (plan file card facts) is not on this branch yet; the cell is filled in once `format.PlanFile` carries a date.

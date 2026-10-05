@@ -30,6 +30,7 @@ const (
 	ReasonWorkflowMissing   = "workflow_missing"
 	ReasonRepositoryList    = "repository_list"
 	ReasonWriteFailed       = "write_failed"
+	ReasonIndexNotOwned     = "index_not_owned"
 )
 
 // ErrPassRunning reports that a sync pass or a write already holds the

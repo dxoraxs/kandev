@@ -224,6 +224,7 @@ func (p *pass) applyOne(ctx context.Context, tr tracked) error {
 		p.volatile[task.ID] = struct{}{}
 	}
 	p.keys[task.ID] = e.orderKey()
+	p.finalStep[task.ID] = task.WorkflowStepID
 	return p.saveRow(ctx, e, tr.row, task, tr.notice)
 }
 
