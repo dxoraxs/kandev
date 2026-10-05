@@ -171,6 +171,7 @@ func TestPlanFilesSync_RealTaskServiceCreatesOrdersAndStaysQuiet(t *testing.T) {
 	assert.Equal(t, map[string]any{
 		"date": "2026-10-12", "date_kind": "due",
 		"executor": map[string]any{"name": "codex", "kind": "agent"},
+		"flags":    []any{"uncommitted"},
 	}, f.planTask("a.md").Metadata["card_display"])
 	beta := f.planTask("b.md")
 	assert.Equal(t, f.steps[format.BoardInProgress], beta.WorkflowStepID)
@@ -268,6 +269,7 @@ func TestPlanFilesSync_RealTaskServiceKeepsOtherMetadataWhenFactsChange(t *testi
 	assert.Equal(t, map[string]any{
 		"date": "2026-10-20", "date_kind": "waiting",
 		"executor": map[string]any{"name": "Claude", "kind": "agent"},
+		"flags":    []any{"uncommitted"},
 	}, got["card_display"])
 	before := f.events.Load()
 	assert.Equal(t, planfiles.PassCounts{}, f.sync().Counts)

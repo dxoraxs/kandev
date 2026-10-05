@@ -97,6 +97,10 @@ func (p *pass) createTask(ctx context.Context, e planEntry) (*taskmodels.Task, e
 	if err != nil {
 		return nil, err
 	}
+	inputs, err := p.cardInputs(ctx, e, nil)
+	if err != nil {
+		return nil, err
+	}
 	result, err := p.svc.tasks.CreateTask(ctx, &taskservice.CreateTaskRequest{
 		WorkspaceID:    p.cfg.WorkspaceID,
 		WorkflowID:     p.cfg.WorkflowID,
@@ -106,7 +110,7 @@ func (p *pass) createTask(ctx context.Context, e planEntry) (*taskmodels.Task, e
 		Priority:       e.file.Priority,
 		Repositories:   []taskservice.TaskRepositoryInput{{RepositoryID: e.repo.ID}},
 		ExternalID:     e.extID,
-		Metadata:       cardMetadata(projectCardFacts(e.file)),
+		Metadata:       cardMetadata(projectCardFacts(e.file, inputs)),
 	})
 	if err != nil {
 		return nil, err
@@ -330,7 +334,11 @@ func (p *pass) updateFields(
 	if task.Priority != priority {
 		req.Priority = &priority
 	}
-	if metadata, changed := mergeCardFacts(task.Metadata, projectCardFacts(e.file)); changed {
+	inputs, err := p.cardInputs(ctx, e, task)
+	if err != nil {
+		return nil, err
+	}
+	if metadata, changed := mergeCardFacts(task.Metadata, projectCardFacts(e.file, inputs)); changed {
 		req.Metadata = metadata
 	}
 	if req.Title == nil && req.Description == nil && req.Priority == nil && req.Metadata == nil {

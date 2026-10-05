@@ -139,5 +139,11 @@
   "cardDateDeferred": "Deferred until {{date}}",
   "cardExecutor": "Executor: {{name}}",
   "cardProgress_one": "{{done}} of {{count}} step done",
-  "cardProgress_other": "{{done}} of {{count}} steps done"
+  "cardProgress_other": "{{done}} of {{count}} steps done",
+  "cardFlagStale": "Stale",
+  "cardFlagStaleLabel": "Stale: no recent activity on this plan",
+  "cardFlagOpenItems": "Open items",
+  "cardFlagOpenItemsLabel": "Open items: this plan is done but items are still open",
+  "cardFlagUncommitted": "Uncommitted",
+  "cardFlagUncommittedLabel": "Uncommitted: this plan file has uncommitted changes"
 }

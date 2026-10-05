@@ -139,5 +139,11 @@
   "cardDateDeferred": "Ďēƒēŕŕēď ũńţĩĺ {{date}}",
   "cardExecutor": "Ēxēćũţōŕ: {{name}}",
   "cardProgress_one": "{{done}} ōƒ {{count}} śţēƥ ďōńē",
-  "cardProgress_other": "{{done}} ōƒ {{count}} śţēƥś ďōńē"
+  "cardProgress_other": "{{done}} ōƒ {{count}} śţēƥś ďōńē",
+  "cardFlagStale": "Śţàĺē",
+  "cardFlagStaleLabel": "Śţàĺē: ńō ŕēćēńţ àćţĩvĩţŷ ōń ţĥĩś ƥĺàń",
+  "cardFlagOpenItems": "Ōƥēń ĩţēḿś",
+  "cardFlagOpenItemsLabel": "Ōƥēń ĩţēḿś: ţĥĩś ƥĺàń ĩś ďōńē ƀũţ ĩţēḿś àŕē śţĩĺĺ ōƥēń",
+  "cardFlagUncommitted": "Ũńćōḿḿĩţţēď",
+  "cardFlagUncommittedLabel": "Ũńćōḿḿĩţţēď: ţĥĩś ƥĺàń ƒĩĺē ĥàś ũńćōḿḿĩţţēď ćĥàńĝēś"
 }

@@ -258,7 +258,7 @@ as warning pills: `Stale`, `Open items`, `Uncommitted`. Same row on phone.
 - [x] [Task 06: Create a plan from the board](task-06-create-plan.md)
 - [x] [Task 07: Plan index](task-07-plan-index.md)
 - [x] [Task 08: Plan dependencies](task-08-dependencies.md)
-- [ ] [Task 09: Progress and card flags](task-09-progress-and-flags.md)
+- [x] [Task 09: Progress and card flags](task-09-progress-and-flags.md)
 - [ ] [Task 10: Date wake-up and date sort](task-10-date-wake-up.md)
 - [x] [Task 11: Waiting for owner page](task-11-waiting-owner-page.md)
 - [ ] [Task 12: E2E, public docs, and promotion](task-12-e2e-and-docs.md)

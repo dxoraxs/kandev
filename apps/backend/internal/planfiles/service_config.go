@@ -56,7 +56,7 @@ type Service struct {
 	archiver   TaskArchiver
 	workspaces WorkspaceLister
 
-	// clock supplies the current time to owner decisions; nil means time.Now.
+	// clock supplies the current time; nil means time.Now. Read through currentTime.
 	clock func() time.Time
 
 	// workspaceAuthorizer enforces per-user workspace scoping. Nil, or a

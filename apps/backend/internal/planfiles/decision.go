@@ -74,17 +74,22 @@ type DecisionResult struct {
 
 var lineBreakRun = regexp.MustCompile(`[\r\n]+`)
 
-// SetClock replaces the clock that dates owner notes.
+// SetClock replaces the clock of the service: owner notes, new file names, and
+// every sync pass read the current time from it.
 func (s *Service) SetClock(clock func() time.Time) {
 	s.clock = clock
 }
 
-func (s *Service) today() string {
-	now := time.Now
+// currentTime is the service clock, time.Now unless SetClock replaced it.
+func (s *Service) currentTime() time.Time {
 	if s.clock != nil {
-		now = s.clock
+		return s.clock()
 	}
-	return now().In(time.Local).Format(noteDateLayout)
+	return time.Now()
+}
+
+func (s *Service) today() string {
+	return s.currentTime().In(time.Local).Format(noteDateLayout)
 }
 
 // decisionEdit is a validated decision: the status to write and the note line.

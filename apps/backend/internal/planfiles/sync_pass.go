@@ -36,6 +36,9 @@ type planEntry struct {
 	relPath string
 	file    format.PlanFile
 	extID   string
+	// items holds the item counts and newest modification time of the file and
+	// its tracked entries.
+	items planItems
 }
 
 func (e planEntry) key() string { return pathKey(e.repo.ID, e.relPath) }
@@ -83,6 +86,9 @@ type pass struct {
 	// directories that are modified, staged, or untracked. A repository that
 	// is not a git working tree has no entry.
 	dirty map[string]map[string]struct{}
+	// dirtyFailed holds the local repository IDs whose git state could not be
+	// read this pass.
+	dirtyFailed map[string]struct{}
 	// finalStep maps a task to the board step it holds after this pass applied
 	// its file, so the index groups plans by where they are on the board.
 	finalStep map[string]string
@@ -95,7 +101,7 @@ func newPass(svc *Service, cfg *Config, now time.Time) *pass {
 		rowsByPath: map[string]*TaskRow{}, rowsByExt: map[string]*TaskRow{}, repoNames: map[string]string{},
 		seen: map[string]struct{}{}, protectedRepos: map[string]struct{}{}, protectedPaths: map[string]struct{}{},
 		claimed: map[string]struct{}{}, pathTask: map[string]string{}, keys: map[string]orderKey{},
-		roots: map[string]string{}, volatile: map[string]struct{}{}, dirty: map[string]map[string]struct{}{},
+		roots: map[string]string{}, volatile: map[string]struct{}{}, dirty: map[string]map[string]struct{}{}, dirtyFailed: map[string]struct{}{},
 		finalStep: map[string]string{},
 	}
 }
@@ -188,7 +194,10 @@ func (p *pass) collect(repos []*taskmodels.Repository) []planEntry {
 				p.unadapted[repo.ID]++
 				continue
 			}
-			entry := planEntry{repo: repo, relPath: f.RelPath, file: pf, extID: pf.ExternalID}
+			entry := planEntry{
+				repo: repo, relPath: f.RelPath, file: pf, extID: pf.ExternalID,
+				items: p.readItems(repo, f.RelPath, pf, f.ModTime),
+			}
 			if entry.extID == "" {
 				entry.extID = defaultExternalID(repo.ID, f.RelPath)
 			}

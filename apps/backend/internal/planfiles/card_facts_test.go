@@ -32,28 +32,28 @@ func TestProjectCardFacts_DateKindForEveryBoardStatus(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(string(c.board), func(t *testing.T) {
-			assert.Equal(t, c.want, projectCardFacts(datedPlan(c.board, "2026-10-12", "")))
+			assert.Equal(t, c.want, projectCardFacts(datedPlan(c.board, "2026-10-12", ""), cardInputs{}))
 		})
 	}
 }
 
 // @covers AC-TASKS-PLAN-CARD-001.2
 func TestProjectCardFacts_NoDateNoDateFact(t *testing.T) {
-	assert.Nil(t, projectCardFacts(datedPlan(format.BoardWaitingOwner, "", "")))
+	assert.Nil(t, projectCardFacts(datedPlan(format.BoardWaitingOwner, "", ""), cardInputs{}))
 }
 
 // @covers AC-TASKS-PLAN-CARD-001.3
 func TestProjectCardFacts_ExecutorFact(t *testing.T) {
 	assert.Equal(t,
 		map[string]any{"executor": map[string]any{"name": "Claude", "kind": "agent"}},
-		projectCardFacts(datedPlan(format.BoardInProgress, "", "  Claude ")))
+		projectCardFacts(datedPlan(format.BoardInProgress, "", "  Claude "), cardInputs{}))
 	assert.Equal(t,
 		map[string]any{
 			"date": "2026-10-12", "date_kind": "due",
 			"executor": map[string]any{"name": "codex", "kind": "agent"},
 		},
-		projectCardFacts(datedPlan(format.BoardQueued, "2026-10-12", "codex")))
-	assert.Nil(t, projectCardFacts(datedPlan(format.BoardDone, "2026-10-12", "codex")), "done plans carry no facts")
+		projectCardFacts(datedPlan(format.BoardQueued, "2026-10-12", "codex"), cardInputs{}))
+	assert.Nil(t, projectCardFacts(datedPlan(format.BoardDone, "2026-10-12", "codex"), cardInputs{}), "done plans carry no facts")
 }
 
 // @covers AC-TASKS-PLAN-CARD-001.3

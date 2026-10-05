@@ -100,11 +100,7 @@ func (s *Service) defaultFileName(title string) string {
 	if slug := slugOf(title); slug != "" {
 		return slug + planFileExt
 	}
-	now := time.Now
-	if s.clock != nil {
-		now = s.clock
-	}
-	return fallbackNamePrefix + now().In(time.Local).Format(fallbackNameLayout) + planFileExt
+	return fallbackNamePrefix + s.currentTime().In(time.Local).Format(fallbackNameLayout) + planFileExt
 }
 
 // configuredDirectory returns the configured form of dir, or false when dir is

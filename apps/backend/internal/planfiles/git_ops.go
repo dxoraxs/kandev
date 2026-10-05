@@ -121,8 +121,9 @@ func planPaths(root string, dirs []string, indexFile string) map[string]struct{}
 }
 
 // loadDirty reads the git state of every local repository once per pass. A
-// repository that is not a git working tree, or whose status cannot be read,
-// gets no entry; neither stops the pass.
+// repository that is not a git working tree gets no entry. One whose status
+// cannot be read gets no entry either, is recorded in dirtyFailed, and is
+// reported; neither stops the pass.
 func (p *pass) loadDirty(ctx context.Context) {
 	for _, repoID := range sortedKeys(p.roots) {
 		dirty, err := gitstate.Dirty(ctx, p.roots[repoID], p.cfg.Directories)
@@ -132,6 +133,8 @@ func (p *pass) loadDirty(ctx context.Context) {
 		if err != nil {
 			p.svc.logger.Warn("plan file git state could not be read",
 				zap.String("repository_id", repoID), zap.Error(err))
+			p.dirtyFailed[repoID] = struct{}{}
+			p.addError(repoID, "", ReasonGitStatusFailed)
 			continue
 		}
 		p.dirty[repoID] = dirty

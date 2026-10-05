@@ -2,14 +2,22 @@
 
 import { useTranslation } from "react-i18next";
 import {
+  IconAlertTriangle,
   IconCalendarDue,
+  IconGitCommit,
   IconHourglass,
   IconListCheck,
   IconPlayerPause,
   IconUser,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
-import { dateTagTone, localDay, type DateKind, type DateTone } from "@/lib/kanban/card-display";
+import {
+  dateTagTone,
+  localDay,
+  type CardFlag,
+  type DateKind,
+  type DateTone,
+} from "@/lib/kanban/card-display";
 import type { Task } from "@/components/kanban-card";
 
 const PILL =
@@ -32,6 +40,42 @@ const DATE_KEY = {
   due: "kanban:cardDateDue",
   deferred: "kanban:cardDateDeferred",
 } as const;
+
+const FLAG_ICON = {
+  stale: IconHourglass,
+  open_items: IconAlertTriangle,
+  uncommitted: IconGitCommit,
+} as const;
+
+const FLAG_TEXT_KEY = {
+  stale: "kanban:cardFlagStale",
+  open_items: "kanban:cardFlagOpenItems",
+  uncommitted: "kanban:cardFlagUncommitted",
+} as const;
+
+const FLAG_LABEL_KEY = {
+  stale: "kanban:cardFlagStaleLabel",
+  open_items: "kanban:cardFlagOpenItemsLabel",
+  uncommitted: "kanban:cardFlagUncommittedLabel",
+} as const;
+
+function FlagTag({ flag }: { flag: CardFlag }) {
+  const { t } = useTranslation();
+  const label = t(FLAG_LABEL_KEY[flag]);
+  const Icon = FLAG_ICON[flag];
+  return (
+    <span
+      className={cn(PILL, TONE_CLASS.warning)}
+      data-testid={`kanban-card-flag-${flag}`}
+      role="img"
+      aria-label={label}
+      title={label}
+    >
+      <Icon className="h-3 w-3" aria-hidden="true" />
+      <span aria-hidden="true">{t(FLAG_TEXT_KEY[flag])}</span>
+    </span>
+  );
+}
 
 function DateTag({ iso, kind }: { iso: string; kind: DateKind }) {
   const { t, i18n } = useTranslation();
@@ -114,9 +158,15 @@ export function KanbanCardHintRow({ task }: { task: Task }) {
   const hints = task.cardDisplay;
   if (!hints) return null;
   return (
-    <div className="mt-1 flex min-w-0 items-center gap-1" data-testid="kanban-card-hint-row">
+    <div
+      className="mt-1 flex min-w-0 flex-wrap items-center gap-1"
+      data-testid="kanban-card-hint-row"
+    >
       {hints.date && <DateTag iso={hints.date.iso} kind={hints.date.kind} />}
       {hints.progress && <ProgressChip done={hints.progress.done} total={hints.progress.total} />}
+      {hints.flags?.map((flag) => (
+        <FlagTag key={flag} flag={flag} />
+      ))}
       {hints.executor && <ExecutorBadge name={hints.executor.name} kind={hints.executor.kind} />}
     </div>
   );

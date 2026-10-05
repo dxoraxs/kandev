@@ -28,3 +28,20 @@ func TestCountItems(t *testing.T) {
 		})
 	}
 }
+
+// @covers AC-TASKS-PLAN-BOARD-OPS-005.2
+func TestBodyOf(t *testing.T) {
+	cases := []struct{ name, content, want string }{
+		{"with frontmatter", "---\nboard: queued\nlist:\n  - [x]\n---\n- [ ] a\n", "- [ ] a\n"},
+		{"bom", "\xef\xbb\xbf---\nk: v\n---\nbody\n", "body\n"},
+		{"no frontmatter", "- [x] a\n", "- [x] a\n"},
+		{"unclosed frontmatter", "---\nk: v\n- [x] a\n", "---\nk: v\n- [x] a\n"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := BodyOf([]byte(c.content)); got != c.want {
+				t.Fatalf("BodyOf = %q, want %q", got, c.want)
+			}
+		})
+	}
+}

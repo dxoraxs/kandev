@@ -139,5 +139,11 @@
   "cardDateDeferred": "{{date}} まで延期",
   "cardExecutor": "担当: {{name}}",
   "cardProgress_one": "{{count}} 件中 {{done}} 件のステップが完了",
-  "cardProgress_other": "{{count}} 件中 {{done}} 件のステップが完了"
+  "cardProgress_other": "{{count}} 件中 {{done}} 件のステップが完了",
+  "cardFlagStale": "停滞",
+  "cardFlagStaleLabel": "停滞: このプランに最近の動きがありません",
+  "cardFlagOpenItems": "未完了項目",
+  "cardFlagOpenItemsLabel": "未完了項目: このプランは完了ですが、未完了の項目が残っています",
+  "cardFlagUncommitted": "未コミット",
+  "cardFlagUncommittedLabel": "未コミット: このプランファイルにコミットされていない変更があります"
 }

@@ -40,7 +40,8 @@ which keeps a malformed value from ever reaching rendering.
     "date": "2026-10-05",
     "date_kind": "waiting",
     "executor": { "name": "Claude", "kind": "agent" },
-    "progress": { "done": 1, "total": 3 }
+    "progress": { "done": 1, "total": 3 },
+    "flags": ["stale", "uncommitted"]
   }
 }
 ```
@@ -52,6 +53,7 @@ which keeps a malformed value from ever reaching rendering.
 | `executor.name` | String, trimmed, 1 to 40 characters after trimming. |
 | `executor.kind` | `agent` or `person`. Absent or other values read as `agent`. |
 | `progress.done`, `progress.total` | Integers, `0 <= done <= total`, `total > 0`. |
+| `flags` | Array. Entries other than `stale`, `open_items`, and `uncommitted` (and non-string entries) are ignored; duplicates collapse. The card renders the known entries in that fixed order; with none left the field is invalid. |
 
 Each field is validated independently (AC-002.2). Writers merge the object
 into the existing metadata; the task API stores metadata as given, so a
@@ -65,7 +67,8 @@ task API.
 
 - `type CardDisplayHints = { date?: { iso: string; kind: DateKind };
   executor?: { name: string; kind: "agent" | "person" };
-  progress?: { done: number; total: number } }`.
+  progress?: { done: number; total: number };
+  flags?: ("stale" | "open_items" | "uncommitted")[] }`.
 - `cardDisplayFromMetadata(metadata: unknown): CardDisplayHints | undefined`
   returns `undefined` when no field is valid.
 - `dateTagTone(iso, kind, today: Date): "neutral" | "warning" | "danger"`
@@ -131,18 +134,23 @@ when complete. Accessible name and title: `kanban:cardProgress` with `count`
 ## Hint row
 
 `KanbanCardHintRow` renders nothing without `task.cardDisplay`. Otherwise a
-`mt-1 flex items-center gap-1 min-w-0` row: date tag, progress chip, then the
-executor badge pushed right with `ml-auto`. Elements are non-interactive
+`mt-1 flex flex-wrap items-center gap-1 min-w-0` row: date tag, progress chip,
+one warning tag per flag (`kanban-card-flag-<flag>`, visible short label,
+accessible name and title from the long label), then the executor badge pushed
+right with `ml-auto`. Elements are non-interactive
 spans with `title`; they carry no pointer handlers, so a hover never starts a
 drag or opens the task, and the card click target is unchanged (AC-004.3).
-The row does not wrap; the date tag and chip have fixed content, so at
-375 px the row fits beside the badge.
+The row wraps so that two flag tags and the other hints never overflow the
+card at 375 px.
 
 ## Localization
 
 New keys in the `kanban` namespace in all seven locales plus English and the
 pseudo-locale: `cardDateWaiting`, `cardDateDue`, `cardDateDeferred`,
-`cardExecutor`, `cardProgress_one`, `cardProgress_other`. Traditional Chinese
+`cardExecutor`, `cardProgress_one`, `cardProgress_other`, and for flags
+`cardFlagStale`, `cardFlagOpenItems`, `cardFlagUncommitted` (visible text) with
+`cardFlagStaleLabel`, `cardFlagOpenItemsLabel`, `cardFlagUncommittedLabel`
+(accessible name). Traditional Chinese
 through `pnpm run i18n:zh-hant`. The new component file is appended to
 `i18nGuardFiles`.
 

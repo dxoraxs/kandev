@@ -83,6 +83,37 @@ describe("cardDisplayFromMetadata", () => {
       expect(cardDisplayFromMetadata(wrap({ progress }))).toBeUndefined();
     }
   });
+});
+
+describe("cardDisplayFromMetadata flags", () => {
+  it("parses known flags in a fixed order and ignores duplicates", () => {
+    expect(
+      cardDisplayFromMetadata(
+        wrap({ flags: ["uncommitted", "stale", "uncommitted", "open_items"] }),
+      )?.flags,
+    ).toEqual(["stale", "open_items", "uncommitted"]);
+  });
+
+  it("ignores unknown flags and keeps the known ones", () => {
+    expect(cardDisplayFromMetadata(wrap({ flags: ["bogus", "stale", "STALE", ""] }))).toEqual({
+      flags: ["stale"],
+    });
+    expect(cardDisplayFromMetadata(wrap({ flags: ["bogus"] }))).toBeUndefined();
+    expect(cardDisplayFromMetadata(wrap({ flags: [] }))).toBeUndefined();
+  });
+
+  it("ignores flag values of the wrong type", () => {
+    for (const flags of ["stale", 3, null, true, { stale: true }, [1, null, {}, ["stale"]]]) {
+      expect(cardDisplayFromMetadata(wrap({ flags }))).toBeUndefined();
+    }
+    expect(cardDisplayFromMetadata(wrap({ flags: [1, "stale", null] }))?.flags).toEqual(["stale"]);
+  });
+
+  it("counts flags as a valid field next to an invalid sibling", () => {
+    expect(cardDisplayFromMetadata(wrap({ date: "nope", flags: ["uncommitted"] }))).toEqual({
+      flags: ["uncommitted"],
+    });
+  });
 
   it("keeps valid fields when a sibling is invalid", () => {
     expect(

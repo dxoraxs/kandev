@@ -139,5 +139,11 @@
   "cardDateDeferred": "推迟至 {{date}}",
   "cardExecutor": "执行者：{{name}}",
   "cardProgress_one": "已完成 {{done}}/{{count}} 个步骤",
-  "cardProgress_other": "已完成 {{done}}/{{count}} 个步骤"
+  "cardProgress_other": "已完成 {{done}}/{{count}} 个步骤",
+  "cardFlagStale": "停滞",
+  "cardFlagStaleLabel": "停滞: 此计划近期没有活动",
+  "cardFlagOpenItems": "未完成事项",
+  "cardFlagOpenItemsLabel": "未完成事项: 此计划已完成，但仍有未完成的事项",
+  "cardFlagUncommitted": "未提交",
+  "cardFlagUncommittedLabel": "未提交: 此计划文件有未提交的更改"
 }

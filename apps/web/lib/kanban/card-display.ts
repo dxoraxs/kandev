@@ -1,10 +1,16 @@
 export type DateKind = "waiting" | "due" | "deferred";
 export type DateTone = "neutral" | "warning" | "danger";
 
+export type CardFlag = "stale" | "open_items" | "uncommitted";
+
+/** The flags a card can show, in display order. */
+export const CARD_FLAGS: readonly CardFlag[] = ["stale", "open_items", "uncommitted"];
+
 export type CardDisplayHints = {
   date?: { iso: string; kind: DateKind };
   executor?: { name: string; kind: "agent" | "person" };
   progress?: { done: number; total: number };
+  flags?: CardFlag[];
 };
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -46,6 +52,12 @@ function parseProgress(raw: unknown): CardDisplayHints["progress"] {
   return t > 0 && d >= 0 && d <= t ? { done: d, total: t } : undefined;
 }
 
+function parseFlags(raw: unknown): CardDisplayHints["flags"] {
+  if (!Array.isArray(raw)) return undefined;
+  const flags = CARD_FLAGS.filter((flag) => raw.includes(flag));
+  return flags.length > 0 ? flags : undefined;
+}
+
 /** Validates each field independently; returns undefined when none is valid. */
 export function cardDisplayFromMetadata(metadata: unknown): CardDisplayHints | undefined {
   if (!isRecord(metadata) || !isRecord(metadata.card_display)) return undefined;
@@ -54,10 +66,12 @@ export function cardDisplayFromMetadata(metadata: unknown): CardDisplayHints | u
   const date = parseDate(raw);
   const executor = parseExecutor(raw.executor);
   const progress = parseProgress(raw.progress);
+  const flags = parseFlags(raw.flags);
   if (date) hints.date = date;
   if (executor) hints.executor = executor;
   if (progress) hints.progress = progress;
-  return date || executor || progress ? hints : undefined;
+  if (flags) hints.flags = flags;
+  return date || executor || progress || flags ? hints : undefined;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;

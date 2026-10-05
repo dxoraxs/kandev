@@ -33,6 +33,8 @@ const (
 	ReasonIndexNotOwned     = "index_not_owned"
 	ReasonUnknownDependency = "unknown_dependency"
 	ReasonInvalidDependency = "invalid_dependency"
+	ReasonInvalidTrack      = "invalid_track"
+	ReasonGitStatusFailed   = "git_status_failed"
 )
 
 // ErrPassRunning reports that a sync pass or a write already holds the

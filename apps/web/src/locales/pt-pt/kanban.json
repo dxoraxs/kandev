@@ -139,5 +139,11 @@
   "cardDateDeferred": "Adiado até {{date}}",
   "cardExecutor": "Executor: {{name}}",
   "cardProgress_one": "{{done}} de {{count}} passo concluído",
-  "cardProgress_other": "{{done}} de {{count}} passos concluídos"
+  "cardProgress_other": "{{done}} de {{count}} passos concluídos",
+  "cardFlagStale": "Parado",
+  "cardFlagStaleLabel": "Parado: sem atividade recente neste plano",
+  "cardFlagOpenItems": "Itens em aberto",
+  "cardFlagOpenItemsLabel": "Itens em aberto: este plano está concluído, mas ainda tem itens em aberto",
+  "cardFlagUncommitted": "Sem commit",
+  "cardFlagUncommittedLabel": "Sem commit: este ficheiro de plano tem alterações sem commit"
 }

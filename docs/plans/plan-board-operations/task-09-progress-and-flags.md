@@ -93,4 +93,31 @@ Task 05, Task 08
 
 ## Results
 
-Pending.
+Implemented in `internal/planfiles`: `scan.ReadTrack` and `ScannedFile.ModTime`,
+`format.BodyOf`, `cardInputs` and the `addProgressFact` and `addFlagsFact`
+helpers in `card_facts.go`, `card_inputs.go` (tracked item reading, per-pass
+inputs), `git_status_failed` and `invalid_track` reasons, and
+`Service.currentTime` as the shared injectable clock. Web: `flags` in
+`card-display.ts`, `FlagTag` in `KanbanCardHintRow`, `kanban.json` copy in every
+locale.
+
+Verification, each run from the documented directory (final line of output):
+
+- `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)`:
+  `ok  	github.com/kandev/kandev/internal/planfiles/scan	1.468s`
+  (planfiles, format, gitstate, scan all `ok`)
+- `make -C apps/backend lint`: `0 issues.`
+- `(cd apps && pnpm --filter @kandev/web test -- lib/kanban/card-display.test.ts)`:
+  `Tests  17 passed (17)`
+- `(cd apps && pnpm --filter @kandev/web test -- components/kanban-card-display-hints.test.tsx)`:
+  `Tests  12 passed (12)`
+- `(cd apps/web && pnpm run typecheck)`: `tsc --noEmit` exit 0, no errors
+- `(cd apps/web && pnpm run i18n:check)`:
+  `no non-JSX copy: 3674 guarded file(s) checked.` after
+  `i18n keys OK ... ja, ko, pt-pt, ru, zh-cn, zh-hk, zh-tw complete.`
+- `(cd apps && pnpm --filter @kandev/web lint)`: `eslint --max-warnings 0`, exit 0
+- Also: `go test ./internal/backendapp/ -run PlanFiles -count=1`: `ok`;
+  `golangci-lint run ./internal/planfiles/... ./internal/backendapp/...`:
+  `0 issues.`; `pnpm run i18n:ratchet`: `i18n new-code ratchet: clean`;
+  `pnpm --filter @kandev/web test -- lib/toast/sonner.test.ts components/kanban lib/kanban`:
+  `Tests  683 passed (683)`.

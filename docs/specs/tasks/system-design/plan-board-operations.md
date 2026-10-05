@@ -234,12 +234,20 @@ Computed in `projection.go` next to `projectCardFacts`:
   read through `scan` with the plan-file safety rules (inside the repository
   root, no symbolic links, 1 MiB per file, at most 200 `task-*.md` files per
   directory). Errors are file errors (`invalid_track`) and the item counts as
-  zero.
+  zero. A `tracks` entry is an error when it is absolute, contains a `..`
+  segment, does not exist, is a symbolic link (inside the repository or not),
+  resolves outside the repository root, or is a file over 1 MiB. A tracked
+  directory with more than 200 `task-*.md` files counts the first 200 and
+  reports `truncated`; `task-*.md` entries that are links or not regular files
+  are skipped.
 - **`open_items`:** board `done` and `done < total`.
 - **`stale`:** board `in_progress`, `cfg.StaleAfterDays > 0`, not
   `turnInFlight`, and the newest modification time among the plan file and
   its tracked items is older than the threshold. Modification times come from
-  `os.Lstat` in the scanner (`scan.FileInfo` gains `ModTime`).
+  `os.Lstat` in the scanner (`scan.ScannedFile` gains `ModTime`). A tracked
+  directory contributes its own modification time as well, so adding or
+  removing a work order counts as a touch. The clock is `Service.currentTime`
+  (`SetClock`), shared with owner notes and plan creation.
 - **`uncommitted`:** see [Git state](#git-state).
 
 ## Plan index
@@ -343,7 +351,7 @@ are sorted by `card_display.date` ascending, undated last, then by title.
   orchestrator started; the notice tells the owner. Stopping that session is
   not part of this design.
 - A failed `git status` leaves the previous `uncommitted` flags unchanged for
-  that repository and is reported as a repository error.
+  that repository and is reported as a repository error (`git_status_failed`).
 - A failed commit resets only the paths the action added to the index.
 
 ## Security

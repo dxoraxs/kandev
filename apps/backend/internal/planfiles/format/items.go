@@ -49,3 +49,13 @@ func taskItem(line string) (open, ok bool) {
 	}
 	return false, false
 }
+
+// BodyOf returns the text after the frontmatter block, or the whole content
+// when the file has none.
+func BodyOf(content []byte) string {
+	fm, ok := locate(content)
+	if !ok {
+		return string(content)
+	}
+	return string(fm.body())
+}
