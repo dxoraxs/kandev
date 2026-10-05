@@ -1,6 +1,6 @@
 ---
 created: 2026-10-05
-status: draft
+status: implemented
 requirements:
   - REQ-TASKS-PLAN-BOARD-OPS-001
   - REQ-TASKS-PLAN-BOARD-OPS-002
@@ -268,7 +268,17 @@ schema, `plan-files-api.ts`, and the locale files.
 
 ## Verification results
 
-Pending.
+Run on 2026-10-05 on macOS with Go 1.26 and Node 22 after all work orders.
+
+- `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)`: all four packages `ok`.
+- `(cd apps/backend && go test ./internal/notifications/... ./internal/user/... -count=1)`: `ok`.
+- `(cd apps/backend && go test ./internal/backendapp/... -count=1)`: the plan-files tests pass; three unrelated tests fail on macOS because they compare `/var` with `/private/var`, and they fail the same way on the parent of this work.
+- `(cd apps/backend && golangci-lint run ./internal/planfiles/... ./internal/backendapp/... ./internal/notifications/... ./internal/user/...)`: `0 issues.`
+- `(cd apps && pnpm --filter @kandev/web test)`: 21850 passed, 4 skipped; one suite (`e2e/helpers/multi-repo-managed-clone-recovery.test.ts`) cannot load because `node:sqlite` needs Node 24.
+- `(cd apps && pnpm --filter @kandev/web lint)`, `(cd apps/web && pnpm run typecheck)`, `(cd apps/web && pnpm run i18n:check)`: clean.
+- `(cd apps/web && pnpm e2e:run --no-build tests/plans/plan-board-operations.spec.ts)`: `4 passed`.
+- `(cd apps/web && pnpm e2e:run --no-build --project mobile-chrome tests/plans/mobile-plan-board-operations.spec.ts)`: `3 passed`.
+- `python3 scripts/list-docs.py validate` and `python3 scripts/lint-spec-files.py --all`: pass.
 
 ## Risks
 

@@ -1,7 +1,7 @@
 ---
 id: "09-progress-and-flags"
 title: "Progress and card flags"
-status: pending
+status: done
 wave: 9
 depends_on: ["05-git-state-and-commit", "08-dependencies"]
 plan: "plan.md"

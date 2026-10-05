@@ -91,7 +91,7 @@ apps/backend/
 │   ├── utility/          # Shared utility functions
 │   ├── workflow/         # Workflow engine (engine, models, repository, service)
 │   ├── workflowsync/     # GitHub workflow sync (per-workspace repo config, poller, force sync)
-│   ├── planfiles/        # Repository plan files on a board (frontmatter format, safe scan, sync pass, write-back)
+│   ├── planfiles/        # Repository plan files on a board (format, scan, sync pass, write-back, owner decisions, plan creation, git state/commit, index, dependencies, date wake-up, waiting list)
 │   └── worktree/         # Git worktree management for workspace isolation
 ```
 
@@ -99,8 +99,7 @@ Canvas creation authority comes only from the trusted task adapter and binds
 the owner, session, task, and policy version. Its first valid static release
 may consume that authority for exact workspace-ceiling grants in the activation
 transaction. Existing drafts, imports, later permission increases, and
-revoked grants still require human review; source metadata and manifests never
-grant authority.
+revoked grants still require human review; source metadata and manifests never grant authority.
 Canvas scopes expose `canvas_data_scope_transition_total` with fixed transition
 and result labels. Lifecycle events carry IDs; metrics never label task data.
 

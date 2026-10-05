@@ -1,5 +1,5 @@
 ---
-status: draft
+status: current
 system: tasks
 requirements:
   - REQ-TASKS-PLAN-BOARD-OPS-001
@@ -118,9 +118,9 @@ All under `/api/v1/plan-files`, authorized with the existing
 | Route | Request | Response |
 | --- | --- | --- |
 | `POST /tasks/:taskId/decision` | `{action: "accept"\|"return", result?: "done"\|"queued", comment?}` | `200 {board}`; `404 not_plan_task`; `409 not_waiting_owner`; `409 file_changed`; `400 invalid_decision` |
-| `POST /plans?workspace_id=` | `{repository_id, directory, title, file_name?, priority?, executor?, body?}` | `201 {task_id, repository_id, rel_path}`; `409 file_exists`; `400 invalid_plan` |
+| `POST /plans?workspace_id=` | `{repository_id, directory, title, file_name?, priority?, executor?, body?}` | `201 {task_id, repository_id, rel_path}`; `409 file_exists`; `400 invalid_plan`; `404 repository_not_found` |
 | `GET /git-status?workspace_id=` | | `200 {repositories: [{repository_id, repository_name, files: [rel_path]}]}` |
-| `POST /commit?workspace_id=` | `{repository_id, message?}` | `200 {commit, files}`; `409 repository_busy`; `409 nothing_to_commit`; `422 commit_failed {output}` |
+| `POST /commit?workspace_id=` | `{repository_id, message?}` | `200 {commit, files}`; `409 repository_busy`; `409 nothing_to_commit`; `422 commit_failed {output}`; `404 repository_not_found`; `400 invalid_commit` |
 | `GET /waiting-owner` | | `200 {items: [...], failed_workspaces: [{workspace_id, workspace_name}]}` |
 
 A waiting-owner item is `{workspace_id, workspace_name, task_id, title,
@@ -286,7 +286,7 @@ Subpackage `internal/planfiles/gitstate`:
   pathspecs and returns repository-relative paths. `ErrNotRepository` when
   `git rev-parse --is-inside-work-tree` fails; the pass treats it as an empty
   set.
-- `Busy(root) bool`: `MERGE_HEAD`, `CHERRY_PICK_HEAD`, `REVERT_HEAD`,
+- `Busy(ctx, root) bool`: `MERGE_HEAD`, `CHERRY_PICK_HEAD`, `REVERT_HEAD`,
   `rebase-merge`, or `rebase-apply` exists in the git directory
   (`git rev-parse --git-dir`).
 - `CommitPaths(ctx, root, paths, message) (sha string, output string, err error)`:
