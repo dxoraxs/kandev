@@ -1,4 +1,5 @@
 import { TASK_PRIORITY_TOKENS } from "@/lib/tasks/task-priority";
+import { localDay } from "@/lib/kanban/card-display";
 import type { KanbanSort } from "@/lib/kanban/kanban-sort";
 import type { TaskPriority } from "@/lib/types/http";
 
@@ -24,6 +25,31 @@ export function compareTasksByCreatedDesc(a: CreatedTask, b: CreatedTask): numbe
 function priorityRank(priority: TaskPriority | null | undefined): number {
   const index = priority ? (TASK_PRIORITY_TOKENS as readonly string[]).indexOf(priority) : -1;
   return index === -1 ? TASK_PRIORITY_TOKENS.length : index;
+}
+
+/** The card's plan date, as the card hint carries it. */
+type DatedTask = { cardDisplay?: { date?: { iso: string } } | null };
+
+/** A valid ISO date, or undefined: an invalid date reads as no date. */
+function dateOf(task: DatedTask): string | undefined {
+  const iso = task.cardDisplay?.date?.iso;
+  return iso && localDay(iso) ? iso : undefined;
+}
+
+/**
+ * `date_asc` order: dated tasks first by ascending date, then the rest. Ties and
+ * undated tasks keep the order `fallback` gives, which is the board order of
+ * the surface being sorted.
+ */
+function dateFirst<T extends DatedTask>(fallback: (a: T, b: T) => number) {
+  return (a: T, b: T): number => {
+    const aDate = dateOf(a);
+    const bDate = dateOf(b);
+    if (aDate && bDate && aDate !== bDate) return aDate < bDate ? -1 : 1;
+    if (aDate && !bDate) return -1;
+    if (!aDate && bDate) return 1;
+    return fallback(a, b);
+  };
 }
 
 function compareIdsAsc(a: string, b: string): number {
@@ -68,7 +94,11 @@ export function compareTasksByPriorityThenCreatedDesc(
  */
 export function pickKanbanColumnComparator(
   sortToken: KanbanSort,
-): (a: PriorityRankedTask & CreatedTask, b: PriorityRankedTask & CreatedTask) => number {
+): (
+  a: PriorityRankedTask & CreatedTask & DatedTask,
+  b: PriorityRankedTask & CreatedTask & DatedTask,
+) => number {
+  if (sortToken === "date_asc") return compareTasksByDateThenBoardOrder;
   return sortToken === "priority_desc"
     ? compareTasksByPriorityThenCreatedDesc
     : compareTasksByCreatedOrNativeOrder;
@@ -165,6 +195,11 @@ function compareTasksByCreatedOrNativeOrder(
   return compareTasksByCreatedDesc(left, right);
 }
 
+/** `date_asc` order for the column surfaces: dated first, then board order. */
+export const compareTasksByDateThenBoardOrder = dateFirst<
+  PriorityRankedTask & CreatedTask & DatedTask
+>(compareTasksByCreatedOrNativeOrder);
+
 export function compareStepOrder(left: StepOrderTask, right: StepOrderTask): number {
   const position = comparePositionAsc(left, right);
   if (position !== 0) return position;
@@ -181,6 +216,17 @@ function comparePriorityThenNativeStepOrder(left: StepOrderTask, right: StepOrde
   return compareNativeStepOrderWithoutPriority(left, right);
 }
 
+type PipelineTask = StepOrderTask & DatedTask;
+
+const comparePipelineDateOrder = dateFirst<PipelineTask>(comparePipelineCreatedOrder);
+
+function comparePipelineWithinStep(sortToken: KanbanSort) {
+  if (sortToken === "date_asc") return comparePipelineDateOrder;
+  return sortToken === "priority_desc"
+    ? comparePriorityThenNativeStepOrder
+    : comparePipelineCreatedOrder;
+}
+
 /**
  * Orders tasks for the pipeline view by workflow-step index, then by the
  * selected view order. Unknown steps use a finite equal sentinel, so the
@@ -188,16 +234,14 @@ function comparePriorityThenNativeStepOrder(left: StepOrderTask, right: StepOrde
  * `Infinity - Infinity`.
  */
 export function sortTasksForPipelineView<
-  T extends PriorityRankedTask & { workflowStepId: string; position?: number | null },
+  T extends PriorityRankedTask & DatedTask & { workflowStepId: string; position?: number | null },
 >(tasks: T[], displaySteps: { id: string }[], sortToken: KanbanSort): T[] {
   const stepIndex = new Map(displaySteps.map((step, index) => [step.id, index]));
   const indexOf = (task: T) => stepIndex.get(task.workflowStepId) ?? displaySteps.length;
   return [...tasks].sort((a, b) => {
     const stepDiff = indexOf(a) - indexOf(b);
     if (stepDiff !== 0) return stepDiff;
-    return sortToken === "priority_desc"
-      ? comparePriorityThenNativeStepOrder(a, b)
-      : comparePipelineCreatedOrder(a, b);
+    return comparePipelineWithinStep(sortToken)(a, b);
   });
 }
 
@@ -209,7 +253,8 @@ export function sortIdsByCreatedDesc(ids: string[], taskById: Map<string, Create
 }
 
 export type DisplayOrderTask = PriorityRankedTask &
-  CreatedTask & { position?: number | null; workflowStepId?: string };
+  CreatedTask &
+  DatedTask & { position?: number | null; workflowStepId?: string };
 
 /**
  * Sort selected ids into the board's current display order. The pipeline
@@ -227,16 +272,9 @@ export function sortIdsByDisplayOrder(
 ): string[] {
   const { sortToken, isPipelineView, stepIndexOf } = options;
   if (!isPipelineView) {
+    const comparator = pickKanbanColumnComparator(sortToken);
     return [...ids].sort((a, b) =>
-      sortToken === "priority_desc"
-        ? compareTasksByPriorityThenCreatedDesc(
-            taskById.get(a) ?? { id: a },
-            taskById.get(b) ?? { id: b },
-          )
-        : compareTasksByCreatedOrNativeOrder(
-            taskById.get(a) ?? { id: a },
-            taskById.get(b) ?? { id: b },
-          ),
+      comparator(taskById.get(a) ?? { id: a }, taskById.get(b) ?? { id: b }),
     );
   }
 
@@ -247,8 +285,6 @@ export function sortIdsByDisplayOrder(
     const stepA = indexOf(taskA.workflowStepId);
     const stepB = indexOf(taskB.workflowStepId);
     if (stepA !== stepB) return stepA - stepB;
-    return sortToken === "priority_desc"
-      ? comparePriorityThenNativeStepOrder(taskA, taskB)
-      : comparePipelineCreatedOrder(taskA, taskB);
+    return comparePipelineWithinStep(sortToken)(taskA, taskB);
   });
 }

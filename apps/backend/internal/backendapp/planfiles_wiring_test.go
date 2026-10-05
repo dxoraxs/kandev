@@ -88,3 +88,38 @@ func TestInitPlanFilesService_WiresRealWorkspaceAuthorization(t *testing.T) {
 		t.Fatalf("identity-free GetConfig: %v", err)
 	}
 }
+
+// @covers AC-TASKS-PLAN-BOARD-OPS-009.1
+func TestInitPlanFilesService_WaitingOwnerListsOnlyTheCallersWorkspaces(t *testing.T) {
+	harness := newBootStateTestHarness(t)
+	ctx := context.Background()
+	ownerCtx := authn.WithIdentity(ctx, authn.Identity{UserID: "owner-1", Role: authn.RoleMember})
+	workspace, err := harness.taskSvc.CreateWorkspace(ownerCtx, &taskservice.CreateWorkspaceRequest{Name: "plans workspace"})
+	if err != nil {
+		t.Fatalf("create workspace: %v", err)
+	}
+	log, err := logger.NewLogger(logger.LoggingConfig{Level: "error", Format: "console"})
+	if err != nil {
+		t.Fatalf("logger: %v", err)
+	}
+	cfg := &config.Config{}
+	cfg.Features.PlanFiles = true
+	svc, err := initPlanFilesService(cfg, planFilesTestDB(t), harness.taskSvc, harness.workflowSvc, log)
+	if err != nil || svc == nil {
+		t.Fatalf("initPlanFilesService = %v, %v; want a service", svc, err)
+	}
+	svc.SetSyncDeps(harness.taskSvc, nil)
+	if _, err := svc.EnsureBoard(ownerCtx, workspace.ID); err != nil {
+		t.Fatalf("EnsureBoard: %v", err)
+	}
+
+	owner, err := svc.WaitingOwner(ownerCtx)
+	if err != nil || len(owner.FailedWorkspaces) != 0 {
+		t.Fatalf("owner WaitingOwner = %+v, %v; want no failure", owner, err)
+	}
+	foreignCtx := authn.WithIdentity(ctx, authn.Identity{UserID: "attacker-1", Role: authn.RoleMember})
+	foreign, err := svc.WaitingOwner(foreignCtx)
+	if err != nil || len(foreign.Items) != 0 || len(foreign.FailedWorkspaces) != 0 {
+		t.Fatalf("foreign WaitingOwner = %+v, %v; want an empty list without failures", foreign, err)
+	}
+}

@@ -34,9 +34,11 @@ type NativeSelectProps = {
   children: ReactNode;
   disabled?: boolean;
   testId?: string;
+  /** Accessible name for a select that has no visible label. */
+  label?: string;
 };
 
-function NativeSelect({
+export function NativeSelect({
   id,
   value,
   onChange,
@@ -44,12 +46,14 @@ function NativeSelect({
   children,
   disabled,
   testId,
+  label,
 }: NativeSelectProps) {
   return (
     <select
       id={id}
       value={value}
       disabled={disabled}
+      aria-label={label}
       data-testid={testId}
       onChange={(event) => onChange(event.target.value)}
       className={settingsControlClassName(SELECT_CLASS)}

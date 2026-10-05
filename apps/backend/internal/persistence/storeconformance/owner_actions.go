@@ -3048,11 +3048,16 @@ func planFilesAction() apiAction {
 
 func planFilesConfig(workspaceID string, enabled bool, dirs ...string) *planfiles.Config {
 	return &planfiles.Config{
-		WorkspaceID: workspaceID,
-		Enabled:     enabled,
-		WorkflowID:  "workflow-" + workspaceID,
-		StatusSteps: map[format.BoardStatus]string{format.BoardQueued: "step-queued", format.BoardDone: "step-done"},
-		Directories: dirs,
+		WorkspaceID:    workspaceID,
+		Enabled:        enabled,
+		WorkflowID:     "workflow-" + workspaceID,
+		StatusSteps:    map[format.BoardStatus]string{format.BoardQueued: "step-queued", format.BoardDone: "step-done"},
+		Directories:    dirs,
+		ExecutorSteps:  map[string]string{"step-executor": "Claude"},
+		NotesHeading:   "Owner notes",
+		WakeOnDate:     true,
+		StaleAfterDays: 7,
+		IndexFile:      "INDEX.md",
 	}
 }
 
@@ -3087,7 +3092,7 @@ func planFilesCreate(s testconformance.ScenarioContext, id string) (any, error) 
 	}
 	taskRow := &planfiles.TaskRow{
 		TaskID: "task-" + id, WorkspaceID: id, RepositoryID: "repo-" + id, RelPath: "docs/plans/a.md",
-		ExternalID: "plan-file:" + id, LastSeenAt: time.Now().UTC(),
+		ExternalID: "plan-file:" + id, SyncedDependsOn: []string{"task-blocker"}, LastSeenAt: time.Now().UTC(),
 	}
 	if err := st.UpsertTaskRow(s.Context, taskRow); err != nil {
 		return nil, err

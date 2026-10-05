@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -32,6 +33,10 @@ type handlerRepo interface {
 
 type TaskHandlers struct {
 	service                       *service.Service
+	planFiles                     PlanFilesSetup
+	repositoryCleanup             bool
+	repositoryWorktrees           RepositoryWorktreeReader
+	maintenanceLocks              sync.Map
 	orchestrator                  OrchestratorStarter
 	configChatRetirer             ConfigChatSessionRetirer
 	configChatAdmission           configChatAdmission
@@ -212,6 +217,7 @@ func RegisterTaskRoutes(router *gin.Engine, dispatcher *ws.Dispatcher, svc *serv
 func (h *TaskHandlers) registerHTTP(router *gin.Engine) {
 	api := router.Group("/api/v1")
 	api.GET("/workflows/:id/tasks", h.httpListTasks)
+	api.POST("/repositories/:id/maintenance-tasks", h.httpStartMaintenanceTask)
 	api.GET("/workspaces/:id/tasks", h.httpListTasksByWorkspace)
 	api.POST("/workspaces/:id/sidebar/query", h.httpQuerySidebarTasks)
 	// Task create-idempotency (docs/specs/tasks/requirements/external-id-idempotency.md):

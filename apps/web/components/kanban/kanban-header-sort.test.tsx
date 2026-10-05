@@ -35,12 +35,13 @@ describe("KanbanHeaderSort", () => {
     expect(trigger.textContent).toContain("Board order");
   });
 
-  it("offers the board order and priority variants", () => {
+  it("offers the board order, priority, and date variants", () => {
     render(<KanbanHeaderSort />);
     openSelect();
     expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
       "Board order",
       "Priority",
+      "Date",
     ]);
   });
 
@@ -49,5 +50,12 @@ describe("KanbanHeaderSort", () => {
     openSelect();
     fireEvent.click(screen.getByRole("option", { name: "Priority" }));
     expect(onBoardSortChange).toHaveBeenCalledWith("priority_desc");
+  });
+
+  it("selects the date sort", () => {
+    render(<KanbanHeaderSort />);
+    openSelect();
+    fireEvent.click(screen.getByRole("option", { name: "Date" }));
+    expect(onBoardSortChange).toHaveBeenCalledWith("date_asc");
   });
 });

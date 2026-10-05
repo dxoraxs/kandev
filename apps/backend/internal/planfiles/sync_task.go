@@ -97,6 +97,10 @@ func (p *pass) createTask(ctx context.Context, e planEntry) (*taskmodels.Task, e
 	if err != nil {
 		return nil, err
 	}
+	inputs, err := p.cardInputs(ctx, e, nil)
+	if err != nil {
+		return nil, err
+	}
 	result, err := p.svc.tasks.CreateTask(ctx, &taskservice.CreateTaskRequest{
 		WorkspaceID:    p.cfg.WorkspaceID,
 		WorkflowID:     p.cfg.WorkflowID,
@@ -106,6 +110,7 @@ func (p *pass) createTask(ctx context.Context, e planEntry) (*taskmodels.Task, e
 		Priority:       e.file.Priority,
 		Repositories:   []taskservice.TaskRepositoryInput{{RepositoryID: e.repo.ID}},
 		ExternalID:     e.extID,
+		Metadata:       cardMetadata(projectCardFacts(e.file, inputs)),
 	})
 	if err != nil {
 		return nil, err
@@ -168,7 +173,7 @@ func (p *pass) staysInHandoff(pf format.PlanFile, task *taskmodels.Task) bool {
 			return false
 		}
 	}
-	return true
+	return handoffHolds(p.cfg, pf, task.WorkflowStepID)
 }
 
 // describe builds the task description of a plan file. notice is the
@@ -188,41 +193,46 @@ func (p *pass) describe(e planEntry, notice string) string {
 }
 
 // applyTracked brings one task in line with its file and stores the state it
-// applied.
-func (p *pass) applyTracked(ctx context.Context, tr tracked) {
+// applied. It returns the stored row, or nil when the task could not be synced.
+func (p *pass) applyTracked(ctx context.Context, tr tracked) *TaskRow {
 	e := tr.entry
-	if err := p.applyOne(ctx, tr); err != nil {
+	row, err := p.applyOne(ctx, tr)
+	if err != nil {
 		p.fail(e.repo.ID, e.relPath, err)
+		return nil
 	}
+	return row
 }
 
-func (p *pass) applyOne(ctx context.Context, tr tracked) error {
+func (p *pass) applyOne(ctx context.Context, tr tracked) (*TaskRow, error) {
 	startStep := tr.task.WorkflowStepID
 	volatile := p.startsVolatile(tr)
 	task, err := p.unarchive(ctx, tr.task)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	tr.task = task
 	tr.notice = carriedNotice(tr.row, tr.entry)
 	p.reconcileBoardEdit(ctx, &tr)
+	task = tr.task
 	e := tr.entry
 	stepID, err := p.desiredStep(e.file, task)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	task, err = p.moveIfNeeded(ctx, task, stepID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	task, err = p.updateFields(ctx, e, tr.notice, task)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if volatile || task.WorkflowStepID != startStep || task.WorkflowStepID != stepID {
 		p.volatile[task.ID] = struct{}{}
 	}
 	p.keys[task.ID] = e.orderKey()
+	p.finalStep[task.ID] = task.WorkflowStepID
 	return p.saveRow(ctx, e, tr.row, task, tr.notice)
 }
 
@@ -307,8 +317,9 @@ func (p *pass) turnInFlight(ctx context.Context, taskID string) (bool, error) {
 	return false, nil
 }
 
-// updateFields writes the title, description, and priority a file projects.
-// Metadata is never sent: UpdateTask replaces the whole map.
+// updateFields writes the title, description, priority, and card facts a file
+// projects. UpdateTask replaces the whole metadata map, so metadata is sent
+// only when the facts changed, as a copy that keeps every other key.
 func (p *pass) updateFields(
 	ctx context.Context, e planEntry, notice string, task *taskmodels.Task,
 ) (*taskmodels.Task, error) {
@@ -323,7 +334,14 @@ func (p *pass) updateFields(
 	if task.Priority != priority {
 		req.Priority = &priority
 	}
-	if req.Title == nil && req.Description == nil && req.Priority == nil {
+	inputs, err := p.cardInputs(ctx, e, task)
+	if err != nil {
+		return nil, err
+	}
+	if metadata, changed := mergeCardFacts(task.Metadata, projectCardFacts(e.file, inputs)); changed {
+		req.Metadata = metadata
+	}
+	if req.Title == nil && req.Description == nil && req.Priority == nil && req.Metadata == nil {
 		return task, nil
 	}
 	updated, err := p.svc.tasks.UpdateTask(ctx, task.ID, req)
@@ -339,7 +357,9 @@ func (p *pass) updateFields(
 
 // saveRow stores the state this pass applied, when it differs from the stored
 // row. LastSeenAt therefore records the last change, not the last pass.
-func (p *pass) saveRow(ctx context.Context, e planEntry, row *TaskRow, task *taskmodels.Task, notice string) error {
+func (p *pass) saveRow(
+	ctx context.Context, e planEntry, row *TaskRow, task *taskmodels.Task, notice string,
+) (*TaskRow, error) {
 	next := &TaskRow{
 		TaskID: task.ID, WorkspaceID: p.cfg.WorkspaceID, RepositoryID: e.repo.ID, RelPath: e.relPath,
 		ExternalID: e.extID, ContentHash: e.file.Hash, SyncedStepID: task.WorkflowStepID,
@@ -347,11 +367,15 @@ func (p *pass) saveRow(ctx context.Context, e planEntry, row *TaskRow, task *tas
 	}
 	if row != nil {
 		next.ExternalID = row.ExternalID
+		next.SyncedDependsOn = row.SyncedDependsOn
 		if sameSyncState(row, next) {
-			return nil
+			return row, nil
 		}
 	}
-	return p.svc.store.UpsertTaskRow(ctx, next)
+	if err := p.svc.store.UpsertTaskRow(ctx, next); err != nil {
+		return nil, err
+	}
+	return next, nil
 }
 
 func sameSyncState(a, b *TaskRow) bool {

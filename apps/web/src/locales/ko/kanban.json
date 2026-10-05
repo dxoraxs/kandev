@@ -128,6 +128,7 @@
   "boardSort": "보드 정렬",
   "boardSortCreatedDesc": "최신순",
   "boardSortPriorityDesc": "우선순위순",
+  "boardSortDateAsc": "날짜순",
   "priorityFilter": "우선순위 필터",
   "bulkSelected_one": "{{count}}개 선택됨",
   "bulkSelected_other": "{{count}}개 선택됨",
@@ -139,5 +140,11 @@
   "cardDateDeferred": "{{date}}까지 연기",
   "cardExecutor": "실행자: {{name}}",
   "cardProgress_one": "{{count}}개 단계 중 {{done}}개 완료",
-  "cardProgress_other": "{{count}}개 단계 중 {{done}}개 완료"
+  "cardProgress_other": "{{count}}개 단계 중 {{done}}개 완료",
+  "cardFlagStale": "정체",
+  "cardFlagStaleLabel": "정체: 이 계획에 최근 활동이 없습니다",
+  "cardFlagOpenItems": "미완료 항목",
+  "cardFlagOpenItemsLabel": "미완료 항목: 이 계획은 완료되었지만 아직 열려 있는 항목이 있습니다",
+  "cardFlagUncommitted": "커밋 안 됨",
+  "cardFlagUncommittedLabel": "커밋 안 됨: 이 계획 파일에 커밋되지 않은 변경 사항이 있습니다"
 }

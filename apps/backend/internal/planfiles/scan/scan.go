@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 )
 
 const (
@@ -42,6 +43,7 @@ type ScannedFile struct {
 	RelPath string
 	Content []byte
 	Mode    fs.FileMode
+	ModTime time.Time
 }
 
 // FileError reports a path that was skipped. RelPath is empty for a
@@ -162,5 +164,5 @@ func readPlanFile(path, rel string) (ScannedFile, Reason) {
 	if len(content) > MaxPlanFileBytes {
 		return ScannedFile{}, ReasonTooLarge
 	}
-	return ScannedFile{RelPath: rel, Content: content, Mode: info.Mode()}, ""
+	return ScannedFile{RelPath: rel, Content: content, Mode: info.Mode(), ModTime: info.ModTime()}, ""
 }

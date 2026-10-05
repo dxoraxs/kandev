@@ -12,6 +12,7 @@ import { useFeature } from "@/hooks/domains/features/use-feature";
 import { useOfficeModeState } from "@/hooks/use-in-office";
 import { useQuickChatLauncher } from "@/hooks/use-quick-chat-launcher";
 import { useQuickChatActivity } from "@/components/quick-chat/use-quick-chat-activity";
+import { PlansWaitingSidebarItem } from "@/components/plans-waiting/plans-waiting-nav";
 import { homeDestinationHref } from "@/lib/navigation/core-destinations";
 import { NEEDS_YOU_INBOX_HREF } from "@/lib/navigation/needs-you-inbox-destination";
 import { AppSidebarNavItem } from "./app-sidebar-nav-item";
@@ -84,6 +85,7 @@ export function AppSidebarFixedNav({ collapsed }: { collapsed: boolean }) {
           testId="sidebar-needs-you-inbox"
         />
       )}
+      <PlansWaitingSidebarItem collapsed={collapsed} />
       {workspaceId && collapsed && (
         <AppSidebarNavItem
           icon={IconMessageCircle}

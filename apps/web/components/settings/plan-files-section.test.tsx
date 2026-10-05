@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/api/client";
 const getPlanFilesConfig = vi.fn();
 const putPlanFilesConfig = vi.fn();
 const createPlanFilesBoard = vi.fn();
+const getUnadaptedPlanFiles = vi.fn();
 const syncPlanFilesNow = vi.fn();
 const listWorkflows = vi.fn();
 const listWorkflowSteps = vi.fn();
@@ -17,6 +18,7 @@ vi.mock("@/lib/api/domains/plan-files-api", async (importActual) => ({
   putPlanFilesConfig: (...a: unknown[]) => putPlanFilesConfig(...a),
   createPlanFilesBoard: (...a: unknown[]) => createPlanFilesBoard(...a),
   syncPlanFilesNow: (...a: unknown[]) => syncPlanFilesNow(...a),
+  getUnadaptedPlanFiles: (...a: unknown[]) => getUnadaptedPlanFiles(...a),
 }));
 vi.mock("@/lib/api/domains/kanban-api", () => ({
   listWorkflows: (...a: unknown[]) => listWorkflows(...a),
@@ -25,11 +27,17 @@ vi.mock("@/lib/api/domains/workflow-api", () => ({
   listWorkflowSteps: (...a: unknown[]) => listWorkflowSteps(...a),
 }));
 
+vi.mock("@/components/toast-provider", () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock("@/lib/routing/client-router", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
 import { PlanFilesSection } from "./plan-files-section";
 
 const ENABLED = "plan-files-enabled";
 const BOARD = "plan-files-board";
 const SAVE = "plan-files-save";
+const EXECUTOR_NAME_0 = "plan-files-executor-name-0";
+const NOTES_HEADING = "Notes section heading";
+const STALE_DAYS = /Mark in-progress plans as stale/;
 const SYNC_NOW = "plan-files-sync-now";
 const STATUSES = ["queued", "in_progress", "waiting_owner", "waiting_external", "deferred", "done"];
 const FULL_MAP = Object.fromEntries(STATUSES.map((s, i) => [s, `step-${i}`]));
@@ -41,9 +49,22 @@ function config(overrides: Record<string, unknown> = {}) {
     workflow_id: "wf-1",
     status_steps: FULL_MAP,
     directories: ["docs/plans", "docs/superpowers/plans"],
+    executor_steps: {},
+    notes_heading: "",
+    wake_on_date: true,
+    stale_after_days: 7,
+    index_file: "",
     last_pass_at: "2026-10-04T13:42:00Z",
     last_pass_ok: false,
-    last_counts: { created: 2, updated: 1, moved: 0, archived: 0, unarchived: 0, failed: 1 },
+    last_counts: {
+      created: 2,
+      updated: 1,
+      moved: 0,
+      archived: 0,
+      unarchived: 0,
+      failed: 1,
+      unadapted: 0,
+    },
     last_file_errors: [
       {
         repository_id: "r1",
@@ -58,7 +79,11 @@ function config(overrides: Record<string, unknown> = {}) {
   };
 }
 
-const STEPS = STATUSES.map((_, i) => ({ id: `step-${i}`, name: `Step ${i}`, position: i }));
+const STEPS = [
+  ...STATUSES.map((_, i) => ({ id: `step-${i}`, name: `Step ${i}`, position: i })),
+  { id: "step-x", name: "Handoff", position: 6 },
+  { id: "step-y", name: "Review", position: 7 },
+];
 
 function renderSection(planFiles = true) {
   return render(
@@ -78,11 +103,13 @@ beforeEach(() => {
     putPlanFilesConfig,
     createPlanFilesBoard,
     syncPlanFilesNow,
+    getUnadaptedPlanFiles,
     listWorkflows,
     listWorkflowSteps,
   ]) {
     fn.mockReset();
   }
+  getUnadaptedPlanFiles.mockResolvedValue([]);
   listWorkflows.mockResolvedValue({
     workflows: [
       { id: "wf-1", name: "Plans", style: "kanban" },
@@ -126,7 +153,7 @@ describe("PlanFilesSection", () => {
     expect(screen.queryByTestId("plan-files-step-hidden")).toBeNull();
 
     fireEvent.change(board, { target: { value: "wf-2" } });
-    await waitFor(() => expect(select("plan-files-step-queued").options.length).toBe(7));
+    await waitFor(() => expect(select("plan-files-step-queued").options.length).toBe(9));
     for (const status of STATUSES.slice(0, -1)) {
       fireEvent.change(select(`plan-files-step-${status}`), {
         target: { value: `step-${STATUSES.indexOf(status)}` },
@@ -147,6 +174,11 @@ describe("PlanFilesSection", () => {
       workflow_id: "wf-2",
       status_steps: FULL_MAP,
       directories: ["docs/plans", "docs/superpowers/plans"],
+      executor_steps: {},
+      notes_heading: "",
+      wake_on_date: true,
+      stale_after_days: 7,
+      index_file: "",
     });
     expect(opts).toEqual({ workspaceId: "ws-1" });
   });
@@ -215,7 +247,15 @@ describe("PlanFilesSection status and sync", () => {
       config({
         last_pass_ok: true,
         last_file_errors: [],
-        last_counts: { created: 5, updated: 0, moved: 0, archived: 0, unarchived: 0, failed: 0 },
+        last_counts: {
+          created: 5,
+          updated: 0,
+          moved: 0,
+          archived: 0,
+          unarchived: 0,
+          failed: 0,
+          unadapted: 0,
+        },
       }),
     );
     fireEvent.click(button);
@@ -266,5 +306,102 @@ describe("PlanFilesSection errors and phone layout", () => {
       expect(el.parentElement?.className).toContain("flex-col");
     }
     expect(screen.getByTestId(BOARD).className).toContain("w-full");
+  });
+});
+
+describe("PlanFilesSection operation settings", () => {
+  async function renderLoaded(overrides: Record<string, unknown> = {}) {
+    getPlanFilesConfig.mockResolvedValue(config(overrides));
+    renderSection();
+    await waitFor(() => expect(select(BOARD).value).toBe("wf-1"));
+    await waitFor(() => expect(select("plan-files-step-queued").options.length).toBe(9));
+  }
+
+  it("edits and saves executor columns, notes heading, wake-up, stale days and index file (AC-001.1, 003.1, 005.4, 006.1)", async () => {
+    await renderLoaded();
+    fireEvent.click(screen.getByTestId("plan-files-add-executor"));
+    const stepSelect = select("plan-files-executor-step-0");
+    // Mapped status steps are not offered; only the two free steps are.
+    expect(Array.from(stepSelect.options).map((o) => o.value)).toEqual(["", "step-x", "step-y"]);
+    fireEvent.change(stepSelect, { target: { value: "step-x" } });
+    fireEvent.change(screen.getByTestId(EXECUTOR_NAME_0), {
+      target: { value: " Claude " },
+    });
+    fireEvent.change(screen.getByLabelText(NOTES_HEADING), {
+      target: { value: "Owner notes" },
+    });
+    fireEvent.click(screen.getByTestId("plan-files-wake-on-date"));
+    fireEvent.change(screen.getByLabelText(STALE_DAYS), {
+      target: { value: "0" },
+    });
+    fireEvent.change(screen.getByLabelText("Index file name"), { target: { value: "INDEX.md" } });
+
+    putPlanFilesConfig.mockResolvedValue(config());
+    fireEvent.click(screen.getByTestId(SAVE));
+    await waitFor(() => expect(putPlanFilesConfig).toHaveBeenCalledTimes(1));
+    const [body] = putPlanFilesConfig.mock.calls[0]!;
+    expect(body).toMatchObject({
+      executor_steps: { "step-x": "Claude" },
+      notes_heading: "Owner notes",
+      wake_on_date: false,
+      stale_after_days: 0,
+      index_file: "INDEX.md",
+    });
+  });
+
+  it("loads stored values into the controls and removes an executor column", async () => {
+    await renderLoaded({
+      executor_steps: { "step-x": "Claude" },
+      notes_heading: "Mine",
+      wake_on_date: false,
+      stale_after_days: 30,
+      index_file: "INDEX.md",
+    });
+    expect((screen.getByTestId(EXECUTOR_NAME_0) as HTMLInputElement).value).toBe("Claude");
+    expect((screen.getByLabelText(NOTES_HEADING) as HTMLInputElement).value).toBe("Mine");
+    expect(screen.getByTestId("plan-files-wake-on-date").getAttribute("data-state")).toBe(
+      "unchecked",
+    );
+    expect((screen.getByLabelText(STALE_DAYS) as HTMLInputElement).value).toBe("30");
+    fireEvent.click(screen.getByTestId("plan-files-executor-remove-0"));
+    expect(screen.queryByTestId(EXECUTOR_NAME_0)).toBeNull();
+    expect((screen.getByTestId(SAVE) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("keeps Save disabled for an incomplete executor row or an invalid stale threshold", async () => {
+    await renderLoaded();
+    fireEvent.click(screen.getByTestId("plan-files-add-executor"));
+    fireEvent.change(screen.getByLabelText(NOTES_HEADING), { target: { value: "x" } });
+    expect((screen.getByTestId(SAVE) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByTestId("plan-files-executor-remove-0"));
+    expect((screen.getByTestId(SAVE) as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.change(screen.getByLabelText(STALE_DAYS), {
+      target: { value: "366" },
+    });
+    expect((screen.getByTestId(SAVE) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("drops an executor column whose step a status then claims", async () => {
+    await renderLoaded({ executor_steps: { "step-x": "Claude" } });
+    fireEvent.change(select("plan-files-step-done"), { target: { value: "step-x" } });
+    expect(screen.queryByTestId(EXECUTOR_NAME_0)).toBeNull();
+  });
+
+  it("stacks the new controls full width on phones with every desktop control present", async () => {
+    await renderLoaded({ executor_steps: { "step-x": "Claude" } });
+    for (const el of [
+      screen.getByTestId("plan-files-executor-step-0"),
+      screen.getByTestId(EXECUTOR_NAME_0),
+      screen.getByTestId("plan-files-add-executor"),
+      screen.getByLabelText(NOTES_HEADING),
+      screen.getByLabelText(STALE_DAYS),
+      screen.getByLabelText("Index file name"),
+    ]) {
+      expect(el.className).toContain("w-full");
+    }
+    expect(screen.getByTestId(EXECUTOR_NAME_0).parentElement?.className).toContain("flex-col");
+    expect(screen.getByTestId("plan-files-executor-remove-0").className).toContain(
+      "max-md:size-11",
+    );
   });
 });

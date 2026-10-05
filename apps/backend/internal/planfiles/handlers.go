@@ -33,14 +33,21 @@ type Controller struct {
 }
 
 // RegisterRoutes wires the plan-file HTTP endpoints. Every route takes the
-// workspace as the workspace_id query parameter.
+// workspace as the workspace_id query parameter, except the task decision,
+// which takes it from the task's row, and the waiting-owner list, which spans
+// workspaces.
 func RegisterRoutes(router *gin.Engine, svc *Service, log *logger.Logger) {
 	ctrl := &Controller{service: svc, logger: log}
 	api := router.Group("/api/v1/plan-files")
 	api.GET("/config", ctrl.httpGetConfig)
 	api.PUT("/config", ctrl.httpPutConfig)
 	api.POST("/board", ctrl.httpCreateBoard)
+	api.GET("/unadapted", ctrl.httpUnadapted)
 	ctrl.registerSyncRoutes(api)
+	ctrl.registerDecisionRoutes(api)
+	ctrl.registerGitRoutes(api)
+	ctrl.registerCreateRoutes(api)
+	ctrl.registerWaitingRoutes(api)
 }
 
 // registerSyncRoutes registers POST /sync, the "Sync now" action.
@@ -118,7 +125,12 @@ func (c *Controller) httpPutConfig(ctx *gin.Context) {
 	}
 	cfg, err := c.service.PutConfig(ctx.Request.Context(), workspaceID, &req)
 	if errors.Is(err, ErrInvalidConfig) {
-		ctx.JSON(http.StatusBadRequest, gin.H{errKey: err.Error()})
+		body := gin.H{errKey: err.Error()}
+		var cfgErr *ConfigError
+		if errors.As(err, &cfgErr) {
+			body["code"] = cfgErr.Code
+		}
+		ctx.JSON(http.StatusBadRequest, body)
 		return
 	}
 	if err != nil {
@@ -139,4 +151,20 @@ func (c *Controller) httpCreateBoard(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, result)
+}
+
+// httpUnadapted lists local repositories with Markdown plan files that have no
+// board key. It needs no sync config and stores nothing.
+func (c *Controller) httpUnadapted(ctx *gin.Context) {
+	workspaceID, ok := c.requireWorkspaceID(ctx)
+	if !ok {
+		return
+	}
+	repos, err := c.service.UnadaptedCounts(
+		ctx.Request.Context(), workspaceID, strings.TrimSpace(ctx.Query("repository_id")))
+	if err != nil {
+		c.failure(ctx, "failed to count unadapted plan files", err)
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"repositories": repos})
 }

@@ -36,14 +36,10 @@ func oneLine(s string) string {
 	return strings.Join(strings.Fields(s), " ")
 }
 
-// projectTitle is the task title of a plan file: the plan title, prefixed with
-// the executor unless the plan is done, truncated to the task title limit.
+// projectTitle is the task title of a plan file: the plan title on one line,
+// truncated to the task title limit.
 func projectTitle(pf format.PlanFile) string {
-	title := oneLine(pf.Title)
-	if executor := oneLine(pf.Executor); executor != "" && pf.Board != format.BoardDone {
-		title = "[" + executor + "] " + title
-	}
-	return taskservice.TruncateTaskTitle(title)
+	return taskservice.TruncateTaskTitle(oneLine(pf.Title))
 }
 
 // dependencyLink is a `depends_on` entry whose plan task exists.

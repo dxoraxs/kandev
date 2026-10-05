@@ -3,7 +3,6 @@ package planfiles
 import (
 	"context"
 	"errors"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -84,7 +83,7 @@ func (s *Service) runPass(ctx context.Context, workspaceID string) (PassSummary,
 	if s.tasks == nil || s.archiver == nil {
 		return PassSummary{}, errSyncNotWired
 	}
-	p := newPass(s, cfg, time.Now().UTC())
+	p := newPass(s, cfg, s.currentTime().UTC())
 	runErr := p.run(ctx)
 	summary := p.summary(runErr)
 	statusErr := s.store.RecordPassStatus(

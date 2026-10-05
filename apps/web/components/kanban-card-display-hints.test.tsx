@@ -106,6 +106,45 @@ describe("KanbanCardHintRow", () => {
     expect(screen.queryByTestId(PROGRESS_CHIP)).toBeNull();
     expect(screen.getByTestId(EXECUTOR_BADGE).className).toContain("ml-auto");
   });
+});
+
+describe("KanbanCardHintRow flags", () => {
+  it("renders each flag as a warning tag with a visible label and an accessible name", () => {
+    row({ flags: ["stale", "open_items", "uncommitted"] });
+    const stale = screen.getByTestId("kanban-card-flag-stale");
+    expect(stale.textContent).toBe("Stale");
+    expect(stale.getAttribute(ARIA)).toBe("Stale: no recent activity on this plan");
+    expect(stale.className).toContain("bg-amber-500/15");
+    const open = screen.getByTestId("kanban-card-flag-open_items");
+    expect(open.textContent).toBe("Open items");
+    expect(open.getAttribute(ARIA)).toBe("Open items: this plan is done but items are still open");
+    const uncommitted = screen.getByTestId("kanban-card-flag-uncommitted");
+    expect(uncommitted.textContent).toBe("Uncommitted");
+    expect(uncommitted.getAttribute("title")).toBe(
+      "Uncommitted: this plan file has uncommitted changes",
+    );
+    expect(screen.getAllByRole("img")).toHaveLength(3);
+  });
+
+  it("places the flags after the date and progress and keeps the executor on the right", () => {
+    row({
+      date: { iso: "2026-10-05", kind: "due" },
+      progress: { done: 3, total: 8 },
+      flags: ["stale"],
+      executor: { name: "Claude", kind: "agent" },
+    });
+    const order = Array.from(screen.getByTestId("kanban-card-hint-row").children).map((el) =>
+      el.getAttribute("data-testid"),
+    );
+    expect(order).toEqual([DATE_TAG, PROGRESS_CHIP, "kanban-card-flag-stale", EXECUTOR_BADGE]);
+    expect(screen.getByTestId(EXECUTOR_BADGE).className).toContain("ml-auto");
+  });
+
+  it("renders the hint row for flags alone", () => {
+    row({ flags: ["uncommitted"] });
+    expect(screen.getByTestId("kanban-card-hint-row")).not.toBeNull();
+    expect(screen.queryByTestId("kanban-card-flag-stale")).toBeNull();
+  });
 
   it("exposes each hint as an image with an accessible name", () => {
     row({

@@ -630,6 +630,7 @@ func initPlanFilesService(
 	}
 	svc := planfiles.NewService(store, taskSvc, workflowSvc, log)
 	svc.SetWorkspaceAuthorizer(taskSvc.AuthorizeWorkspaceAccess)
+	svc.SetWorkspaceLister(taskSvc)
 	return svc, nil
 }
 

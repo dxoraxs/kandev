@@ -127,6 +127,7 @@
   "boardSort": "看板排序",
   "boardSortCreatedDesc": "最新優先",
   "boardSortPriorityDesc": "優先級",
+  "boardSortDateAsc": "日期",
   "priorityFilter": "優先級篩選",
   "bulkSelected_other": "已選擇 {{count}} 個",
   "bulkActions": "操作",
@@ -139,5 +140,11 @@
   "cardDateDeferred": "推遲至 {{date}}",
   "cardExecutor": "執行者：{{name}}",
   "cardProgress_one": "已完成 {{done}}/{{count}} 個步驟",
-  "cardProgress_other": "已完成 {{done}}/{{count}} 個步驟"
+  "cardProgress_other": "已完成 {{done}}/{{count}} 個步驟",
+  "cardFlagStale": "停滯",
+  "cardFlagStaleLabel": "停滯: 此計劃近期沒有活動",
+  "cardFlagOpenItems": "未完成事項",
+  "cardFlagOpenItemsLabel": "未完成事項: 此計劃已完成，但仍有未完成的事項",
+  "cardFlagUncommitted": "未提交",
+  "cardFlagUncommittedLabel": "未提交: 此計劃檔案有未提交的更改"
 }

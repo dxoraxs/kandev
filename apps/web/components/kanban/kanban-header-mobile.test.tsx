@@ -48,15 +48,18 @@ vi.mock("./mobile-menu-sheet", () => ({
     open,
     pageActions,
     listingControls,
+    onNewPlan,
   }: {
     open: boolean;
     pageActions?: ReactNode;
     listingControls?: ReactNode;
+    onNewPlan?: () => void;
   }) =>
     open ? (
       <div role="dialog">
         {pageActions}
         {listingControls}
+        {onNewPlan && <button data-testid="menu-new-plan" onClick={onNewPlan} />}
       </div>
     ) : null,
 }));
@@ -268,5 +271,21 @@ describe("shared phone listing header", () => {
     expect(
       within(menu).getByTestId("quick-chat-activity-indicator").getAttribute("data-state"),
     ).toBe("running");
+  });
+});
+
+describe("phone New plan entry", () => {
+  it("hands the New plan action to the listing menu only when one is given", () => {
+    const onNewPlan = vi.fn();
+    renderHeader({ onNewPlan });
+    fireEvent.click(screen.getByTestId(CONTEXT));
+    fireEvent.click(screen.getByTestId("menu-new-plan"));
+    expect(onNewPlan).toHaveBeenCalledTimes(1);
+  });
+
+  it("has no entry without the action", () => {
+    renderHeader();
+    fireEvent.click(screen.getByTestId(CONTEXT));
+    expect(screen.queryByTestId("menu-new-plan")).toBeNull();
   });
 });

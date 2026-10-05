@@ -130,12 +130,19 @@
       "sources": [
         "apps/backend/internal/planfiles/service_sync.go",
         "apps/backend/internal/planfiles/format/parse.go",
-        "apps/backend/internal/planfiles/scan/scan.go"
+        "apps/backend/internal/planfiles/scan/scan.go",
+        "apps/backend/internal/planfiles/decision.go",
+        "apps/backend/internal/planfiles/create.go",
+        "apps/backend/internal/planfiles/wake.go",
+        "apps/backend/internal/planfiles/waiting.go",
+        "apps/backend/internal/planfiles/gitstate/gitstate.go"
       ],
       "tests": [
         "apps/backend/internal/planfiles/service_sync_test.go",
         "apps/backend/internal/planfiles/format/parse_test.go",
-        "apps/backend/internal/planfiles/scan/scan_test.go"
+        "apps/backend/internal/planfiles/scan/scan_test.go",
+        "apps/web/e2e/tests/plans/plan-board-operations.spec.ts",
+        "apps/web/e2e/tests/plans/mobile-plan-board-operations.spec.ts"
       ]
     },
     {

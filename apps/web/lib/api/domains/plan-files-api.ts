@@ -25,6 +25,8 @@ export type PlanFilePassCounts = {
   archived: number;
   unarchived: number;
   failed: number;
+  /** Plan files whose header is not in the board format, counted by the last pass. */
+  unadapted: number;
 };
 
 export type PlanFileErrorRow = {
@@ -40,6 +42,14 @@ export type PlanFilesConfig = {
   workflow_id: string;
   status_steps: PlanFileStatusSteps;
   directories: string[];
+  /** Step ID to executor name. */
+  executor_steps: Record<string, string>;
+  notes_heading: string;
+  wake_on_date: boolean;
+  /** 0 turns the stale flag off. */
+  stale_after_days: number;
+  /** Empty means no index file. */
+  index_file: string;
   last_pass_at?: string;
   last_pass_ok: boolean;
   last_counts: PlanFilePassCounts;
@@ -53,6 +63,12 @@ export type PutPlanFilesConfigRequest = {
   workflow_id: string;
   status_steps: PlanFileStatusSteps;
   directories: string[];
+  /** Omitted fields keep the stored value. */
+  executor_steps?: Record<string, string>;
+  notes_heading?: string;
+  wake_on_date?: boolean;
+  stale_after_days?: number;
+  index_file?: string;
 };
 
 export type CreatePlanBoardResult = {
@@ -67,19 +83,26 @@ export type PlanFilePassSummary = {
   file_errors: PlanFileErrorRow[];
 };
 
+export type UnadaptedPlanFilesRepository = {
+  repository_id: string;
+  repository_name: string;
+  count: number;
+  directories: string[];
+};
+
 type PlanFilesApiOptions = ApiRequestOptions & { workspaceId: string };
 
 function planFilesUrl(path: string, workspaceId: string): string {
   return `/api/v1/plan-files/${path}?workspace_id=${encodeURIComponent(workspaceId)}`;
 }
 
-function requestOptions(options: PlanFilesApiOptions): ApiRequestOptions {
+function requestOptions(options: ApiRequestOptions & { workspaceId?: string }): ApiRequestOptions {
   const { workspaceId: _workspaceId, ...rest } = options;
   return rest;
 }
 
 function withMethod(
-  options: PlanFilesApiOptions,
+  options: ApiRequestOptions & { workspaceId?: string },
   method: string,
   body?: unknown,
 ): ApiRequestOptions {
@@ -133,4 +156,222 @@ export function syncPlanFilesNow(options: PlanFilesApiOptions): Promise<PlanFile
     planFilesUrl("sync", options.workspaceId),
     withMethod(options, "POST"),
   );
+}
+
+/**
+ * Local repositories of the workspace that hold plan files without board
+ * status, read live and independent of the sync config.
+ */
+export async function getUnadaptedPlanFiles(
+  options: PlanFilesApiOptions & { repositoryId?: string },
+): Promise<UnadaptedPlanFilesRepository[]> {
+  const { repositoryId, ...rest } = options;
+  const scope = repositoryId ? `&repository_id=${encodeURIComponent(repositoryId)}` : "";
+  const res = await fetchJson<{ repositories: UnadaptedPlanFilesRepository[] | null }>(
+    `${planFilesUrl("unadapted", options.workspaceId)}${scope}`,
+    requestOptions(rest),
+  );
+  return res.repositories ?? [];
+}
+
+export type PlanDecisionBody = {
+  action: "accept" | "return";
+  /** Accept only: the status the plan moves to. The server defaults to done. */
+  result?: "done" | "queued";
+  comment?: string;
+};
+
+export type PlanDecisionErrorCode =
+  | "not_plan_task"
+  | "not_waiting_owner"
+  | "file_changed"
+  | "invalid_decision";
+
+const PLAN_DECISION_ERROR_CODES: readonly string[] = [
+  "not_plan_task",
+  "not_waiting_owner",
+  "file_changed",
+  "invalid_decision",
+];
+
+/** The decision error code a rejected `decidePlan` carries, or null for any other failure. */
+export function planDecisionErrorCode(err: unknown): PlanDecisionErrorCode | null {
+  if (!(err instanceof ApiError)) return null;
+  const code = (err.body as { code?: unknown } | null)?.code;
+  return typeof code === "string" && PLAN_DECISION_ERROR_CODES.includes(code)
+    ? (code as PlanDecisionErrorCode)
+    : null;
+}
+
+/**
+ * Records the owner's decision on a plan task waiting for them. The workspace
+ * comes from the task, so the route takes no workspace parameter.
+ */
+export function decidePlan(
+  taskId: string,
+  body: PlanDecisionBody,
+  options: ApiRequestOptions = {},
+): Promise<{ board: PlanFileStatus }> {
+  return fetchJson<{ board: PlanFileStatus }>(
+    `/api/v1/plan-files/tasks/${encodeURIComponent(taskId)}/decision`,
+    withMethod(options, "POST", body),
+  );
+}
+
+export type PlanGitRepository = {
+  repository_id: string;
+  repository_name: string;
+  /** Plan files and plan indexes with uncommitted changes. */
+  files: string[];
+};
+
+export type PlanCommitBody = {
+  repository_id: string;
+  /** The server defaults to its plan-files commit message when empty. */
+  message?: string;
+};
+
+export type PlanCommitResult = { commit: string; files: string[] };
+
+export type PlanCommitErrorCode =
+  | "repository_busy"
+  | "nothing_to_commit"
+  | "commit_failed"
+  | "repository_not_found"
+  | "invalid_commit";
+
+const PLAN_COMMIT_ERROR_CODES: readonly string[] = [
+  "repository_busy",
+  "nothing_to_commit",
+  "commit_failed",
+  "repository_not_found",
+  "invalid_commit",
+];
+
+// i18n-exempt: commit message data sent to git, not user-facing copy.
+export const DEFAULT_PLAN_COMMIT_MESSAGE = "docs(plans): update plan files";
+
+/** Local repositories of the workspace with the plan files that have uncommitted changes. */
+export async function getPlanGitStatus(options: PlanFilesApiOptions): Promise<PlanGitRepository[]> {
+  const res = await fetchJson<{ repositories: PlanGitRepository[] | null }>(
+    planFilesUrl("git-status", options.workspaceId),
+    requestOptions(options),
+  );
+  return res.repositories ?? [];
+}
+
+/** Commits the repository's uncommitted plan files; the server never pushes. */
+export function commitPlanFiles(
+  body: PlanCommitBody,
+  options: PlanFilesApiOptions,
+): Promise<PlanCommitResult> {
+  return fetchJson<PlanCommitResult>(
+    planFilesUrl("commit", options.workspaceId),
+    withMethod(options, "POST", body),
+  );
+}
+
+/**
+ * The typed code and the last lines of git output a rejected `commitPlanFiles`
+ * carries, or null for any other failure.
+ */
+export function planCommitError(
+  err: unknown,
+): { code: PlanCommitErrorCode; output: string } | null {
+  if (!(err instanceof ApiError)) return null;
+  const body = err.body as { code?: unknown; output?: unknown } | null;
+  const code = body?.code;
+  if (typeof code !== "string" || !PLAN_COMMIT_ERROR_CODES.includes(code)) return null;
+  return {
+    code: code as PlanCommitErrorCode,
+    output: typeof body?.output === "string" ? body.output : "",
+  };
+}
+
+export type CreatePlanBody = {
+  repository_id: string;
+  /** One of the configured plan directories. */
+  directory: string;
+  title: string;
+  /** The server derives it from the title when empty. */
+  file_name?: string;
+  priority?: "critical" | "high" | "medium" | "low";
+  executor?: string;
+  body?: string;
+};
+
+export type CreatePlanResult = {
+  task_id: string;
+  repository_id: string;
+  rel_path: string;
+};
+
+export type PlanCreateErrorCode = "file_exists" | "invalid_plan" | "repository_not_found";
+
+const PLAN_CREATE_ERROR_CODES: readonly string[] = [
+  "file_exists",
+  "invalid_plan",
+  "repository_not_found",
+];
+
+/**
+ * Writes a new plan file and resolves once its task is on the board. Rejects
+ * with an ApiError carrying a `planCreateErrorCode` when the file is refused.
+ */
+export function createPlan(
+  body: CreatePlanBody,
+  options: PlanFilesApiOptions,
+): Promise<CreatePlanResult> {
+  return fetchJson<CreatePlanResult>(
+    planFilesUrl("plans", options.workspaceId),
+    withMethod(options, "POST", body),
+  );
+}
+
+/** The create error code a rejected `createPlan` carries, or null for any other failure. */
+export function planCreateErrorCode(err: unknown): PlanCreateErrorCode | null {
+  if (!(err instanceof ApiError)) return null;
+  const code = (err.body as { code?: unknown } | null)?.code;
+  return typeof code === "string" && PLAN_CREATE_ERROR_CODES.includes(code)
+    ? (code as PlanCreateErrorCode)
+    : null;
+}
+
+export type WaitingOwnerItem = {
+  workspace_id: string;
+  workspace_name: string;
+  task_id: string;
+  title: string;
+  repository_name: string;
+  rel_path: string;
+  /** YYYY-MM-DD, empty when the plan has no valid date. */
+  date: string;
+  /** Empty when the plan names no executor. */
+  executor: string;
+  priority: string;
+};
+
+export type WaitingOwnerFailedWorkspace = {
+  workspace_id: string;
+  workspace_name: string;
+};
+
+export type WaitingOwnerResult = {
+  items: WaitingOwnerItem[];
+  failed_workspaces: WaitingOwnerFailedWorkspace[];
+};
+
+/**
+ * Plans that wait for the owner in every workspace the caller can access,
+ * ordered by date with undated plans last. A workspace that could not be read
+ * is named in `failed_workspaces` and never hides the others.
+ */
+export async function getWaitingOwner(
+  options: ApiRequestOptions = {},
+): Promise<WaitingOwnerResult> {
+  const res = await fetchJson<{
+    items: WaitingOwnerItem[] | null;
+    failed_workspaces: WaitingOwnerFailedWorkspace[] | null;
+  }>("/api/v1/plan-files/waiting-owner", options);
+  return { items: res.items ?? [], failed_workspaces: res.failed_workspaces ?? [] };
 }

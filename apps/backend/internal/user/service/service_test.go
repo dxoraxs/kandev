@@ -702,6 +702,22 @@ func TestApplyBasicSettings_KanbanSort(t *testing.T) {
 		}
 	})
 
+	t.Run("accepts the date sort and still rejects unknown values", func(t *testing.T) {
+		settings := &models.UserSettings{}
+		if err := applyBasicSettings(settings, &UpdateUserSettingsRequest{KanbanSort: ptr("date_asc")}); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if settings.KanbanSort != "date_asc" {
+			t.Fatalf("KanbanSort = %q, want date_asc", settings.KanbanSort)
+		}
+		if err := applyBasicSettings(settings, &UpdateUserSettingsRequest{KanbanSort: ptr("date_desc")}); err == nil {
+			t.Fatal("date_desc must be rejected")
+		}
+		if settings.KanbanSort != "date_asc" {
+			t.Fatalf("a rejected value changed the setting to %q", settings.KanbanSort)
+		}
+	})
+
 	t.Run("empty value defaults", func(t *testing.T) {
 		settings := &models.UserSettings{}
 		req := &UpdateUserSettingsRequest{KanbanSort: ptr("  ")}

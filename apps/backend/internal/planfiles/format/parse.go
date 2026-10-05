@@ -55,8 +55,10 @@ type PlanFile struct {
 	Priority    string
 	Order       *float64
 	Executor    string
+	Date        string
 	DependsOn   []string
 	ExternalID  string
+	Tracks      []string
 	Body        string
 	ParseErrors []string
 	Hash        string
@@ -83,6 +85,8 @@ func Parse(name string, content []byte) (PlanFile, bool) {
 	pf := PlanFile{Body: string(fm.body()), Hash: ContentHash(content), Priority: models.TaskPriorityMedium}
 	pf.decodeBoard(boardNode)
 	pf.decodeOptional(fields)
+	pf.decodeTracks(fields)
+	pf.decodeDate(fields)
 	if pf.Title == "" {
 		pf.Title = fallbackTitle(name, pf.Body)
 	}
@@ -237,7 +241,7 @@ func fallbackTitle(name, body string) string {
 	inFence := false
 	for _, line := range strings.Split(body, "\n") {
 		line = strings.TrimRight(line, "\r")
-		if strings.HasPrefix(line, "```") || strings.HasPrefix(line, "~~~") {
+		if isCodeFence(line) {
 			inFence = !inFence
 			continue
 		}
@@ -250,4 +254,10 @@ func fallbackTitle(name, body string) string {
 	}
 	base := filepath.Base(name)
 	return strings.TrimSuffix(base, filepath.Ext(base))
+}
+
+// isCodeFence reports whether a line (without its line ending) opens or closes
+// a fenced code block.
+func isCodeFence(line string) bool {
+	return strings.HasPrefix(line, "```") || strings.HasPrefix(line, "~~~")
 }

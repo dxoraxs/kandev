@@ -21,6 +21,7 @@ import {
   MobilePluginNavSection,
   type MobilePluginWorkspaceContext,
 } from "@/components/plugins/mobile-plugin-nav-section";
+import { PlansWaitingMobileRow } from "@/components/plans-waiting/plans-waiting-nav";
 import { useSystemHealthIndicator } from "@/hooks/use-system-health-indicator";
 import { useTheme } from "@/components/theme/app-theme";
 import { getThemeToggleLabelKey, getThemeToggleTarget } from "@/components/theme/theme-toggle";
@@ -242,6 +243,7 @@ function PrimaryNavSection({
         homeCoversListings={phoneNavigation}
         className="gap-3 px-3 text-sm aria-[current=page]:bg-primary/10"
       />
+      <PlansWaitingMobileRow onNavigate={onNavigate} />
       {quickActions}
     </div>
   );

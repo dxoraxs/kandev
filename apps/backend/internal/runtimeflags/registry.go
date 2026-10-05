@@ -164,6 +164,24 @@ var registrations = []runtimeFlagRegistration{
 	},
 	{
 		definition: RuntimeFlagDefinition{
+			Key:         "features.repositoryCleanup",
+			EnvVar:      "KANDEV_FEATURES_REPOSITORY_CLEANUP",
+			Kind:        KindFeature,
+			Label:       "Repository cleanup",
+			Description: "Adds a cleanup action to local repositories that starts an agent task to merge finished branches, delete merged branches, and remove stale worktrees.",
+			Stability:   StabilityExperimental,
+			RiskLevel:   RiskHigh,
+			RiskDescription: "The cleanup agent merges branches, deletes local and remote branches, removes worktrees, " +
+				"and pushes to the remote. Enable it only on an installation whose repositories you are prepared to " +
+				"have rewritten, and review the first cleanup before relying on it.",
+			RestartRequired: true,
+			Mutable:         true,
+		},
+		read:  func(cfg *config.Config) bool { return cfg.Features.RepositoryCleanup },
+		apply: func(cfg *config.Config, value bool) { cfg.Features.RepositoryCleanup = value },
+	},
+	{
+		definition: RuntimeFlagDefinition{
 			Key:         "features.multiTenancy",
 			EnvVar:      "KANDEV_FEATURES_MULTI_TENANCY",
 			Kind:        KindFeature,

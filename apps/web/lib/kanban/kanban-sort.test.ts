@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_KANBAN_SORT, KANBAN_SORT_OPTIONS, parseKanbanSort } from "./kanban-sort";
+import {
+  DEFAULT_KANBAN_SORT,
+  KANBAN_SORT_LABEL_KEYS,
+  KANBAN_SORT_OPTIONS,
+  parseKanbanSort,
+} from "./kanban-sort";
 
 describe("parseKanbanSort", () => {
-  it("accepts the two defined tokens verbatim", () => {
+  it("accepts the defined tokens verbatim", () => {
     expect(parseKanbanSort("created_desc")).toBe("created_desc");
     expect(parseKanbanSort("priority_desc")).toBe("priority_desc");
+    expect(parseKanbanSort("date_asc")).toBe("date_asc");
+    expect(parseKanbanSort(" date_asc ")).toBe("date_asc");
   });
 
   it("resolves undefined, null and empty to the default", () => {
@@ -15,6 +22,7 @@ describe("parseKanbanSort", () => {
 
   it("resolves an unrecognized value to the default rather than failing", () => {
     expect(parseKanbanSort("priority_asc")).toBe(DEFAULT_KANBAN_SORT);
+    expect(parseKanbanSort("date_desc")).toBe(DEFAULT_KANBAN_SORT);
     expect(parseKanbanSort("garbage")).toBe(DEFAULT_KANBAN_SORT);
   });
 
@@ -30,10 +38,20 @@ describe("parseKanbanSort", () => {
 });
 
 describe("KANBAN_SORT_OPTIONS", () => {
-  it("presents exactly the two defined tokens", () => {
+  it("presents exactly the defined tokens", () => {
     expect(KANBAN_SORT_OPTIONS.map((option) => option.value)).toEqual([
       "created_desc",
       "priority_desc",
+      "date_asc",
     ]);
+  });
+});
+
+describe("KANBAN_SORT_LABEL_KEYS", () => {
+  it("labels every option", () => {
+    for (const option of KANBAN_SORT_OPTIONS) {
+      expect(KANBAN_SORT_LABEL_KEYS[option.value]).toMatch(/^kanban:boardSort/);
+    }
+    expect(KANBAN_SORT_LABEL_KEYS.date_asc).toBe("kanban:boardSortDateAsc");
   });
 });

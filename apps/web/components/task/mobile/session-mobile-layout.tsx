@@ -16,6 +16,7 @@ import { MobileTerminalKeybar, KEYBAR_HEIGHT_PX } from "./mobile-terminal-keybar
 import { MobileTerminalPane } from "./mobile-terminal-pane";
 import { MobileSessionsPicker } from "./mobile-sessions-section";
 import { SessionlessTaskView, useSessionlessTaskView } from "../sessionless-task-view";
+import { PlanDecisionPhoneBar } from "../plan-decision-task-bars";
 import { SessionPanelContent } from "@kandev/ui/pannel-session";
 import { useSessionLayoutState } from "@/hooks/use-session-layout-state";
 import { useVisualViewportOffset } from "@/hooks/use-visual-viewport-offset";
@@ -156,12 +157,14 @@ function MobileChatPanelContent({
   if (sessionlessView) {
     return (
       <div className="flex-1 min-h-0 flex flex-col">
+        <PlanDecisionPhoneBar taskId={activeTaskId} />
         <SessionlessTaskView {...sessionlessView} presentation="mobile" />
       </div>
     );
   }
   return (
     <div className="flex-1 min-h-0 flex flex-col">
+      <PlanDecisionPhoneBar taskId={activeTaskId} />
       <LaunchQueueStatus queue={launchStatusSummary?.launch_queue} />
       <WipQueueStatus taskId={activeTaskId} />
       <div className="flex items-center px-1 py-2">

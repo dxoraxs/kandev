@@ -45,6 +45,13 @@ type fakeTaskSystem struct {
 	reorders   [][]string
 	failCreate map[string]error
 	listCalls  int
+	// onGetTask runs at the start of every GetTask call, before any lock.
+	onGetTask func(id string)
+
+	// blockers maps a task to the tasks it depends on. depCalls logs every
+	// dependency call, so a test can assert that a pass made none.
+	blockers map[string]map[string]bool
+	depCalls []string
 }
 
 func newFakeTaskSystem() *fakeTaskSystem {
@@ -53,6 +60,7 @@ func newFakeTaskSystem() *fakeTaskSystem {
 		sessions:   map[string][]*taskmodels.TaskSession{},
 		stepWF:     map[string]string{},
 		failCreate: map[string]error{},
+		blockers:   map[string]map[string]bool{},
 		clock:      time.Date(2026, 10, 4, 12, 0, 0, 0, time.UTC),
 	}
 }
@@ -74,7 +82,23 @@ func (f *fakeTaskSystem) tick() time.Time {
 
 func cloneTask(t *taskmodels.Task) *taskmodels.Task {
 	c := *t
+	c.Metadata = cloneMetadata(t.Metadata)
 	return &c
+}
+
+// cloneMetadata deep-copies nested maps, as a store round trip would.
+func cloneMetadata(in map[string]interface{}) map[string]interface{} {
+	if in == nil {
+		return nil
+	}
+	out := make(map[string]interface{}, len(in))
+	for k, v := range in {
+		if nested, ok := v.(map[string]interface{}); ok {
+			v = cloneMetadata(nested)
+		}
+		out[k] = v
+	}
+	return out
 }
 
 // seedTask adds a task that was created outside the plan-file feature.
@@ -133,6 +157,9 @@ func (f *fakeTaskSystem) ListRepositories(_ context.Context, _ string) ([]*taskm
 }
 
 func (f *fakeTaskSystem) GetTask(_ context.Context, id string) (*taskmodels.Task, error) {
+	if f.onGetTask != nil {
+		f.onGetTask(id)
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	t, ok := f.tasks[id]
@@ -170,7 +197,7 @@ func (f *fakeTaskSystem) CreateTask(_ context.Context, req *taskservice.CreateTa
 		ID: id, WorkspaceID: req.WorkspaceID, WorkflowID: req.WorkflowID, WorkflowStepID: req.WorkflowStepID,
 		Title: req.Title, Description: req.Description, Priority: req.Priority, State: v1.TaskStateTODO,
 		ExternalID: req.ExternalID, WIPAdmitted: true, Position: f.nextPositionLocked(req.WorkflowStepID),
-		CreatedAt: f.tick(),
+		CreatedAt: f.tick(), Metadata: cloneMetadata(req.Metadata),
 	}
 	f.tasks[id] = task
 	f.creates = append(f.creates, req)
@@ -202,7 +229,7 @@ func (f *fakeTaskSystem) UpdateTask(_ context.Context, id string, req *taskservi
 		t.Priority = *req.Priority
 	}
 	if req.Metadata != nil {
-		t.Metadata = req.Metadata // replaces, as the real service does
+		t.Metadata = cloneMetadata(req.Metadata) // replaces, as the real service does
 	}
 	f.updates = append(f.updates, req)
 	f.logWrite("update:%s", id)
@@ -319,4 +346,90 @@ func (f *fakeTaskSystem) byExternalIDLocked(ext string) string {
 
 func updatePriority(priority string) *taskservice.UpdateTaskRequest {
 	return &taskservice.UpdateTaskRequest{Priority: &priority}
+}
+
+// AddDependency mimics the task service: self-edges, unknown tasks, and cycles
+// are rejected; an existing edge is a successful replay.
+func (f *fakeTaskSystem) AddDependency(_ context.Context, taskID, dependsOnID string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.depCalls = append(f.depCalls, "add:"+taskID+"->"+dependsOnID)
+	if taskID == dependsOnID {
+		return fmt.Errorf("a task cannot depend on itself")
+	}
+	if f.tasks[taskID] == nil || f.tasks[dependsOnID] == nil {
+		return repoerrors.ErrTaskNotFound
+	}
+	if f.reachesLocked(dependsOnID, taskID) {
+		return fmt.Errorf("dependency cycle")
+	}
+	if f.blockers[taskID] == nil {
+		f.blockers[taskID] = map[string]bool{}
+	}
+	f.blockers[taskID][dependsOnID] = true
+	f.logWrite("dep-add:%s->%s", taskID, dependsOnID)
+	return nil
+}
+
+// RemoveDependency removes an edge; an absent edge is a no-op and an unknown
+// task is not found.
+func (f *fakeTaskSystem) RemoveDependency(_ context.Context, taskID, dependsOnID string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.depCalls = append(f.depCalls, "remove:"+taskID+"->"+dependsOnID)
+	if f.tasks[taskID] == nil || f.tasks[dependsOnID] == nil {
+		return repoerrors.ErrTaskNotFound
+	}
+	delete(f.blockers[taskID], dependsOnID)
+	f.logWrite("dep-remove:%s->%s", taskID, dependsOnID)
+	return nil
+}
+
+// reachesLocked reports whether the target is reachable from the start task along dependency edges.
+func (f *fakeTaskSystem) reachesLocked(from, to string) bool {
+	seen := map[string]bool{}
+	stack := []string{from}
+	for len(stack) > 0 {
+		id := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		if id == to {
+			return true
+		}
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		for next := range f.blockers[id] {
+			stack = append(stack, next)
+		}
+	}
+	return false
+}
+
+// seedDependency adds an edge the way a person would, bypassing the call log.
+func (f *fakeTaskSystem) seedDependency(taskID, dependsOnID string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.blockers[taskID] == nil {
+		f.blockers[taskID] = map[string]bool{}
+	}
+	f.blockers[taskID][dependsOnID] = true
+}
+
+// dependenciesOf returns the sorted IDs the task depends on.
+func (f *fakeTaskSystem) dependenciesOf(taskID string) []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	ids := []string{}
+	for id := range f.blockers[taskID] {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	return ids
+}
+
+func (f *fakeTaskSystem) dependencyCallCount() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return len(f.depCalls)
 }

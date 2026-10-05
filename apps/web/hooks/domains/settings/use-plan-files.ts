@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { t } from "@/lib/i18n";
+import { invalidatePlanBoardConfig } from "@/hooks/domains/plans/use-plan-board";
 import { ApiError } from "@/lib/api/client";
 import { listWorkflows } from "@/lib/api/domains/kanban-api";
 import { listWorkflowSteps } from "@/lib/api/domains/workflow-api";
@@ -17,12 +18,23 @@ import {
 // (initially these) directories as soon as a config is saved.
 export const DEFAULT_PLAN_DIRECTORIES = ["docs/plans", "docs/superpowers/plans"];
 
+export type ExecutorRow = { stepId: string; name: string };
+
 export type PlanFilesDraft = {
   enabled: boolean;
   workflowId: string;
   statusSteps: PlanFileStatusSteps;
   directories: string[];
+  executorRows: ExecutorRow[];
+  notesHeading: string;
+  wakeOnDate: boolean;
+  /** Kept as typed text so the field can be empty while editing. */
+  staleAfterDays: string;
+  indexFile: string;
 };
+
+const EXECUTOR_NAME_MAX_BYTES = 40;
+const STALE_AFTER_DAYS_MAX = 365;
 
 export type PlanFilesStep = { id: string; name: string };
 export type PlanFilesWorkflow = { id: string; name: string };
@@ -35,6 +47,11 @@ const EMPTY_DRAFT: PlanFilesDraft = {
   workflowId: "",
   statusSteps: {},
   directories: DEFAULT_PLAN_DIRECTORIES,
+  executorRows: [],
+  notesHeading: "",
+  wakeOnDate: true,
+  staleAfterDays: "7",
+  indexFile: "",
 };
 
 function draftFromConfig(config: PlanFilesConfig | null): PlanFilesDraft {
@@ -44,14 +61,46 @@ function draftFromConfig(config: PlanFilesConfig | null): PlanFilesDraft {
     workflowId: config.workflow_id,
     statusSteps: { ...config.status_steps },
     directories: [...config.directories],
+    executorRows: Object.entries(config.executor_steps ?? {}).map(([stepId, name]) => ({
+      stepId,
+      name,
+    })),
+    notesHeading: config.notes_heading ?? "",
+    wakeOnDate: config.wake_on_date ?? true,
+    staleAfterDays: String(config.stale_after_days ?? 7),
+    indexFile: config.index_file ?? "",
   };
 }
 
-/** Save needs a board, a step for every status except hidden, and a directory. */
+function parseStaleAfterDays(value: string): number | null {
+  if (!/^\d+$/.test(value.trim())) return null;
+  const days = Number(value);
+  return days <= STALE_AFTER_DAYS_MAX ? days : null;
+}
+
+function executorRowComplete(row: ExecutorRow): boolean {
+  const bytes = new TextEncoder().encode(row.name.trim()).length;
+  return row.stepId !== "" && bytes > 0 && bytes <= EXECUTOR_NAME_MAX_BYTES;
+}
+
+function executorStepsPayload(rows: ExecutorRow[]): Record<string, string> {
+  return Object.fromEntries(rows.map((row) => [row.stepId, row.name.trim()]));
+}
+
+function sameRows(a: ExecutorRow[], b: ExecutorRow[]): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+/**
+ * Save needs a board, a step for every status except hidden, a directory,
+ * complete executor rows, and a valid stale threshold.
+ */
 export function isDraftComplete(draft: PlanFilesDraft): boolean {
   return (
     draft.workflowId !== "" &&
     draft.directories.length > 0 &&
+    draft.executorRows.every(executorRowComplete) &&
+    parseStaleAfterDays(draft.staleAfterDays) !== null &&
     PLAN_FILE_STATUSES.every((status) => Boolean(draft.statusSteps[status]))
   );
 }
@@ -61,6 +110,11 @@ function sameDraft(a: PlanFilesDraft, b: PlanFilesDraft): boolean {
     a.enabled === b.enabled &&
     a.workflowId === b.workflowId &&
     a.directories.join("\0") === b.directories.join("\0") &&
+    sameRows(a.executorRows, b.executorRows) &&
+    a.notesHeading === b.notesHeading &&
+    a.wakeOnDate === b.wakeOnDate &&
+    a.staleAfterDays === b.staleAfterDays &&
+    a.indexFile === b.indexFile &&
     PLAN_FILE_STATUSES.every(
       (status) => (a.statusSteps[status] ?? "") === (b.statusSteps[status] ?? ""),
     )
@@ -125,9 +179,15 @@ function useSaveConfig({
           workflow_id: draft.workflowId,
           status_steps: draft.statusSteps,
           directories: draft.directories,
+          executor_steps: executorStepsPayload(draft.executorRows),
+          notes_heading: draft.notesHeading.trim(),
+          wake_on_date: draft.wakeOnDate,
+          stale_after_days: parseStaleAfterDays(draft.staleAfterDays) ?? 0,
+          index_file: draft.indexFile.trim(),
         },
         { workspaceId },
       );
+      invalidatePlanBoardConfig(workspaceId);
       setConfig(saved);
       setDraft(draftFromConfig(saved));
       setError(null);
@@ -198,12 +258,16 @@ export function usePlanFiles(workspaceId: string) {
   }, []);
 
   const selectWorkflow = useCallback(
-    (workflowId: string) => patch({ workflowId, statusSteps: {} }),
+    (workflowId: string) => patch({ workflowId, statusSteps: {}, executorRows: [] }),
     [patch],
   );
 
   const setStatusStep = useCallback((status: keyof PlanFileStatusSteps, stepId: string) => {
-    setDraft((prev) => ({ ...prev, statusSteps: { ...prev.statusSteps, [status]: stepId } }));
+    setDraft((prev) => ({
+      ...prev,
+      statusSteps: { ...prev.statusSteps, [status]: stepId },
+      executorRows: prev.executorRows.filter((row) => row.stepId !== stepId),
+    }));
     setError(null);
   }, []);
 
@@ -212,7 +276,11 @@ export function usePlanFiles(workspaceId: string) {
     try {
       const board = await createPlanFilesBoard({ workspaceId });
       setWorkflows(await fetchBoards(workspaceId));
-      patch({ workflowId: board.workflow_id, statusSteps: { ...board.status_steps } });
+      patch({
+        workflowId: board.workflow_id,
+        statusSteps: { ...board.status_steps },
+        executorRows: [],
+      });
     } catch (err) {
       setError(errorMessage(err));
     } finally {

@@ -36,6 +36,9 @@ type planEntry struct {
 	relPath string
 	file    format.PlanFile
 	extID   string
+	// items holds the item counts and newest modification time of the file and
+	// its tracked entries.
+	items planItems
 }
 
 func (e planEntry) key() string { return pathKey(e.repo.ID, e.relPath) }
@@ -50,9 +53,11 @@ type pass struct {
 	cfg *Config
 	now time.Time
 
-	counts   PassCounts
-	errs     []FileErrorRow
-	degraded bool
+	counts PassCounts
+	// unadapted tallies files without a board key per repository ID.
+	unadapted map[string]int
+	errs      []FileErrorRow
+	degraded  bool
 
 	rows       []*TaskRow
 	rowsByPath map[string]*TaskRow
@@ -77,15 +82,27 @@ type pass struct {
 	// volatile holds the tasks whose position on the board this pass cannot
 	// read as a person's reorder: new, changed, moved, or moved by a person.
 	volatile map[string]struct{}
+	// dirty holds, per local repository ID, the paths under the scanned
+	// directories that are modified, staged, or untracked. A repository that
+	// is not a git working tree has no entry.
+	dirty map[string]map[string]struct{}
+	// dirtyFailed holds the local repository IDs whose git state could not be
+	// read this pass.
+	dirtyFailed map[string]struct{}
+	// finalStep maps a task to the board step it holds after this pass applied
+	// its file, so the index groups plans by where they are on the board.
+	finalStep map[string]string
 }
 
 func newPass(svc *Service, cfg *Config, now time.Time) *pass {
 	return &pass{
 		svc: svc, cfg: cfg, now: now,
+		unadapted:  map[string]int{},
 		rowsByPath: map[string]*TaskRow{}, rowsByExt: map[string]*TaskRow{}, repoNames: map[string]string{},
 		seen: map[string]struct{}{}, protectedRepos: map[string]struct{}{}, protectedPaths: map[string]struct{}{},
 		claimed: map[string]struct{}{}, pathTask: map[string]string{}, keys: map[string]orderKey{},
-		roots: map[string]string{}, volatile: map[string]struct{}{},
+		roots: map[string]string{}, volatile: map[string]struct{}{}, dirty: map[string]map[string]struct{}{}, dirtyFailed: map[string]struct{}{},
+		finalStep: map[string]string{},
 	}
 }
 
@@ -123,13 +140,20 @@ func (p *pass) run(ctx context.Context) error {
 		return &passFailure{reason: ReasonTaskService, err: err}
 	}
 	entries := p.collect(repos)
+	p.loadDirty(ctx)
 	entries = p.rejectDuplicates(entries)
 	tracked := p.resolveAll(ctx, entries)
+	p.wakeDue(ctx, tracked)
+	var deps []depWork
 	for _, tr := range tracked {
-		p.applyTracked(ctx, tr)
+		if row := p.applyTracked(ctx, tr); row != nil {
+			deps = append(deps, depWork{entry: tr.entry, row: row})
+		}
 	}
+	p.syncDependencies(ctx, deps)
 	p.archiveMissing(ctx)
 	p.reorder(ctx)
+	p.writeIndexes(ctx, tracked)
 	return nil
 }
 
@@ -147,8 +171,9 @@ func (p *pass) loadRows(ctx context.Context) error {
 }
 
 // collect scans every local repository and parses its plan files in a stable
-// order. Files that are not plan files are dropped silently; scan problems and
-// parse errors become file errors without stopping the pass.
+// order. Files that are not plan files are counted as unadapted and otherwise
+// dropped; scan problems and parse errors become file errors without stopping
+// the pass.
 func (p *pass) collect(repos []*taskmodels.Repository) []planEntry {
 	var entries []planEntry
 	for _, repo := range repos {
@@ -161,11 +186,19 @@ func (p *pass) collect(repos []*taskmodels.Repository) []planEntry {
 		files, scanErrs := scan.ScanRepository(repo.LocalPath, p.cfg.Directories)
 		p.recordScanErrors(repo, scanErrs)
 		for _, f := range files {
-			pf, ok := format.Parse(path.Base(f.RelPath), f.Content)
-			if !ok {
+			if isIndexFile(p.cfg.IndexFile, f.RelPath) {
 				continue
 			}
-			entry := planEntry{repo: repo, relPath: f.RelPath, file: pf, extID: pf.ExternalID}
+			pf, ok := format.Parse(path.Base(f.RelPath), f.Content)
+			if !ok {
+				p.counts.Unadapted++
+				p.unadapted[repo.ID]++
+				continue
+			}
+			entry := planEntry{
+				repo: repo, relPath: f.RelPath, file: pf, extID: pf.ExternalID,
+				items: p.readItems(repo, f.RelPath, pf, f.ModTime),
+			}
 			if entry.extID == "" {
 				entry.extID = defaultExternalID(repo.ID, f.RelPath)
 			}
@@ -197,13 +230,19 @@ func (p *pass) addError(repositoryID, relPath, reason string) {
 
 // isProtected reports that the file behind a row could not be read this pass.
 func (p *pass) isProtected(row *TaskRow) bool {
-	if _, ok := p.protectedRepos[row.RepositoryID]; ok {
+	return p.pathUnreadable(row.RepositoryID, row.RelPath)
+}
+
+// pathUnreadable reports that the file, or its directory or repository, could
+// not be read this pass.
+func (p *pass) pathUnreadable(repositoryID, relPath string) bool {
+	if _, ok := p.protectedRepos[repositoryID]; ok {
 		return true
 	}
-	if _, ok := p.protectedPaths[pathKey(row.RepositoryID, row.RelPath)]; ok {
+	if _, ok := p.protectedPaths[pathKey(repositoryID, relPath)]; ok {
 		return true
 	}
-	_, ok := p.protectedPaths[pathKey(row.RepositoryID, path.Dir(row.RelPath))]
+	_, ok := p.protectedPaths[pathKey(repositoryID, path.Dir(relPath))]
 	return ok
 }
 

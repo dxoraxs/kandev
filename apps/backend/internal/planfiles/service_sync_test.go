@@ -25,21 +25,20 @@ func TestSync_CreatesOneTaskPerPlanFileInMappedStep(t *testing.T) {
 	assert.Equal(t, OutcomeOK, summary.Outcome)
 	assert.Equal(t, 2, summary.Counts.Created)
 	a := h.taskFor("docs/plans/a.md")
-	assert.Equal(t, "[codex] Alpha", a.Title)
+	assert.Equal(t, "Alpha", a.Title)
 	assert.Equal(t, "high", a.Priority)
 	assert.Equal(t, h.step(format.BoardQueued), a.WorkflowStepID)
 	assert.Equal(t, "wf-1", a.WorkflowID)
 	assert.Contains(t, a.Description, "> Plan file: `city_companion` `docs/plans/a.md`")
 	assert.Contains(t, a.Description, "Body of Alpha.")
 	b := h.taskFor("docs/plans/b.md")
-	assert.Equal(t, "Beta", b.Title, "done plans carry no executor prefix")
+	assert.Equal(t, "Beta", b.Title)
 	assert.Equal(t, h.step(format.BoardDone), b.WorkflowStepID)
 	assert.Len(t, h.tasks.creates, 2, "non-plan files create nothing")
 	for _, req := range h.tasks.creates {
 		assert.False(t, req.StartAgent)
 		require.Len(t, req.Repositories, 1)
 		assert.Equal(t, testRepoID, req.Repositories[0].RepositoryID)
-		assert.Nil(t, req.Metadata)
 	}
 }
 
@@ -89,7 +88,7 @@ func TestSync_FileChangeUpdatesAndMovesTheSameTask(t *testing.T) {
 	require.Len(t, h.tasks.moves, 1)
 	assert.Equal(t, "system", string(h.tasks.moves[0].Actor))
 	for _, upd := range h.tasks.updates {
-		assert.Nil(t, upd.Metadata, "metadata is replaced by UpdateTask, so the pass never sends it")
+		assert.Nil(t, upd.Metadata, "a plan without card facts never sends metadata")
 	}
 }
 

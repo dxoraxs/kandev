@@ -139,6 +139,7 @@
   "boardSort": "Сортировка доски",
   "boardSortCreatedDesc": "По порядку на доске",
   "boardSortPriorityDesc": "По приоритету",
+  "boardSortDateAsc": "По дате",
   "priorityFilter": "Фильтр по приоритету",
   "bulkSelected_one": "Выбран {{count}}",
   "bulkSelected_few": "Выбрано {{count}}",
@@ -155,5 +156,11 @@
   "cardProgress_one": "{{done}} из {{count}} шага выполнено",
   "cardProgress_few": "{{done}} из {{count}} шагов выполнено",
   "cardProgress_many": "{{done}} из {{count}} шагов выполнено",
-  "cardProgress_other": "{{done}} из {{count}} шагов выполнено"
+  "cardProgress_other": "{{done}} из {{count}} шагов выполнено",
+  "cardFlagStale": "Без движения",
+  "cardFlagStaleLabel": "Без движения: по этому плану давно нет активности",
+  "cardFlagOpenItems": "Открытые пункты",
+  "cardFlagOpenItemsLabel": "Открытые пункты: план закрыт, но остались невыполненные пункты",
+  "cardFlagUncommitted": "Не закоммичено",
+  "cardFlagUncommittedLabel": "Не закоммичено: в файле этого плана есть незакоммиченные изменения"
 }

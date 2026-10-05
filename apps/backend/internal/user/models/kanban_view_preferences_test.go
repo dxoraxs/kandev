@@ -9,9 +9,11 @@ func TestIsValidKanbanSort(t *testing.T) {
 	}{
 		{"created_desc", true},
 		{"priority_desc", true},
-		{" priority_desc", true},
+		{"date_asc", true},
+		{" date_asc", true},
 		{"", false},
 		{"priority_asc", false},
+		{"date_desc", false},
 		{"CREATED_DESC", false},
 	}
 	for _, tc := range cases {
@@ -28,8 +30,10 @@ func TestNormalizeKanbanSort(t *testing.T) {
 	}{
 		{"created_desc", "created_desc"},
 		{"priority_desc", "priority_desc"},
+		{"date_asc", "date_asc"},
 		{" priority_desc", "priority_desc"},
 		{"", KanbanSortDefault},
+		{"date_desc", KanbanSortDefault},
 		{"priority_asc", KanbanSortDefault},
 		{"garbage", KanbanSortDefault},
 	}

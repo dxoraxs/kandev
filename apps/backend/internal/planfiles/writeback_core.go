@@ -33,6 +33,10 @@ type boardResult struct {
 	row *TaskRow
 	// file is the parsed file as it is on disk after the attempt.
 	file format.PlanFile
+	// moved is the task after it was returned to another step instead of
+	// being written back; notice is the notice its row now carries.
+	moved  *taskmodels.Task
+	notice string
 }
 
 // writeBoardEdit writes the board edit a task shows, relative to the state its
@@ -53,6 +57,9 @@ func (s *Service) writeBoardEdit(
 	if !ok {
 		s.recordWriteback(writebackFailed, row, errors.New("the file is no longer a plan file"))
 		return boardResult{outcome: writebackFailed, row: row}
+	}
+	if holder, taken := claimHolder(cfg, row, task, pf); taken {
+		return s.refuseExecutorClaim(ctx, cfg, row, task, pf, holder)
 	}
 	keys, handoff := boardKeys(cfg, row, task, pf)
 	syncBoard := func(r *TaskRow) { r.SyncedStepID, r.SyncedPriority = task.WorkflowStepID, task.Priority }
@@ -79,7 +86,7 @@ func boardKeys(cfg *Config, row *TaskRow, task *taskmodels.Task, pf format.PlanF
 		status, mapped := statusOfStep(cfg, task.WorkflowStepID, pf.Board)
 		switch {
 		case !mapped:
-			handoff = true
+			handoff = executorEntryKeys(cfg, task.WorkflowStepID, pf, keys)
 		case status != pf.Board:
 			keys[keyBoard] = string(status)
 		}

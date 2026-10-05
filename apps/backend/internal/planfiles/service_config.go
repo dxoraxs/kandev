@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -51,8 +52,19 @@ type Service struct {
 	// passLocks serializes sync passes and board write-backs per workspace.
 	passLocks sync.Map // workspaceID -> *sync.Mutex
 
-	tasks    TaskAccess
-	archiver TaskArchiver
+	tasks      TaskAccess
+	archiver   TaskArchiver
+	workspaces WorkspaceLister
+
+	// clock supplies the current time; nil means time.Now. Read through currentTime.
+	clock func() time.Time
+
+	// dateNotifier receives date wake-ups; nil means they are not announced.
+	dateNotifier DateNotifier
+	// wakeMu guards pendingWakes.
+	wakeMu sync.Mutex
+	// pendingWakes holds the wake-ups of finished passes not yet announced.
+	pendingWakes []wakeNotice
 
 	// workspaceAuthorizer enforces per-user workspace scoping. Nil, or a
 	// context without caller identity, means unscoped: internal callers such
@@ -112,18 +124,38 @@ func (s *Service) PutConfig(ctx context.Context, workspaceID string, req *PutCon
 	if err != nil {
 		return nil, err
 	}
-	if err := s.validateBoard(ctx, workspaceID, req.WorkflowID, req.StatusSteps); err != nil {
-		return nil, err
-	}
 	lock := s.workspaceLock(workspaceID)
 	lock.Lock()
 	defer lock.Unlock()
+	existing, err := s.store.GetConfig(ctx, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	ops, err := resolveOperationSettings(existing, req)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.validateBoard(ctx, workspaceID, req.WorkflowID, req.StatusSteps, &ops); err != nil {
+		return nil, err
+	}
+	return s.saveConfig(ctx, workspaceID, req, directories, ops)
+}
+
+// saveConfig stores a validated config. The caller holds the workspace lock.
+func (s *Service) saveConfig(
+	ctx context.Context, workspaceID string, req *PutConfigRequest, directories []string, ops operationSettings,
+) (*Config, error) {
 	return s.store.UpsertConfig(ctx, &Config{
-		WorkspaceID: workspaceID,
-		Enabled:     req.Enabled,
-		WorkflowID:  req.WorkflowID,
-		StatusSteps: req.StatusSteps,
-		Directories: directories,
+		WorkspaceID:    workspaceID,
+		Enabled:        req.Enabled,
+		WorkflowID:     req.WorkflowID,
+		StatusSteps:    req.StatusSteps,
+		Directories:    directories,
+		ExecutorSteps:  ops.executorSteps,
+		NotesHeading:   ops.notesHeading,
+		WakeOnDate:     ops.wakeOnDate,
+		StaleAfterDays: ops.staleAfterDays,
+		IndexFile:      ops.indexFile,
 	})
 }
 
@@ -153,10 +185,12 @@ func normalizeDirectories(dirs []string) ([]string, error) {
 	return cleaned, nil
 }
 
-// validateBoard checks that the workflow belongs to the workspace and that the
-// mapping covers every visible status with steps of that workflow.
+// validateBoard checks that the workflow belongs to the workspace, that the
+// mapping covers every visible status with steps of that workflow, and that
+// the executor steps are valid for it.
 func (s *Service) validateBoard(
 	ctx context.Context, workspaceID, workflowID string, mapping map[format.BoardStatus]string,
+	ops *operationSettings,
 ) error {
 	if strings.TrimSpace(workflowID) == "" {
 		return invalidf("workflow_id is required")
@@ -174,7 +208,10 @@ func (s *Service) validateBoard(
 	if err != nil {
 		return err
 	}
-	return validateMapping(mapping, steps)
+	if err := validateMapping(mapping, steps); err != nil {
+		return err
+	}
+	return ops.validateExecutorSteps(mapping, steps)
 }
 
 func validateMapping(mapping map[format.BoardStatus]string, steps []*wfmodels.WorkflowStep) error {

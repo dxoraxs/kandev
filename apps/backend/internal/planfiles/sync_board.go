@@ -26,6 +26,10 @@ func (p *pass) reconcileBoardEdit(ctx context.Context, tr *tracked) {
 	}
 	res := p.svc.writeBoardEdit(ctx, p.cfg, root, row, tr.task)
 	tr.row = res.row
+	if res.moved != nil {
+		tr.task, tr.notice = res.moved, res.notice
+		p.counts.Moved++
+	}
 	switch res.outcome {
 	case writebackWritten:
 		tr.entry.file, tr.notice = res.file, ""

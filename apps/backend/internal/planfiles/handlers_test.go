@@ -145,3 +145,35 @@ func TestHandlers_CreateBoardReturnsWorkflowAndMapping(t *testing.T) {
 	assert.Equal(t, "created-1", result.WorkflowID)
 	assert.Len(t, result.StatusSteps, len(VisibleStatuses()))
 }
+
+func TestHandlers_PutRejectsMappedExecutorStepWithCode(t *testing.T) {
+	svc, _ := newTestService(t)
+	router := newTestRouter(t, svc)
+	req := validRequest()
+	executors := map[string]string{"q": "Claude"}
+	req.ExecutorSteps = &executors
+
+	rec := doRequest(t, router, http.MethodPut, configPath, req)
+
+	require.Equal(t, http.StatusBadRequest, rec.Code, rec.Body.String())
+	var body map[string]string
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+	assert.Equal(t, "invalid_executor_steps", body["code"])
+}
+
+func TestHandlers_PutWithoutOperationFieldsKeepsThem(t *testing.T) {
+	svc, _ := newTestService(t)
+	router := newTestRouter(t, svc)
+	req := validRequest()
+	req.StaleAfterDays = ptr(30)
+	require.Equal(t, http.StatusOK, doRequest(t, router, http.MethodPut, configPath, req).Code)
+
+	legacy := `{"enabled":true,"workflow_id":"wf-1","status_steps":{"queued":"q","in_progress":"ip",` +
+		`"waiting_owner":"wo","waiting_external":"we","deferred":"df","done":"dn"},"directories":["docs/plans"]}`
+	rec := doRequest(t, router, http.MethodPut, configPath, legacy)
+
+	require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+	var cfg Config
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &cfg))
+	assert.Equal(t, 30, cfg.StaleAfterDays)
+}

@@ -92,14 +92,16 @@ across projects in one place.
   the plan board within 90 seconds, including uncommitted changes.
 - **AC-TASKS-PLAN-FILES-002.3:** The system shall create one plan task per plan
   file in the step that the file's board status maps to. The task title shall
-  be the plan title, prefixed with `[<executor>] ` when `executor` is set and
-  the status is not `done`, truncated to the task title limit with an ellipsis.
+  be the plan title, truncated to the task title limit with an ellipsis. The
+  executor and the optional `date` are card facts, not title text, as defined
+  by [Plan file card facts](plan-file-card-facts.md).
 - **AC-TASKS-PLAN-FILES-002.4:** The task description shall start with a header
   that names the repository and the file path, the executor when set, links to
   the plan tasks of the `depends_on` entries that exist, and any parse error,
   followed by the file body without its frontmatter. A body longer than
   16 KiB shall be cut to at most 16 KiB, and the header shall say that the
-  full plan is in the file. Dependencies shall not block task launch.
+  full plan is in the file. Blocking by dependencies is defined by
+  [Plan board operations](plan-board-operations.md).
 - **AC-TASKS-PLAN-FILES-002.5:** Within a step, plan tasks shall be ordered by
   `order` ascending; tasks without `order` follow in file path order. The task
   priority shall equal the file's `priority`.

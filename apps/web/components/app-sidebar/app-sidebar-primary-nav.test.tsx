@@ -51,6 +51,15 @@ vi.mock("@/lib/routing/client-router", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
+vi.mock("@/hooks/domains/plans/use-waiting-owner", () => ({
+  useWaitingOwner: () => ({
+    status: "ready",
+    items: [{}, {}, {}],
+    failedWorkspaces: [],
+    reload: vi.fn(),
+  }),
+}));
+
 vi.mock("./app-sidebar-new-task-item", () => ({
   AppSidebarNewTaskItem: ({ collapsed }: { collapsed: boolean }) => (
     <div data-testid="new-task-item" data-collapsed={collapsed ? "true" : "false"} />
@@ -243,5 +252,32 @@ describe("AppSidebarPrimaryNav — Needs-you Inbox nav entry", () => {
     // History's own total leaking into the Needs-you count.
     const link = screen.getByRole("link", { name: "Inbox" });
     expect(link.textContent).not.toContain("12");
+  });
+});
+
+describe("AppSidebarPrimaryNav — Waiting for owner nav entry", () => {
+  beforeEach(() => {
+    state.workspaces.activeId = "ws-1";
+    state.features = { ...defaultFeatureFlags };
+    mode = "kanban";
+    pathname = "/";
+  });
+
+  afterEach(() => cleanup());
+
+  it("is hidden while the planFiles flag is off", () => {
+    state.features.planFiles = false;
+    renderNav(false);
+
+    expect(screen.queryByTestId("sidebar-plans-waiting")).toBeNull();
+  });
+
+  it("links to the page with the waiting count while the planFiles flag is on", () => {
+    state.features.planFiles = true;
+    renderNav(false);
+
+    const link = screen.getByTestId("sidebar-plans-waiting");
+    expect(link.getAttribute("href")).toBe("/plans/waiting");
+    expect(link.textContent).toContain("3");
   });
 });
