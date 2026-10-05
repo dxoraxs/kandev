@@ -56,12 +56,13 @@ func TestWriteBack_QueuedPlanMovedToExecutorStepWritesOnlyExecutor(t *testing.T)
 	h.tasks.moves = nil
 	snap := h.snapshot("docs/plans/a.md")
 
-	// The first pass only projects the new executor into the task title.
+	// The first pass only projects the new executor into the card facts.
 	summary := h.sync()
 
 	assert.Equal(t, 0, summary.Counts.Moved)
 	assert.Empty(t, h.tasks.moves)
-	assert.Equal(t, "[Codex] Alpha plan", h.taskFor("docs/plans/a.md").Title)
+	assert.Equal(t, "Alpha plan", h.taskFor("docs/plans/a.md").Title)
+	assert.Equal(t, map[string]any{"executor": map[string]any{"name": "Codex", "kind": "agent"}}, h.taskFor("docs/plans/a.md").Metadata["card_display"])
 	assert.Equal(t, codexStep, h.taskFor("docs/plans/a.md").WorkflowStepID)
 	h.assertUnchanged(snap)
 	before := h.tasks.writeCount()

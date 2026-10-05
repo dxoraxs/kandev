@@ -55,6 +55,7 @@ type PlanFile struct {
 	Priority    string
 	Order       *float64
 	Executor    string
+	Date        string
 	DependsOn   []string
 	ExternalID  string
 	Tracks      []string
@@ -85,6 +86,7 @@ func Parse(name string, content []byte) (PlanFile, bool) {
 	pf.decodeBoard(boardNode)
 	pf.decodeOptional(fields)
 	pf.decodeTracks(fields)
+	pf.decodeDate(fields)
 	if pf.Title == "" {
 		pf.Title = fallbackTitle(name, pf.Body)
 	}

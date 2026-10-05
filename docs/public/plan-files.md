@@ -43,7 +43,8 @@ Steps of the plan...
 | `title`       | No       | Task title. Defaults to the first `# ` heading of the body, then to the file name.          |
 | `priority`    | No       | `critical`, `high`, `medium` (default), or `low`.                                           |
 | `order`       | No       | A decimal number. Lower values come first within a column.                                  |
-| `executor`    | No       | Who works on the plan. Shown as a `[executor]` title prefix until the plan is done.         |
+| `executor`    | No       | Who works on the plan. Shown on the card as an agent executor until the plan is done.       |
+| `date`        | No       | A calendar date in `YYYY-MM-DD` form, such as when to check an answer or a deadline. Shown on the card until the plan is done. An invalid date is reported in the description header and ignored. |
 | `depends_on`  | No       | A list of plan file names in the same directory. Shown as links; does not block launch.     |
 | `external_id` | No       | Task identifier, at most 255 bytes. Use it to keep a task across renames or adopt an existing task. |
 
@@ -58,7 +59,7 @@ Unknown keys are preserved and ignored. An invalid value does not hide the plan:
 | `waiting_owner`    | Blocked on the workspace owner.                |
 | `waiting_external` | Blocked on someone or something outside.       |
 | `deferred`         | Postponed.                                     |
-| `done`             | Finished. The executor prefix is dropped.      |
+| `done`             | Finished. The card shows no date or executor.  |
 | `hidden`           | Not shown. The task is archived.               |
 
 Each status except `hidden` maps to one step of the plan board. Column names are workflow data, so you can name and localize them freely.
@@ -67,6 +68,7 @@ Each status except `hidden` maps to one step of the plan board. Column names are
 
 - Kandev polls every enabled workspace once a minute, so a created or changed file shows up within 90 seconds, including uncommitted changes. **Sync now** runs a pass immediately.
 - Each plan file becomes one task in the mapped step. The description starts with a header that names the repository, the file, the executor, dependency links, and parse errors, followed by the plan body. Bodies longer than 16 KiB are cut, and the header says the full plan is in the file.
+- The `date` and `executor` keys become card facts, not title text. The date reads as a waiting date for `waiting_owner` and `waiting_external`, a deferral date for `deferred`, and a due date otherwise. Done plans carry no facts.
 - Within a step, plan tasks are ordered by `order`; plans without `order` follow in file path order.
 - Deleting a file, moving it out of the scanned directories, or setting `hidden` archives its task. When the file returns, the same task is unarchived.
 - Kandev does not move a task while its agent turn is starting or running; the move is applied on a later pass.

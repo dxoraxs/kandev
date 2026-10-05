@@ -159,7 +159,7 @@ func TestPlanFilesSync_RealTaskServiceCreatesOrdersAndStaysQuiet(t *testing.T) {
 		WorkspaceID: "ws-1", WorkflowID: planBoardID, WorkflowStepID: queued, Title: "Manual task",
 	})
 	require.NoError(t, err)
-	f.writePlan("a.md", planFile("queued", "Alpha", "order: 2", "executor: codex"))
+	f.writePlan("a.md", planFile("queued", "Alpha", "order: 2", "executor: codex", "date: 2026-10-12"))
 	f.writePlan("b.md", planFile("in_progress", "Beta", "priority: high"))
 	f.writePlan("c.md", planFile("queued", "Gamma", "order: 1"))
 
@@ -167,7 +167,11 @@ func TestPlanFilesSync_RealTaskServiceCreatesOrdersAndStaysQuiet(t *testing.T) {
 
 	assert.Equal(t, planfiles.OutcomeOK, first.Outcome, "%+v", first.FileErrors)
 	assert.Equal(t, 3, first.Counts.Created)
-	assert.Equal(t, []string{"Manual task", "Gamma", "[codex] Alpha"}, f.stepOrder(queued))
+	assert.Equal(t, []string{"Manual task", "Gamma", "Alpha"}, f.stepOrder(queued))
+	assert.Equal(t, map[string]any{
+		"date": "2026-10-12", "date_kind": "due",
+		"executor": map[string]any{"name": "codex", "kind": "agent"},
+	}, f.planTask("a.md").Metadata["card_display"])
 	beta := f.planTask("b.md")
 	assert.Equal(t, f.steps[format.BoardInProgress], beta.WorkflowStepID)
 	assert.Equal(t, "high", beta.Priority)
@@ -243,4 +247,29 @@ func TestPlanFilesSync_RealTaskServiceDefersMoveWhileTurnRuns(t *testing.T) {
 	require.NoError(t, f.h.repo.UpdateTaskSessionState(ctx, "sess-run", taskmodels.TaskSessionStateCompleted, ""))
 	f.sync()
 	assert.Equal(t, f.steps[format.BoardDone], f.planTask("a.md").WorkflowStepID)
+}
+
+// @covers AC-TASKS-PLAN-CARD-001.4
+func TestPlanFilesSync_RealTaskServiceKeepsOtherMetadataWhenFactsChange(t *testing.T) {
+	f := newPlanSyncFixture(t)
+	ctx := context.Background()
+	f.writePlan("a.md", planFile("queued", "Alpha", "date: 2026-10-12"))
+	f.sync()
+	alpha := f.planTask("a.md")
+	metadata := map[string]interface{}{"other": "kept", "card_display": alpha.Metadata["card_display"]}
+	_, err := f.taskSvc.UpdateTask(ctx, alpha.ID, &taskservice.UpdateTaskRequest{Metadata: metadata})
+	require.NoError(t, err)
+	f.writePlan("a.md", planFile("waiting_owner", "Alpha", "date: 2026-10-20", "executor: Claude"))
+
+	f.sync()
+
+	got := f.planTask("a.md").Metadata
+	assert.Equal(t, "kept", got["other"])
+	assert.Equal(t, map[string]any{
+		"date": "2026-10-20", "date_kind": "waiting",
+		"executor": map[string]any{"name": "Claude", "kind": "agent"},
+	}, got["card_display"])
+	before := f.events.Load()
+	assert.Equal(t, planfiles.PassCounts{}, f.sync().Counts)
+	assert.Equal(t, before, f.events.Load())
 }

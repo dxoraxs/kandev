@@ -51,6 +51,12 @@ Owner decision (2026-10-05): one synchronizer for every project.
 Tasks 01 and 02 both touch `planfiles/projection.go` and `sync_task.go`; run
 them one after the other.
 
+## Progress
+
+- [x] [Task 01: Card facts](task-01-card-facts.md)
+- [ ] [Task 02: Summary section](task-02-summary-section.md)
+- [ ] [Task 03: dmhive migration](task-03-dmhive-migration.md)
+
 ## Risks
 
 - **Executor disappears from cards until display hints land.** The title prefix

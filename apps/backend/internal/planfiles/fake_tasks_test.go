@@ -80,7 +80,23 @@ func (f *fakeTaskSystem) tick() time.Time {
 
 func cloneTask(t *taskmodels.Task) *taskmodels.Task {
 	c := *t
+	c.Metadata = cloneMetadata(t.Metadata)
 	return &c
+}
+
+// cloneMetadata deep-copies nested maps, as a store round trip would.
+func cloneMetadata(in map[string]interface{}) map[string]interface{} {
+	if in == nil {
+		return nil
+	}
+	out := make(map[string]interface{}, len(in))
+	for k, v := range in {
+		if nested, ok := v.(map[string]interface{}); ok {
+			v = cloneMetadata(nested)
+		}
+		out[k] = v
+	}
+	return out
 }
 
 // seedTask adds a task that was created outside the plan-file feature.
@@ -176,7 +192,7 @@ func (f *fakeTaskSystem) CreateTask(_ context.Context, req *taskservice.CreateTa
 		ID: id, WorkspaceID: req.WorkspaceID, WorkflowID: req.WorkflowID, WorkflowStepID: req.WorkflowStepID,
 		Title: req.Title, Description: req.Description, Priority: req.Priority, State: v1.TaskStateTODO,
 		ExternalID: req.ExternalID, WIPAdmitted: true, Position: f.nextPositionLocked(req.WorkflowStepID),
-		CreatedAt: f.tick(),
+		CreatedAt: f.tick(), Metadata: cloneMetadata(req.Metadata),
 	}
 	f.tasks[id] = task
 	f.creates = append(f.creates, req)
@@ -208,7 +224,7 @@ func (f *fakeTaskSystem) UpdateTask(_ context.Context, id string, req *taskservi
 		t.Priority = *req.Priority
 	}
 	if req.Metadata != nil {
-		t.Metadata = req.Metadata // replaces, as the real service does
+		t.Metadata = cloneMetadata(req.Metadata) // replaces, as the real service does
 	}
 	f.updates = append(f.updates, req)
 	f.logWrite("update:%s", id)

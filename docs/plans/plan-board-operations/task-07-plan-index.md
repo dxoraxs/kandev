@@ -73,4 +73,4 @@ Task 02
 - `make -C apps/backend lint`: `0 issues.`
 - `gofmt -l internal/planfiles`: no output.
 
-Notes: `scan.WriteGenerated` returns `(wrote bool, err error)` and skips the write itself when the bytes are equal. The Date column is rendered empty because the `date` frontmatter key (plan file card facts) is not on this branch yet; the cell is filled in once `format.PlanFile` carries a date.
+Notes: `scan.WriteGenerated` returns `(wrote bool, err error)` and skips the write itself when the bytes are equal. The Date column is now filled from `format.PlanFile.Date`, the ISO date as written.

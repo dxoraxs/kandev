@@ -106,6 +106,7 @@ func (p *pass) createTask(ctx context.Context, e planEntry) (*taskmodels.Task, e
 		Priority:       e.file.Priority,
 		Repositories:   []taskservice.TaskRepositoryInput{{RepositoryID: e.repo.ID}},
 		ExternalID:     e.extID,
+		Metadata:       cardMetadata(projectCardFacts(e.file)),
 	})
 	if err != nil {
 		return nil, err
@@ -312,8 +313,9 @@ func (p *pass) turnInFlight(ctx context.Context, taskID string) (bool, error) {
 	return false, nil
 }
 
-// updateFields writes the title, description, and priority a file projects.
-// Metadata is never sent: UpdateTask replaces the whole map.
+// updateFields writes the title, description, priority, and card facts a file
+// projects. UpdateTask replaces the whole metadata map, so metadata is sent
+// only when the facts changed, as a copy that keeps every other key.
 func (p *pass) updateFields(
 	ctx context.Context, e planEntry, notice string, task *taskmodels.Task,
 ) (*taskmodels.Task, error) {
@@ -328,7 +330,10 @@ func (p *pass) updateFields(
 	if task.Priority != priority {
 		req.Priority = &priority
 	}
-	if req.Title == nil && req.Description == nil && req.Priority == nil {
+	if metadata, changed := mergeCardFacts(task.Metadata, projectCardFacts(e.file)); changed {
+		req.Metadata = metadata
+	}
+	if req.Title == nil && req.Description == nil && req.Priority == nil && req.Metadata == nil {
 		return task, nil
 	}
 	updated, err := p.svc.tasks.UpdateTask(ctx, task.ID, req)

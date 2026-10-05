@@ -276,3 +276,19 @@ func TestIndex_UnorderedPlansListInPathOrderWhateverTheCreationOrder(t *testing.
 	assert.Less(t, strings.Index(body, "[Bee]"), strings.Index(body, "[Cee]"))
 	assert.NotContains(t, body, emDash)
 }
+
+// @covers AC-TASKS-PLAN-CARD-001.1
+func TestIndex_DateColumnShowsTheValidDateAsWritten(t *testing.T) {
+	h := newSyncHarness(t)
+	h.setIndexFile(indexName)
+	h.writeFile("docs/plans/a.md", planDoc("waiting_owner", "Dated", "date: 2026-10-12"))
+	h.writeFile("docs/plans/b.md", planDoc("waiting_owner", "Broken", "date: 2026-02-30"))
+	h.writeFile("docs/plans/c.md", planDoc("waiting_owner", "Undated"))
+
+	h.sync()
+
+	got := h.read(indexRel)
+	assert.Contains(t, got, "| [Dated](a.md) | medium |  | 2026-10-12 |\n")
+	assert.Contains(t, got, "| [Broken](b.md) | medium |  |  |\n")
+	assert.Contains(t, got, "| [Undated](c.md) | medium |  |  |\n")
+}

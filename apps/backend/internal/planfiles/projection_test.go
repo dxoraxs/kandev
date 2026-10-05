@@ -16,15 +16,6 @@ func filePlan(board format.BoardStatus, title, executor string) format.PlanFile 
 }
 
 // @covers AC-TASKS-PLAN-FILES-002.3
-func TestProjectTitle_ExecutorPrefixExceptDone(t *testing.T) {
-	assert.Equal(t, "[codex] Build it", projectTitle(filePlan(format.BoardQueued, "Build it", "codex")))
-	assert.Equal(t, "Build it", projectTitle(filePlan(format.BoardDone, "Build it", "codex")))
-	assert.Equal(t, "Build it", projectTitle(filePlan(format.BoardQueued, "Build it", "")))
-	// An unreadable board value is not done, so the prefix stays.
-	assert.Equal(t, "[codex] Build it", projectTitle(filePlan("", "Build it", "codex")))
-}
-
-// @covers AC-TASKS-PLAN-FILES-002.3
 func TestProjectTitle_TruncatesToLimitWithEllipsis(t *testing.T) {
 	long := strings.Repeat("я", 90)
 
@@ -32,7 +23,7 @@ func TestProjectTitle_TruncatesToLimitWithEllipsis(t *testing.T) {
 
 	assert.Equal(t, contract.TaskTitleMaxLength, utf8.RuneCountInString(got))
 	assert.True(t, strings.HasSuffix(got, "…"))
-	assert.True(t, strings.HasPrefix(got, "[codex] я"))
+	assert.True(t, strings.HasPrefix(got, "я"))
 }
 
 func TestProjectTitle_CollapsesLineBreaks(t *testing.T) {

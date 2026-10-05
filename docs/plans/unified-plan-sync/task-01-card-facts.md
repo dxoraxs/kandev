@@ -1,7 +1,7 @@
 ---
 id: "01-card-facts"
 title: "Plan file card facts"
-status: pending
+status: done
 wave: 1
 depends_on: []
 plan: "plan.md"
@@ -62,3 +62,16 @@ make -C apps/backend lint
 ## Dependencies
 
 None. Run before or after Task 02, not in parallel.
+
+## Results
+
+- `(cd apps/backend && go test ./internal/planfiles/...)`: all four packages `ok` (last line `ok  github.com/kandev/kandev/internal/planfiles/scan`).
+- `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)`: `ok  github.com/kandev/kandev/internal/planfiles/scan	1.326s`.
+- `(cd apps/backend && go test ./internal/backendapp/ -run PlanFiles -count=1)`: `ok  github.com/kandev/kandev/internal/backendapp	1.787s`.
+- `make -C apps/backend lint`: `0 issues.`
+- `(cd apps/backend && golangci-lint run ./internal/planfiles/... ./internal/backendapp/...)`: `0 issues.`
+- `gofmt -l` on the changed Go packages: no output.
+- `python3.12 scripts/list-docs.py validate`: `Validated 350 decisions and 1347 specifications.`
+- `python3.12 scripts/lint-spec-files.py --all`: `All specification files passed.`
+
+Notes: the sync pass owns the whole `card_display` object of a plan task; keys it does not project are removed, every other metadata key is kept. `projectCardFacts` in `planfiles/card_facts.go` assembles the facts from one helper per fact (`addDateFacts`, `addExecutorFact`); later facts add a helper to that list. No web file asserted the executor title prefix.

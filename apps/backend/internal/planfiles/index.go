@@ -193,7 +193,7 @@ func sortIndexGroup(group []tracked, rank map[string]int) {
 
 func indexRow(e planEntry) string {
 	return "| [" + cellText(e.file.Title) + "](" + linkTarget(path.Base(e.relPath)) + ") | " +
-		cellText(e.file.Priority) + " | " + cellText(e.file.Executor) + " |  |\n"
+		cellText(e.file.Priority) + " | " + cellText(e.file.Executor) + " | " + cellText(e.file.Date) + " |\n"
 }
 
 var cellEscaper = strings.NewReplacer(
