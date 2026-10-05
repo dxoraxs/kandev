@@ -1,7 +1,7 @@
 ---
 id: "12-e2e-and-docs"
 title: "E2E, public docs, and promotion"
-status: pending
+status: done
 wave: 12
 depends_on: ["03-executor-steps", "04-owner-decisions", "05-git-state-and-commit", "06-create-plan", "07-plan-index", "08-dependencies", "09-progress-and-flags", "10-date-wake-up", "11-waiting-owner-page"]
 plan: "plan.md"
@@ -91,4 +91,19 @@ Task 03, Task 04, Task 05, Task 06, Task 07, Task 08, Task 09, Task 10, Task 11
 
 ## Results
 
-Pending.
+Promotion of the requirement, design, and plan statuses is left to the primary session (scope change); the requirement stays `draft`.
+
+| Command | Final output line |
+| --- | --- |
+| `make build-web build-backend` | exit 0 |
+| `(cd apps/web && pnpm e2e:run --no-build tests/plans/plan-board-operations.spec.ts)`, run 1 and run 2 | `4 passed (17.1s)`, `4 passed (15.3s)` |
+| `(cd apps/web && pnpm e2e:run --no-build --project mobile-chrome tests/plans/mobile-plan-board-operations.spec.ts)`, run 1 and run 2 | `3 passed (19.4s)`, `3 passed (19.7s)` |
+| `(cd apps/web && pnpm run typecheck)` | `tsc --noEmit`, no errors |
+| `(cd apps && pnpm --filter @kandev/web lint)` | `eslint --max-warnings 0`, no findings |
+| `(cd apps/web && pnpm run i18n:check)` | `no non-JSX copy - 3674 guarded file(s) checked.` |
+| `(cd apps && pnpm --filter @kandev/web test -- lib/toast/sonner.test.ts components lib/kanban hooks/domains/plans app/plans-waiting)` | `Tests  11021 passed \| 4 skipped (11025)` |
+| `python3.12 scripts/list-docs.py validate` | `Validated 350 decisions and 1347 specifications.` |
+| `python3.12 scripts/lint-spec-files.py --all` | `All specification files passed.` |
+| `git diff --check` | no output |
+
+The E2E global setup requires `make -C apps/backend e2e-plugin-package` after any change under `apps/backend` (including `AGENTS.md`). Product defect found by the phone spec and fixed with a component test: the Waiting for owner row was only in the saved-layout phone navigation, so the default navigation sheet had no entry (`components/navigation/app-nav-sections.tsx`).

@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
 import type { BackendContext } from "../fixtures/backend";
@@ -197,4 +198,159 @@ export async function useDefaultAgentProfile(
   agentProfileId: string,
 ) {
   await apiClient.updateWorkspace(workspaceId, { default_agent_profile_id: agentProfileId });
+}
+
+/** Local calendar day, `offsetDays` from today, as YYYY-MM-DD (the server's own time zone). */
+export function localDay(offsetDays = 0): string {
+  const day = new Date();
+  day.setDate(day.getDate() + offsetDays);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`;
+}
+
+export function planFileText(options: {
+  title: string;
+  board: string;
+  date?: string;
+  body?: string;
+}): string {
+  const date = options.date ? `date: ${options.date}\n` : "";
+  return `---\nboard: ${options.board}\ntitle: ${options.title}\n${date}---\n\n# ${options.title}\n\n${options.body ?? "Plan body."}\n`;
+}
+
+export type PlanFilesRepository = {
+  repoDir: string;
+  repoName: string;
+  read: (relPath: string) => string;
+  write: (relPath: string, content: string) => void;
+  exists: (relPath: string) => boolean;
+  /** Runs a git command in the repository and returns its trimmed stdout. */
+  git: (command: string) => string;
+  /** Unregisters the repository so later specs of the worker do not scan it. */
+  cleanup: () => Promise<void>;
+};
+
+/**
+ * Creates a git repository with the given files committed on `main` and
+ * registers it as a local repository named `name` in the workspace.
+ */
+export async function createPlanFilesRepository(options: {
+  backend: BackendContext;
+  apiClient: ApiClient;
+  workspaceId: string;
+  name: string;
+  files: Record<string, string>;
+}): Promise<PlanFilesRepository> {
+  const { backend, apiClient, workspaceId, name, files } = options;
+  const repoDir = path.join(backend.tmpDir, "repos", name);
+  const gitEnv = makeGitEnv(backend.tmpDir);
+  const git = (command: string) =>
+    execSync(`git ${command}`, { cwd: repoDir, env: gitEnv, encoding: "utf8" }).trim();
+  const write = (relPath: string, content: string) => {
+    const target = path.join(repoDir, relPath);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, content);
+  };
+  fs.mkdirSync(repoDir, { recursive: true });
+  for (const [relPath, content] of Object.entries(files)) write(relPath, content);
+  git("init -b main");
+  git("add -A");
+  git('commit -m "add plans"');
+  const { id: repositoryId } = await apiClient.createRepository(workspaceId, repoDir, "main", {
+    name,
+  });
+  return {
+    repoDir,
+    repoName: name,
+    cleanup: () => apiClient.deleteRepository(repositoryId).catch(() => undefined),
+    read: (relPath) => fs.readFileSync(path.join(repoDir, relPath), "utf8"),
+    write,
+    exists: (relPath) => fs.existsSync(path.join(repoDir, relPath)),
+    git,
+  };
+}
+
+export type ConfiguredPlanBoard = {
+  boardId: string;
+  stepId: (name: string) => string;
+};
+
+/**
+ * Enables plan files for the workspace from the settings page, creates the
+ * Plans board, saves, and runs the first sync pass. The pass runs through the
+ * API: saving the configuration already starts a background pass, and the
+ * settings button answers 409 while that one holds the workspace lock.
+ */
+export async function configurePlanBoard(
+  page: Page,
+  apiClient: ApiClient,
+  workspaceId: string,
+): Promise<ConfiguredPlanBoard> {
+  await page.goto(`/settings/workspaces/${workspaceId}/workflows`);
+  const save = await enablePlanFilesAndCreateBoard(page);
+  await expect(save).toBeEnabled();
+  await save.click();
+  await expect(save).toBeDisabled();
+  const boardId = await page.getByTestId("plan-files-board").inputValue();
+  expect(await syncPlanFiles(apiClient, workspaceId)).toBe("ok");
+  const steps = (await apiClient.listWorkflowSteps(boardId)).steps;
+  return {
+    boardId,
+    stepId: (name) => {
+      const step = steps.find((candidate) => candidate.name === name);
+      if (!step) throw new Error(`Plans board has no ${name} step`);
+      return step.id;
+    },
+  };
+}
+
+/**
+ * Runs one sync pass through the API and returns its outcome. A pass already
+ * running answers 409 and is retried.
+ */
+export async function syncPlanFiles(apiClient: ApiClient, workspaceId: string): Promise<string> {
+  let outcome = "";
+  await expect
+    .poll(
+      async () => {
+        const response = await apiClient.rawRequest(
+          "POST",
+          `/api/v1/plan-files/sync?workspace_id=${encodeURIComponent(workspaceId)}`,
+        );
+        if (response.status === 200)
+          outcome = ((await response.json()) as { outcome: string }).outcome;
+        return response.status;
+      },
+      { message: "plan files sync pass" },
+    )
+    .toBe(200);
+  return outcome;
+}
+
+/** The id of the plan task titled `title`, once the sync has created it. */
+export async function planTaskId(
+  apiClient: ApiClient,
+  workspaceId: string,
+  title: string,
+): Promise<string> {
+  let id = "";
+  await expect
+    .poll(
+      async () => {
+        const { tasks } = await apiClient.listTasks(workspaceId);
+        id = tasks.find((task) => task.title.includes(title))?.id ?? "";
+        return id;
+      },
+      { message: `plan task "${title}"` },
+    )
+    .not.toBe("");
+  return id;
+}
+
+/** Full-page review screenshot, written only when PLAN_OPS_SHOTS=1 (to PLAN_OPS_SHOTS_DIR). */
+export async function planOpsShot(page: Page, name: string) {
+  if (process.env.PLAN_OPS_SHOTS !== "1") return;
+  const dir = process.env.PLAN_OPS_SHOTS_DIR ?? path.join(os.tmpdir(), "plan-ops-shots");
+  fs.mkdirSync(dir, { recursive: true });
+  await page.screenshot({ path: path.join(dir, `${name}.png`), fullPage: true });
 }
