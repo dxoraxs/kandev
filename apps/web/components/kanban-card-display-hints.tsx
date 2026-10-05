@@ -136,7 +136,7 @@ function ExecutorBadge({ name, kind }: { name: string; kind: "agent" | "person" 
   return (
     <span
       className={cn(
-        "ml-auto inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
+        "inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
         isPerson ? "bg-muted text-foreground" : "bg-primary/15 text-primary",
       )}
       data-testid="kanban-card-executor-badge"
@@ -154,20 +154,27 @@ function ExecutorBadge({ name, kind }: { name: string; kind: "agent" | "person" 
   );
 }
 
-export function KanbanCardHintRow({ task }: { task: Task }) {
+/**
+ * One wrapping row for every small card signal: the display hints plus the
+ * card badges passed as `badges` (blocked, queued, review). Each pill keeps
+ * its content width and the row breaks onto a new line only when the next
+ * pill does not fit, so the signals never sit on separate half-empty rows.
+ */
+export function KanbanCardHintRow({ task, badges }: { task: Task; badges?: React.ReactNode }) {
   const hints = task.cardDisplay;
-  if (!hints) return null;
+  if (!hints && !badges) return null;
   return (
     <div
       className="mt-1 flex min-w-0 flex-wrap items-center gap-1"
       data-testid="kanban-card-hint-row"
     >
-      {hints.date && <DateTag iso={hints.date.iso} kind={hints.date.kind} />}
-      {hints.progress && <ProgressChip done={hints.progress.done} total={hints.progress.total} />}
-      {hints.flags?.map((flag) => (
+      {hints?.date && <DateTag iso={hints.date.iso} kind={hints.date.kind} />}
+      {hints?.progress && <ProgressChip done={hints.progress.done} total={hints.progress.total} />}
+      {hints?.flags?.map((flag) => (
         <FlagTag key={flag} flag={flag} />
       ))}
-      {hints.executor && <ExecutorBadge name={hints.executor.name} kind={hints.executor.kind} />}
+      {badges}
+      {hints?.executor && <ExecutorBadge name={hints.executor.name} kind={hints.executor.kind} />}
     </div>
   );
 }

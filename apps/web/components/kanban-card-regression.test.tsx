@@ -139,6 +139,25 @@ describe("KanbanCard regression — AC-UI-PIPELINE-ROW-002.6 fixture matrix", ()
     expect(await openMenuAndSnapshot()).toEqual(expectedMenuEntries());
   });
 
+  it("blocked by pending predecessors: compact lock with the count, full text as the name", () => {
+    const task = baseTask({
+      blocked: true,
+      blockedReason: "pending",
+      dependsOn: [
+        { id: "dep-1", title: "First" },
+        { id: "dep-2", title: "Second" },
+      ],
+    });
+
+    renderCard(task);
+
+    const badge = screen.getByTestId("kanban-card-blocked-badge");
+    expect(badge.textContent).toBe("2");
+    expect(badge.getAttribute("aria-label")).toBe(t("kanban:blockedByCount", { count: 2 }));
+    // shares the wrapping row with the display hints instead of a row of its own
+    expect(badge.closest('[data-testid="kanban-card-hint-row"]')).not.toBeNull();
+  });
+
   it("blocked by a failed predecessor: shows the failed-styled blocked badge and the base menu", async () => {
     const task = baseTask({
       blocked: true,

@@ -9,6 +9,8 @@ const PROGRESS_CHIP = "kanban-card-progress-chip";
 const EXECUTOR_BADGE = "kanban-card-executor-badge";
 const ARIA = "aria-label";
 const TONE_ATTR = "data-tone";
+const TODAY_ISO = "2026-10-05";
+const HINT_ROW = "kanban-card-hint-row";
 const BASE: Task = { id: "task-1", title: "Fix the bug", workflowStepId: "step-1" };
 
 function row(cardDisplay?: CardDisplayHints) {
@@ -32,7 +34,7 @@ describe("KanbanCardHintRow", () => {
   });
 
   it("renders the date tag with short text, full accessible name and tone", () => {
-    row({ date: { iso: "2026-10-05", kind: "waiting" } });
+    row({ date: { iso: TODAY_ISO, kind: "waiting" } });
     const tag = screen.getByTestId(DATE_TAG);
     expect(tag.textContent).toContain("Oct 5");
     expect(tag.textContent).not.toContain("2026");
@@ -99,12 +101,12 @@ describe("KanbanCardHintRow", () => {
     expect(badge.getAttribute("data-kind")).toBe("person");
   });
 
-  it("renders only the fields present, executor pushed right", () => {
+  it("renders only the fields present", () => {
     row({ executor: { name: "Claude", kind: "agent" } });
-    expect(screen.getByTestId("kanban-card-hint-row")).not.toBeNull();
+    expect(screen.getByTestId(HINT_ROW)).not.toBeNull();
     expect(screen.queryByTestId(DATE_TAG)).toBeNull();
     expect(screen.queryByTestId(PROGRESS_CHIP)).toBeNull();
-    expect(screen.getByTestId(EXECUTOR_BADGE).className).toContain("ml-auto");
+    expect(screen.getByTestId(EXECUTOR_BADGE)).not.toBeNull();
   });
 });
 
@@ -126,29 +128,54 @@ describe("KanbanCardHintRow flags", () => {
     expect(screen.getAllByRole("img")).toHaveLength(3);
   });
 
-  it("places the flags after the date and progress and keeps the executor on the right", () => {
+  it("places the flags after the date and progress and the executor last", () => {
     row({
-      date: { iso: "2026-10-05", kind: "due" },
+      date: { iso: TODAY_ISO, kind: "due" },
       progress: { done: 3, total: 8 },
       flags: ["stale"],
       executor: { name: "Claude", kind: "agent" },
     });
-    const order = Array.from(screen.getByTestId("kanban-card-hint-row").children).map((el) =>
+    const order = Array.from(screen.getByTestId(HINT_ROW).children).map((el) =>
       el.getAttribute("data-testid"),
     );
     expect(order).toEqual([DATE_TAG, PROGRESS_CHIP, "kanban-card-flag-stale", EXECUTOR_BADGE]);
-    expect(screen.getByTestId(EXECUTOR_BADGE).className).toContain("ml-auto");
+    // content-width pills that wrap together: nothing is pushed to the far edge
+    expect(screen.getByTestId(EXECUTOR_BADGE).className).not.toContain("ml-auto");
+  });
+
+  it("puts the card badges in the same row, before the executor", () => {
+    render(
+      <KanbanCardHintRow
+        task={{
+          ...BASE,
+          cardDisplay: {
+            date: { iso: TODAY_ISO, kind: "due" },
+            executor: { name: "Claude", kind: "agent" },
+          },
+        }}
+        badges={<span data-testid="badge" />}
+      />,
+    );
+    const order = Array.from(screen.getByTestId(HINT_ROW).children).map((el) =>
+      el.getAttribute("data-testid"),
+    );
+    expect(order).toEqual([DATE_TAG, "badge", EXECUTOR_BADGE]);
+  });
+
+  it("renders the row for badges alone", () => {
+    render(<KanbanCardHintRow task={BASE} badges={<span data-testid="badge" />} />);
+    expect(screen.getByTestId(HINT_ROW).children).toHaveLength(1);
   });
 
   it("renders the hint row for flags alone", () => {
     row({ flags: ["uncommitted"] });
-    expect(screen.getByTestId("kanban-card-hint-row")).not.toBeNull();
+    expect(screen.getByTestId(HINT_ROW)).not.toBeNull();
     expect(screen.queryByTestId("kanban-card-flag-stale")).toBeNull();
   });
 
   it("exposes each hint as an image with an accessible name", () => {
     row({
-      date: { iso: "2026-10-05", kind: "waiting" },
+      date: { iso: TODAY_ISO, kind: "waiting" },
       progress: { done: 1, total: 3 },
       executor: { name: "claude", kind: "agent" },
     });

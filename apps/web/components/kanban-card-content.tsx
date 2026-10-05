@@ -16,6 +16,7 @@ import {
   KanbanCardBadges,
   KanbanCardRelationship,
   RepoChipRow,
+  useHasCardBadges,
 } from "@/components/kanban-card-status-strip";
 import { KanbanCardPriorityIndicator } from "@/components/kanban-card-priority-indicator";
 import { KanbanCardHintRow } from "@/components/kanban-card-display-hints";
@@ -75,6 +76,7 @@ export function KanbanCardBody({
   actions?: React.ReactNode;
   enableTitleHover?: boolean;
 }) {
+  const hasBadges = useHasCardBadges(task);
   return (
     <>
       <div className="flex items-start justify-between gap-2">
@@ -100,9 +102,11 @@ export function KanbanCardBody({
         )}
         {actions}
       </div>
-      <KanbanCardHintRow task={task} />
+      <KanbanCardHintRow
+        task={task}
+        badges={hasBadges ? <KanbanCardBadges task={task} className="contents" /> : null}
+      />
       <KanbanCardRelationship task={task} />
-      <KanbanCardBadges task={task} />
       <TaskCardTags task={task} />
     </>
   );

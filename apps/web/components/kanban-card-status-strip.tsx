@@ -109,6 +109,7 @@ function BlockedBadge({ task }: { task: Task }) {
   const count = task.dependsOn?.length ?? 0;
   const failed = task.blockedReason === "failed";
   const names = (task.dependsOn ?? []).map((ref) => ref.title || ref.id).join(", ");
+  const pendingLabel = t("kanban:blockedByCount", { count });
   return (
     <Badge
       variant="outline"
@@ -116,7 +117,7 @@ function BlockedBadge({ task }: { task: Task }) {
         // Same pill formula as the dependency chip above the composer: rounded
         // outline, 10% tint, 35% border, colour as the text. Keeps the two
         // surfaces for one concept looking like one thing.
-        "h-5 gap-1 rounded-full px-2 text-xs font-medium leading-none",
+        "h-5 gap-1 rounded-full px-1.5 text-[11px] font-medium leading-none",
         failed
           ? "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400"
           : "border-primary/35 bg-primary/10 text-primary",
@@ -127,11 +128,18 @@ function BlockedBadge({ task }: { task: Task }) {
           : t("kanban:blockedByTasksTitle", { tasks: names })
       }
       data-testid="kanban-card-blocked-badge"
+      aria-label={failed ? undefined : pendingLabel}
     >
-      <IconLock className="h-3 w-3" />
-      {failed ? t("kanban:blockedFailed") : t("kanban:blockedByCount", { count })}
+      <IconLock className="h-3 w-3" aria-hidden="true" />
+      {failed ? t("kanban:blockedFailed") : <span aria-hidden="true">{count}</span>}
     </Badge>
   );
+}
+
+/** Whether `KanbanCardBadges` renders anything for this task. */
+export function useHasCardBadges(task: Task, hideSessionCount?: boolean): boolean {
+  const showHumanAssignee = useAppStore((s) => canShowHumanAssignee(s.auth));
+  return hasCardBadges(task, hideSessionCount, showHumanAssignee);
 }
 
 function hasCardBadges(

@@ -133,15 +133,21 @@ when complete. Accessible name and title: `kanban:cardProgress` with `count`
 
 ## Hint row
 
-`KanbanCardHintRow` renders nothing without `task.cardDisplay`. Otherwise a
+`KanbanCardHintRow` renders nothing when the task has neither
+`task.cardDisplay` nor card badges. Otherwise a
 `mt-1 flex flex-wrap items-center gap-1 min-w-0` row: date tag, progress chip,
 one warning tag per flag (`kanban-card-flag-<flag>`, visible short label,
-accessible name and title from the long label), then the executor badge pushed
-right with `ml-auto`. Elements are non-interactive
-spans with `title`; they carry no pointer handlers, so a hover never starts a
-drag or opens the task, and the card click target is unchanged (AC-004.3).
-The row wraps so that two flag tags and the other hints never overflow the
-card at 375 px.
+accessible name and title from the long label), the card badges (blocked,
+queued, review; `KanbanCardBadges` rendered with `display: contents` so each
+badge is a direct flex item), then the executor badge. Every element is a
+content-width pill and nothing is pushed to the far edge, so the pills flow
+left to right and wrap onto a new line only when the next one does not fit.
+The blocked badge is compact: a lock icon and the pending count, with the full
+"blocked by N" text as its accessible name and title. Hint elements are
+non-interactive spans with `title`; they carry no pointer handlers, so a hover
+never starts a drag or opens the task, and the card click target is unchanged
+(AC-004.3). The row wraps so that two flag tags and the other hints never
+overflow the card at 375 px.
 
 ## Localization
 
