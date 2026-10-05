@@ -31,6 +31,8 @@ const (
 	ReasonRepositoryList    = "repository_list"
 	ReasonWriteFailed       = "write_failed"
 	ReasonIndexNotOwned     = "index_not_owned"
+	ReasonUnknownDependency = "unknown_dependency"
+	ReasonInvalidDependency = "invalid_dependency"
 )
 
 // ErrPassRunning reports that a sync pass or a write already holds the
@@ -65,6 +67,8 @@ type TaskAccess interface {
 	) (*taskservice.ReorderStepTasksResult, error)
 	ListTasks(ctx context.Context, workflowID string) ([]*taskmodels.Task, error)
 	ListTaskSessions(ctx context.Context, taskID string) ([]*taskmodels.TaskSession, error)
+	AddDependency(ctx context.Context, taskID, dependsOnTaskID string) error
+	RemoveDependency(ctx context.Context, taskID, dependsOnTaskID string) error
 }
 
 // TaskArchiver archives and restores a single plan task. Satisfied by

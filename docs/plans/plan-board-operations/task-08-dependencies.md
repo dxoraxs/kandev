@@ -1,7 +1,7 @@
 ---
 id: "08-dependencies"
 title: "Plan dependencies"
-status: pending
+status: done
 wave: 8
 depends_on: ["02-config-and-settings"]
 plan: "plan.md"
@@ -72,4 +72,22 @@ Task 02
 
 ## Results
 
-Pending.
+Verification commands (from the worktree root):
+
+- `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)`: `ok  github.com/kandev/kandev/internal/planfiles/scan 1.427s` (all four packages ok).
+- `make -C apps/backend lint`: `0 issues.`
+- `(cd apps/backend && go test ./internal/backendapp/ -run PlanFiles -count=1)`: `ok  github.com/kandev/kandev/internal/backendapp 1.788s`.
+- `gofmt -l apps/backend/internal/planfiles apps/backend/internal/backendapp`: no output.
+- `(cd apps/backend && golangci-lint run ./internal/planfiles/... ./internal/task/... ./internal/backendapp/...)`: `0 issues.`
+
+Behavior notes:
+
+- Every task of the pass is resolved before any dependency is applied, so a
+  predecessor created in the same pass is linked in that pass.
+- The row stores the dependencies this feature holds. A removal or addition the
+  dependency service refuses leaves that entry unchanged, so only the refused
+  edge is retried on the next pass; edges that succeeded are recorded at once.
+- A plan whose named file could not be read this pass keeps its dependencies.
+- The integration test drives a real orchestrator with a spy dependency reader:
+  the gate is consulted on the move into an auto-start step, blocks, and no
+  session is created.

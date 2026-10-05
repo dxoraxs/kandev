@@ -45,6 +45,11 @@ type fakeTaskSystem struct {
 	reorders   [][]string
 	failCreate map[string]error
 	listCalls  int
+
+	// blockers maps a task to the tasks it depends on. depCalls logs every
+	// dependency call, so a test can assert that a pass made none.
+	blockers map[string]map[string]bool
+	depCalls []string
 }
 
 func newFakeTaskSystem() *fakeTaskSystem {
@@ -53,6 +58,7 @@ func newFakeTaskSystem() *fakeTaskSystem {
 		sessions:   map[string][]*taskmodels.TaskSession{},
 		stepWF:     map[string]string{},
 		failCreate: map[string]error{},
+		blockers:   map[string]map[string]bool{},
 		clock:      time.Date(2026, 10, 4, 12, 0, 0, 0, time.UTC),
 	}
 }
@@ -319,4 +325,90 @@ func (f *fakeTaskSystem) byExternalIDLocked(ext string) string {
 
 func updatePriority(priority string) *taskservice.UpdateTaskRequest {
 	return &taskservice.UpdateTaskRequest{Priority: &priority}
+}
+
+// AddDependency mimics the task service: self-edges, unknown tasks, and cycles
+// are rejected; an existing edge is a successful replay.
+func (f *fakeTaskSystem) AddDependency(_ context.Context, taskID, dependsOnID string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.depCalls = append(f.depCalls, "add:"+taskID+"->"+dependsOnID)
+	if taskID == dependsOnID {
+		return fmt.Errorf("a task cannot depend on itself")
+	}
+	if f.tasks[taskID] == nil || f.tasks[dependsOnID] == nil {
+		return repoerrors.ErrTaskNotFound
+	}
+	if f.reachesLocked(dependsOnID, taskID) {
+		return fmt.Errorf("dependency cycle")
+	}
+	if f.blockers[taskID] == nil {
+		f.blockers[taskID] = map[string]bool{}
+	}
+	f.blockers[taskID][dependsOnID] = true
+	f.logWrite("dep-add:%s->%s", taskID, dependsOnID)
+	return nil
+}
+
+// RemoveDependency removes an edge; an absent edge is a no-op and an unknown
+// task is not found.
+func (f *fakeTaskSystem) RemoveDependency(_ context.Context, taskID, dependsOnID string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.depCalls = append(f.depCalls, "remove:"+taskID+"->"+dependsOnID)
+	if f.tasks[taskID] == nil || f.tasks[dependsOnID] == nil {
+		return repoerrors.ErrTaskNotFound
+	}
+	delete(f.blockers[taskID], dependsOnID)
+	f.logWrite("dep-remove:%s->%s", taskID, dependsOnID)
+	return nil
+}
+
+// reachesLocked reports whether the target is reachable from the start task along dependency edges.
+func (f *fakeTaskSystem) reachesLocked(from, to string) bool {
+	seen := map[string]bool{}
+	stack := []string{from}
+	for len(stack) > 0 {
+		id := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		if id == to {
+			return true
+		}
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		for next := range f.blockers[id] {
+			stack = append(stack, next)
+		}
+	}
+	return false
+}
+
+// seedDependency adds an edge the way a person would, bypassing the call log.
+func (f *fakeTaskSystem) seedDependency(taskID, dependsOnID string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.blockers[taskID] == nil {
+		f.blockers[taskID] = map[string]bool{}
+	}
+	f.blockers[taskID][dependsOnID] = true
+}
+
+// dependenciesOf returns the sorted IDs the task depends on.
+func (f *fakeTaskSystem) dependenciesOf(taskID string) []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	ids := []string{}
+	for id := range f.blockers[taskID] {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	return ids
+}
+
+func (f *fakeTaskSystem) dependencyCallCount() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return len(f.depCalls)
 }

@@ -221,7 +221,10 @@ called. Otherwise the pass calls `RemoveDependency` for IDs only in the old
 list and `AddDependency` for IDs only in the new list (two methods added to
 `TaskAccess` and its fake), then saves the new list. An error from the
 dependency service becomes the file error `invalid_dependency`; the row keeps
-the old list so the next pass retries. `not found` on removal is ignored.
+the entries whose change was refused, so the next pass retries only those. A
+name that leaves the directory or is not a `.md` file name, and a
+self-reference, are `invalid_dependency` without a call; a plan whose named
+file could not be read this pass keeps its dependencies. `not found` on removal is ignored.
 
 ## Card facts
 

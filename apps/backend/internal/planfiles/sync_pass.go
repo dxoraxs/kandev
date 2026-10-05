@@ -137,9 +137,13 @@ func (p *pass) run(ctx context.Context) error {
 	p.loadDirty(ctx)
 	entries = p.rejectDuplicates(entries)
 	tracked := p.resolveAll(ctx, entries)
+	var deps []depWork
 	for _, tr := range tracked {
-		p.applyTracked(ctx, tr)
+		if row := p.applyTracked(ctx, tr); row != nil {
+			deps = append(deps, depWork{entry: tr.entry, row: row})
+		}
 	}
+	p.syncDependencies(ctx, deps)
 	p.archiveMissing(ctx)
 	p.reorder(ctx)
 	p.writeIndexes(ctx, tracked)
@@ -216,13 +220,19 @@ func (p *pass) addError(repositoryID, relPath, reason string) {
 
 // isProtected reports that the file behind a row could not be read this pass.
 func (p *pass) isProtected(row *TaskRow) bool {
-	if _, ok := p.protectedRepos[row.RepositoryID]; ok {
+	return p.pathUnreadable(row.RepositoryID, row.RelPath)
+}
+
+// pathUnreadable reports that the file, or its directory or repository, could
+// not be read this pass.
+func (p *pass) pathUnreadable(repositoryID, relPath string) bool {
+	if _, ok := p.protectedRepos[repositoryID]; ok {
 		return true
 	}
-	if _, ok := p.protectedPaths[pathKey(row.RepositoryID, row.RelPath)]; ok {
+	if _, ok := p.protectedPaths[pathKey(repositoryID, relPath)]; ok {
 		return true
 	}
-	_, ok := p.protectedPaths[pathKey(row.RepositoryID, path.Dir(row.RelPath))]
+	_, ok := p.protectedPaths[pathKey(repositoryID, path.Dir(relPath))]
 	return ok
 }
 
