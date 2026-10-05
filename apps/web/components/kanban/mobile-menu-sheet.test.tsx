@@ -324,3 +324,21 @@ describe("MobileMenuSheet — board sort and priority filter", () => {
     expect(onPriorityFilterChange).toHaveBeenCalledWith("high");
   });
 });
+
+describe("MobileMenuSheet — New plan entry", () => {
+  it("offers New plan on the plan board and closes the menu before opening the form", () => {
+    const onNewPlan = vi.fn();
+    const onOpenChange = vi.fn();
+    renderSheet({ onNewPlan, onOpenChange });
+
+    fireEvent.click(screen.getByTestId("mobile-display-new-plan"));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onNewPlan).toHaveBeenCalledTimes(1);
+  });
+
+  it("omits the entry when no plan board action is passed", () => {
+    renderSheet();
+    expect(screen.queryByTestId("mobile-display-new-plan")).toBeNull();
+  });
+});

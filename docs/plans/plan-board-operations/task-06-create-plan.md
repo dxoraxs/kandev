@@ -1,7 +1,7 @@
 ---
 id: "06-create-plan"
 title: "Create a plan from the board"
-status: pending
+status: done
 wave: 6
 depends_on: ["02-config-and-settings"]
 plan: "plan.md"
@@ -98,4 +98,39 @@ Task 02
 
 ## Results
 
-Pending.
+All commands run from the worktree root on branch `feat/plan-board-operations`.
+
+```text
+(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)
+ok  	github.com/kandev/kandev/internal/planfiles/scan	1.524s
+make -C apps/backend lint
+0 issues.
+(cd apps && pnpm --filter @kandev/web test -- components/kanban/new-plan-dialog.test.tsx)
+ Tests  13 passed (13)
+(cd apps && pnpm --filter @kandev/web test -- lib/api/domains/plan-files-api.test.ts)
+ Tests  17 passed (17)
+(cd apps/web && pnpm run typecheck)
+tsc --noEmit (no errors)
+(cd apps/web && pnpm run i18n:check)
+exit 0
+(cd apps && pnpm --filter @kandev/web lint)
+exit 0, no warnings
+```
+
+Also: `gofmt -l apps/backend/internal/planfiles` printed nothing,
+`(cd apps/backend && golangci-lint run ./internal/planfiles/...)` reported `0 issues.`,
+`(cd apps/web && pnpm run i18n:ratchet)` reported `22 added + 24 modified file(s) clean`, and the
+kanban, plan hooks, API, plan decision, and settings web suites passed (359 files, 2548 tests).
+
+Delivered:
+
+- `scan.CreateFile`: validates the path, checks the nearest existing ancestor and the directory
+  against the resolved root before creating anything, then opens the file with `O_EXCL` (a
+  symbolic link at the path counts as existing and is never followed). A failed write removes the
+  file it created.
+- `Service.CreatePlan` and `POST /plans`: `file_exists` (409), `invalid_plan` (400),
+  `repository_not_found` (404). The call holds the workspace lock, writes the file, runs a pass,
+  and answers with the task of the row for the new path.
+- Web: `createPlan` client, `useCreatePlan`, `NewPlanDialog` (dialog on desktop and tablet, full
+  height drawer with a sticky Create button on phones), the header button on desktop (labelled)
+  and tablet (icon), and the phone and tablet menu entry in the board display options.

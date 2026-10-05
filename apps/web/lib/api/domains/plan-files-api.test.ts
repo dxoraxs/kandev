@@ -3,6 +3,8 @@ import { ApiError } from "../client";
 import {
   commitPlanFiles,
   createPlanFilesBoard,
+  createPlan,
+  planCreateErrorCode,
   decidePlan,
   getPlanGitStatus,
   planCommitError,
@@ -15,6 +17,7 @@ import {
 
 const originalFetch = global.fetch;
 const WS = { workspaceId: "ws 1" };
+const PLANS_DIR = "docs/plans";
 const WS_PARAM = "workspace_id=ws%201";
 
 function json(data: unknown, status = 200) {
@@ -58,7 +61,7 @@ describe("plan-files-api", () => {
       enabled: true,
       workflow_id: "wf-1",
       status_steps: { queued: "s1", in_progress: "s2" },
-      directories: ["docs/plans"],
+      directories: [PLANS_DIR],
     };
     await putPlanFilesConfig(payload, WS);
     const [url, init] = fetchSpy.mock.calls[0]! as [string, RequestInit];
@@ -73,7 +76,7 @@ describe("plan-files-api", () => {
       enabled: true,
       workflow_id: "wf-1",
       status_steps: { queued: "s1" },
-      directories: ["docs/plans"],
+      directories: [PLANS_DIR],
     };
     await putPlanFilesConfig(
       {
@@ -150,7 +153,7 @@ describe("plan-files-api unadapted", () => {
 
   it("getUnadaptedPlanFiles reads the rows, scoped to a repository when one is given", async () => {
     const rows = [
-      { repository_id: "r1", repository_name: "beaver", count: 16, directories: ["docs/plans"] },
+      { repository_id: "r1", repository_name: "beaver", count: 16, directories: [PLANS_DIR] },
     ];
     fetchSpy.mockResolvedValueOnce(json({ repositories: rows }));
     await expect(getUnadaptedPlanFiles(WS)).resolves.toEqual(rows);
@@ -260,5 +263,50 @@ describe("plan-files-api git", () => {
     const other = await commitPlanFiles({ repository_id: "r" }, WS).catch((e) => e);
     expect(planCommitError(other)).toBeNull();
     expect(planCommitError(new Error("x"))).toBeNull();
+  });
+});
+
+describe("plan-files-api create", () => {
+  let fetchSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchSpy = vi.fn();
+    global.fetch = fetchSpy as unknown as typeof fetch;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  it("createPlan POSTs the plan to /plans with an encoded workspace_id", async () => {
+    const created = { task_id: "t1", repository_id: "r1", rel_path: "docs/plans/fix.md" };
+    fetchSpy.mockResolvedValueOnce(json(created, 201));
+    const body = {
+      repository_id: "r1",
+      directory: PLANS_DIR,
+      title: "Fix",
+      priority: "high" as const,
+    };
+    await expect(createPlan(body, WS)).resolves.toEqual(created);
+    const [url, init] = fetchSpy.mock.calls[0]! as [string, RequestInit];
+    expect(url).toContain(`/api/v1/plan-files/plans?${WS_PARAM}`);
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual(body);
+  });
+
+  it("planCreateErrorCode reads the typed code of a rejected create", async () => {
+    fetchSpy
+      .mockResolvedValueOnce(json({ error: "exists", code: "file_exists" }, 409))
+      .mockResolvedValueOnce(json({ error: "bad", code: "invalid_plan" }, 400))
+      .mockResolvedValueOnce(json({ error: "gone", code: "repository_not_found" }, 404))
+      .mockResolvedValueOnce(json({ error: "boom" }, 500));
+    const create = () =>
+      createPlan({ repository_id: "r", directory: "d", title: "t" }, WS).catch((e) => e);
+    expect(planCreateErrorCode(await create())).toBe("file_exists");
+    expect(planCreateErrorCode(await create())).toBe("invalid_plan");
+    expect(planCreateErrorCode(await create())).toBe("repository_not_found");
+    expect(planCreateErrorCode(await create())).toBeNull();
+    expect(planCreateErrorCode(new Error("x"))).toBeNull();
   });
 });

@@ -23,6 +23,8 @@ type KanbanHeaderMobileProps = {
   tasksListOptions?: TasksListDisplayOptions;
   taskListingControls?: ReactNode;
   mobileListingStatus?: ReactNode;
+  /** Set on the plan board: adds a New plan entry to the listing menu. */
+  onNewPlan?: () => void;
 };
 
 const MODE_LABELS: Record<TaskListingPage, string> = {
@@ -42,6 +44,7 @@ export function KanbanHeaderMobile({
   tasksListOptions,
   taskListingControls,
   mobileListingStatus,
+  onNewPlan,
 }: KanbanHeaderMobileProps) {
   const { t } = useTranslation();
   const isMenuOpen = useAppStore((state) => state.mobileKanban.isMenuOpen);
@@ -113,6 +116,7 @@ export function KanbanHeaderMobile({
         isSearchLoading={isSearchLoading}
         tasksListOptions={tasksListOptions}
         listingControls={taskListingControls}
+        onNewPlan={onNewPlan}
         pageActions={
           <MobileListingMenuActions
             showWorkspaceActions={false}

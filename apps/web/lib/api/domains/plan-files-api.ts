@@ -287,3 +287,52 @@ export function planCommitError(
     output: typeof body?.output === "string" ? body.output : "",
   };
 }
+
+export type CreatePlanBody = {
+  repository_id: string;
+  /** One of the configured plan directories. */
+  directory: string;
+  title: string;
+  /** The server derives it from the title when empty. */
+  file_name?: string;
+  priority?: "critical" | "high" | "medium" | "low";
+  executor?: string;
+  body?: string;
+};
+
+export type CreatePlanResult = {
+  task_id: string;
+  repository_id: string;
+  rel_path: string;
+};
+
+export type PlanCreateErrorCode = "file_exists" | "invalid_plan" | "repository_not_found";
+
+const PLAN_CREATE_ERROR_CODES: readonly string[] = [
+  "file_exists",
+  "invalid_plan",
+  "repository_not_found",
+];
+
+/**
+ * Writes a new plan file and resolves once its task is on the board. Rejects
+ * with an ApiError carrying a `planCreateErrorCode` when the file is refused.
+ */
+export function createPlan(
+  body: CreatePlanBody,
+  options: PlanFilesApiOptions,
+): Promise<CreatePlanResult> {
+  return fetchJson<CreatePlanResult>(
+    planFilesUrl("plans", options.workspaceId),
+    withMethod(options, "POST", body),
+  );
+}
+
+/** The create error code a rejected `createPlan` carries, or null for any other failure. */
+export function planCreateErrorCode(err: unknown): PlanCreateErrorCode | null {
+  if (!(err instanceof ApiError)) return null;
+  const code = (err.body as { code?: unknown } | null)?.code;
+  return typeof code === "string" && PLAN_CREATE_ERROR_CODES.includes(code)
+    ? (code as PlanCreateErrorCode)
+    : null;
+}

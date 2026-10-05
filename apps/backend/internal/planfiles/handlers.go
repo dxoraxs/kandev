@@ -45,6 +45,7 @@ func RegisterRoutes(router *gin.Engine, svc *Service, log *logger.Logger) {
 	ctrl.registerSyncRoutes(api)
 	ctrl.registerDecisionRoutes(api)
 	ctrl.registerGitRoutes(api)
+	ctrl.registerCreateRoutes(api)
 }
 
 // registerSyncRoutes registers POST /sync, the "Sync now" action.

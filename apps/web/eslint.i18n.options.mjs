@@ -2091,4 +2091,8 @@ export const i18nGuardFiles = [
   "components/settings/plan-files-git.tsx",
   "components/settings/plan-files-git-commit.tsx",
   "hooks/domains/plans/use-plan-git-status.ts",
+  "hooks/domains/plans/use-create-plan.ts",
+  "components/kanban/new-plan-dialog.tsx",
+  "components/kanban/new-plan-form.tsx",
+  "components/kanban/new-plan-action.tsx",
 ];

@@ -44,6 +44,8 @@ export type MobileMenuSheetProps = {
   pageActions?: ReactNode;
   listingOnly?: boolean;
   listingControls?: ReactNode;
+  /** Set on the plan board: adds a New plan entry to the display options. */
+  onNewPlan?: () => void;
 };
 
 function MobileSearchSection({
@@ -238,6 +240,7 @@ function MobileMenuContent({
   pageActions,
   listingOnly,
   listingControls,
+  onNewPlan,
 }: Pick<
   MobileMenuSheetProps,
   | "workspaceId"
@@ -248,6 +251,7 @@ function MobileMenuContent({
   | "pageActions"
   | "listingOnly"
   | "listingControls"
+  | "onNewPlan"
 > & {
   isMobile: boolean;
   open: boolean;
@@ -272,7 +276,18 @@ function MobileMenuContent({
         onViewChange={onViewChange}
         showPipeline={showPipeline}
       />
-      <MobileDisplayOptions open={open} {...displayOptions} />
+      <MobileDisplayOptions
+        open={open}
+        {...displayOptions}
+        onNewPlan={
+          onNewPlan
+            ? () => {
+                onOpenChange(false);
+                onNewPlan();
+              }
+            : undefined
+        }
+      />
       {listingControls && (
         <MobileListingOptionsContext.Provider value={{ close: () => onOpenChange(false) }}>
           {listingControls}
@@ -305,6 +320,7 @@ export function MobileMenuSheet({
   pageActions,
   listingOnly = false,
   listingControls,
+  onNewPlan,
 }: MobileMenuSheetProps) {
   const navControls = useAppNavDialogs(() => onOpenChange(false));
   const { contentRef, isMobile, viewValue, handleViewChange, displayOptions, focusMenu } =
@@ -332,6 +348,7 @@ export function MobileMenuSheet({
       pageActions={pageActions}
       listingOnly={listingOnly}
       listingControls={listingControls}
+      onNewPlan={onNewPlan}
     />
   );
 }
@@ -349,6 +366,7 @@ function MobileMenuRender(
     | "pageActions"
     | "listingOnly"
     | "listingControls"
+    | "onNewPlan"
   > & {
     isMobile: boolean;
     contentRef: RefObject<HTMLDivElement | null>;

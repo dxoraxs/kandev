@@ -63,3 +63,40 @@ func (c *Controller) httpCommit(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, result)
 }
+
+// createStatusCodes maps a create error code to its HTTP status.
+var createStatusCodes = map[string]int{
+	CodeFileExists:         http.StatusConflict,
+	CodeInvalidPlan:        http.StatusBadRequest,
+	CodeRepositoryNotFound: http.StatusNotFound,
+}
+
+// registerCreateRoutes registers POST /plans.
+func (c *Controller) registerCreateRoutes(api *gin.RouterGroup) {
+	api.POST("/plans", c.httpCreatePlan)
+}
+
+func (c *Controller) httpCreatePlan(ctx *gin.Context) {
+	workspaceID, ok := c.requireWorkspaceID(ctx)
+	if !ok {
+		return
+	}
+	var req CreatePlanRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{errKey: msgInvalidPayload, "code": CodeInvalidPlan})
+		return
+	}
+	req.RepositoryID = strings.TrimSpace(req.RepositoryID)
+	result, err := c.service.CreatePlan(ctx.Request.Context(), workspaceID, req)
+	var createErr *CreatePlanError
+	switch {
+	case errors.As(err, &createErr):
+		ctx.JSON(createStatusCodes[createErr.Code], gin.H{errKey: createErr.Message, "code": createErr.Code})
+	case errors.Is(err, ErrNotConfigured):
+		ctx.JSON(http.StatusNotFound, gin.H{errKey: msgConfigNone})
+	case err != nil:
+		c.failure(ctx, "failed to create the plan file", err)
+	default:
+		ctx.JSON(http.StatusCreated, result)
+	}
+}

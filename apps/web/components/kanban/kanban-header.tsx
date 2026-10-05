@@ -26,6 +26,7 @@ import { TaskSearchInput } from "./task-search-input";
 import { KanbanHeaderMobile } from "./kanban-header-mobile";
 import { MainTopBarPluginActions } from "./main-top-bar-plugin-actions";
 import { MobileMenuSheet } from "./mobile-menu-sheet";
+import { NewPlanButton, useNewPlanEntry } from "./new-plan-action";
 import type { TasksListDisplayOptions } from "./mobile-menu-task-list-options";
 import {
   resolveTaskListingNavigation,
@@ -227,6 +228,7 @@ function TabletHeader({
   showHealthIndicator,
   onOpenHealthDialog,
   taskListingControls,
+  onNewPlan,
 }: {
   title: string;
   workspaceLabel: string;
@@ -241,6 +243,7 @@ function TabletHeader({
   showHealthIndicator: boolean;
   onOpenHealthDialog: () => void;
   taskListingControls?: ReactNode;
+  onNewPlan?: () => void;
 }) {
   const { t } = useTranslation();
   const pluginTaskFilters = usePluginTaskFilters();
@@ -271,6 +274,7 @@ function TabletHeader({
           />
           <TopbarMetrics size="lg" />
           <TabletQuickActions workspaceId={workspaceId} />
+          {onNewPlan && <NewPlanButton compact onClick={onNewPlan} />}
           {taskListingControls}
           <TooltipProvider>
             <ViewToggleGroup toggleValue={toggleValue} onValueChange={handleViewChange} size="lg" />
@@ -318,6 +322,7 @@ function DesktopHeader({
   showHealthIndicator,
   onOpenHealthDialog,
   taskListingControls,
+  onNewPlan,
 }: {
   title: string;
   workspaceLabel: string;
@@ -331,6 +336,7 @@ function DesktopHeader({
   showHealthIndicator: boolean;
   onOpenHealthDialog: () => void;
   taskListingControls?: ReactNode;
+  onNewPlan?: () => void;
 }) {
   const { t } = useTranslation();
   const headerRef = useRef<HTMLElement>(null);
@@ -363,6 +369,7 @@ function DesktopHeader({
             currentPage={currentPage}
           />
           <TopbarMetrics size="lg" />
+          {onNewPlan && <NewPlanButton onClick={onNewPlan} />}
           {taskListingControls}
           <TooltipProvider>
             <ViewToggleGroup toggleValue={toggleValue} onValueChange={handleViewChange} size="lg" />
@@ -406,6 +413,32 @@ function useHeaderView(
   };
 }
 
+function HeaderDialogs({
+  releaseNotes,
+  healthIndicator,
+}: {
+  releaseNotes: ReturnType<typeof useReleaseNotes>;
+  healthIndicator: ReturnType<typeof useSystemHealthIndicator>;
+}) {
+  return (
+    <>
+      {releaseNotes.hasNotes && (
+        <ReleaseNotesDialog
+          open={releaseNotes.dialogOpen}
+          onOpenChange={releaseNotes.closeDialog}
+          entries={releaseNotes.unseenEntries}
+          latestVersion={releaseNotes.latestVersion}
+        />
+      )}
+      <HealthIssuesDialog
+        open={healthIndicator.dialogOpen}
+        onOpenChange={healthIndicator.closeDialog}
+        issues={healthIndicator.issues}
+      />
+    </>
+  );
+}
+
 export function KanbanHeader({
   workspaceId,
   currentPage = "kanban",
@@ -430,8 +463,14 @@ export function KanbanHeader({
   const title = getHeaderTitle(currentPage, t);
   const workspaceLabel = getWorkspaceLabel(workspaces, activeWorkspaceId, t);
 
+  const newPlan = useNewPlanEntry(workspaceId, currentPage, workflowId);
   const healthProps = toHeaderHealthProps(healthIndicator);
-  const sharedSearch = { searchQuery, onSearchChange, isSearchLoading };
+  const sharedSearch = {
+    searchQuery,
+    onSearchChange,
+    isSearchLoading,
+    onNewPlan: newPlan.onNewPlan,
+  };
 
   const renderHeader = () => {
     if (isMobile) {
@@ -492,19 +531,8 @@ export function KanbanHeader({
   return (
     <>
       {renderHeader()}
-      {releaseNotes.hasNotes && (
-        <ReleaseNotesDialog
-          open={releaseNotes.dialogOpen}
-          onOpenChange={releaseNotes.closeDialog}
-          entries={releaseNotes.unseenEntries}
-          latestVersion={releaseNotes.latestVersion}
-        />
-      )}
-      <HealthIssuesDialog
-        open={healthIndicator.dialogOpen}
-        onOpenChange={healthIndicator.closeDialog}
-        issues={healthIndicator.issues}
-      />
+      {newPlan.dialog}
+      <HeaderDialogs releaseNotes={releaseNotes} healthIndicator={healthIndicator} />
     </>
   );
 }

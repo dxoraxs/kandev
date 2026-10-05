@@ -8,6 +8,8 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
+import { IconFilePlus } from "@tabler/icons-react";
+import { Button } from "@kandev/ui/button";
 import { Checkbox } from "@kandev/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kandev/ui/select";
 import type { PluginTaskFilterRegistration } from "@/lib/plugins/registry";
@@ -71,6 +73,8 @@ export type MobileDisplayOptionsProps = {
   pluginFilters: PluginTaskFilterRegistration[];
   pluginFilterSelections: Record<string, string[]>;
   onPluginFilterChange: (filterId: string, values: string[]) => void;
+  /** Set on the plan board: starts the New plan form. */
+  onNewPlan?: () => void;
 };
 
 export type MobileColumnsSection = {
@@ -147,6 +151,21 @@ function MobileDisplaySelects({ settings }: { settings: MobileDisplayOptionsProp
         </div>
       )}
     </>
+  );
+}
+
+function MobileNewPlanEntry({ onNewPlan }: { onNewPlan: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <Button
+      variant="outline"
+      className="min-h-11 w-full cursor-pointer justify-start gap-2"
+      onClick={onNewPlan}
+      data-testid="mobile-display-new-plan"
+    >
+      <IconFilePlus className="h-4 w-4" aria-hidden />
+      {t("planFiles:newPlanTitle")}
+    </Button>
   );
 }
 
@@ -429,6 +448,7 @@ export function MobileDisplayOptions({
   return (
     <div className="space-y-4">
       <label className={mobileSectionTitleClass}>{t("kanban:displayOptions")}</label>
+      {settings.onNewPlan && <MobileNewPlanEntry onNewPlan={settings.onNewPlan} />}
       {showFilters && (
         <MobileFiltersGroup
           settings={settings}
