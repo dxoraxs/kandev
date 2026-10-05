@@ -286,6 +286,7 @@
   "maintenanceRepositoryNotFound": "Este repositório já não existe.",
   "maintenanceRepositoryNotLocal": "Um agente só pode tratar repositórios que estejam nesta máquina.",
   "cleanupRepository": "Limpar repositório",
+  "cleanupChooseRepository": "Escolha um repositório no filtro para o limpar.",
   "cleanupTitle": "Limpar {{name}}?",
   "cleanupIntro": "Um agente trabalhará no checkout principal deste repositório:",
   "cleanupStepCommit": "Fazer commit das alterações não confirmadas dos worktrees como WIP.",

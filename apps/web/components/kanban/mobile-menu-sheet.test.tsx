@@ -342,3 +342,26 @@ describe("MobileMenuSheet — New plan entry", () => {
     expect(screen.queryByTestId("mobile-display-new-plan")).toBeNull();
   });
 });
+
+describe("MobileMenuSheet — cleanup entry", () => {
+  it("closes the menu before opening the cleanup confirmation", () => {
+    const onOpen = vi.fn();
+    const onOpenChange = vi.fn();
+    renderSheet({ cleanup: { onOpen }, onOpenChange });
+
+    fireEvent.click(screen.getByTestId("mobile-display-cleanup"));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows a disabled entry until a repository is chosen", () => {
+    renderSheet({ cleanup: { onOpen: undefined } });
+    expect((screen.getByTestId("mobile-display-cleanup") as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("omits the entry when cleanup is not offered", () => {
+    renderSheet();
+    expect(screen.queryByTestId("mobile-display-cleanup")).toBeNull();
+  });
+});

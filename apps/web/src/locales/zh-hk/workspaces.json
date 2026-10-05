@@ -286,6 +286,7 @@
   "maintenanceRepositoryNotFound": "此儲存庫已不存在。",
   "maintenanceRepositoryNotLocal": "代理程式只能處理本機上的儲存庫。",
   "cleanupRepository": "清理儲存庫",
+  "cleanupChooseRepository": "請在篩選器中選擇要清理的儲存庫。",
   "cleanupTitle": "清理 {{name}}？",
   "cleanupIntro": "代理將在此儲存庫的主檢出目錄中工作：",
   "cleanupStepCommit": "將工作樹中未提交的更改作為 WIP 提交。",

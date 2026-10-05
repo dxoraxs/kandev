@@ -24,6 +24,7 @@ import {
 import { TASK_PRIORITY_TOKENS, TASK_PRIORITY_LABEL_KEYS } from "@/lib/tasks/task-priority";
 import { useTranslation } from "react-i18next";
 import { getRepositoryPlaceholderKey } from "@/lib/kanban/repository-placeholder";
+import { MobileCleanupEntry } from "./board-cleanup-action";
 import { ColumnsMenu, type ColumnsMenuStep } from "./columns-menu";
 import {
   MobileTasksListOptions,
@@ -75,6 +76,8 @@ export type MobileDisplayOptionsProps = {
   onPluginFilterChange: (filterId: string, values: string[]) => void;
   /** Set on the plan board: starts the New plan form. */
   onNewPlan?: () => void;
+  /** Set when the board offers repository cleanup. */
+  cleanup?: { onOpen: (() => void) | undefined };
 };
 
 export type MobileColumnsSection = {
@@ -449,6 +452,7 @@ export function MobileDisplayOptions({
     <div className="space-y-4">
       <label className={mobileSectionTitleClass}>{t("kanban:displayOptions")}</label>
       {settings.onNewPlan && <MobileNewPlanEntry onNewPlan={settings.onNewPlan} />}
+      {settings.cleanup && <MobileCleanupEntry onOpen={settings.cleanup.onOpen} />}
       {showFilters && (
         <MobileFiltersGroup
           settings={settings}

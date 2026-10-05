@@ -16,7 +16,7 @@ contract. Task creation and launch reuse the repository maintenance task
 launcher owned by the task system:
 [Maintenance task launcher](../../tasks/system-design/plan-file-adaptation.md#maintenance-task-launcher).
 This design adds the `repository_cleanup` kind, its prompt, its protected-list
-input, its feature flag, and the repository-row UI. It adds no git automation
+input, its feature flag, and the board top-bar UI. It adds no git automation
 to the backend.
 
 Contracts used but not owned here:
@@ -24,8 +24,10 @@ Contracts used but not owned here:
 - Endpoint, active-task guard, profile, workflow, and base-branch resolution:
   the task-system launcher.
 - Kandev worktree records: `worktree.SQLiteStore.GetWorktreesByRepositoryID`.
-- Repository settings surface: `workspace-repositories-client.tsx` and
-  `repository-card-preview.tsx`.
+- Board top bar: `kanban-header.tsx` (desktop and tablet) and the phone
+  listing menu (`mobile-display-options.tsx`).
+- Board repository filter: `useKanbanDisplaySettings()` (`repositories`,
+  `selectedRepositoryId`).
 
 Execution model: [ADR 2026-10-05 repository maintenance agent tasks](../../../decisions/2026-10-05-repository-maintenance-agent-tasks.md).
 
@@ -45,7 +47,8 @@ Execution model: [ADR 2026-10-05 repository maintenance agent tasks](../../../de
 | Protected-list builder | Collects branches and worktree paths of non-archived Kandev tasks for the repository. |
 | `config/prompts/repository-cleanup.md` | Built-in cleanup prompt template. |
 | Runtime flag `features.repositoryCleanup` | Release toggle for the action and the kind. |
-| Web `RepositoryCleanupButton` | Broom icon button in `RepositoryPreview`. |
+| Web `resolveCleanupTarget` | Picks the cleanup repository from the board filter. |
+| Web `BoardCleanupButton` / `MobileCleanupEntry` | Broom in the board top bar and the phone listing menu. |
 | Web `RepositoryCleanupDialog` | Confirmation dialog; calls the launcher and navigates to the task. |
 
 ## Data and contracts
@@ -141,16 +144,25 @@ environment. The frontend reads it with `useFeature("repositoryCleanup")`.
 
 ## Frontend
 
-- `RepositoryPreview` gains a third action before Edit: an icon-only outline
-  button with `IconBroom`, `aria-label`, and a tooltip on fine pointers. It
-  calls `event.stopPropagation()` like its siblings and renders only for local
-  repositories when the flag is on, and not in read-only mode.
-- Desktop size follows the 28px control rule; on phones and coarse pointers the
-  button is 44px.
+- `resolveCleanupTarget(repositories, selectedRepositoryId)` is a pure
+  function. It returns `hidden` when no repository of the workspace is local;
+  the selected repository when it is local; the only local repository when
+  nothing is selected and exactly one is local; otherwise `needs_selection`.
+- `useBoardCleanupAction(currentPage)` combines the flag, the kanban page, the
+  board filter and the target. It owns the dialog's open state and renders
+  `RepositoryCleanupDialog` once per header.
+- Desktop and tablet: `BoardCleanupButton` sits in the top bar before the sort
+  control, an outline `icon-lg` button with the broom, `aria-label`, and a
+  fine-pointer tooltip. With `needs_selection` it is `aria-disabled`, does not
+  open the dialog, and its tooltip reads the choose-a-repository hint.
+- Phone: `MobileCleanupEntry` in the listing menu's display options, after
+  New plan: a full-width 44px button with the broom and label. With
+  `needs_selection` it is disabled and the hint shows below it.
 - `RepositoryCleanupDialog` uses the shared `Dialog` on desktop and the shared
-  `Drawer` (bottom sheet) when `isMobile`: title, the step list, a note that the agent works in the main
-  checkout, Cancel and Start cleanup. On phones the actions stack full width
-  with 44px targets.
+  `Drawer` (bottom sheet) when `isMobile`: title, the step list, a note that
+  the agent works in the main checkout, Cancel and Start cleanup. On phones the
+  actions stack full width with 44px targets.
+- Repository settings rows no longer carry the action.
 - Copy goes through `t("workspaces:…")` in English, pseudo, and the seven
   translated catalogs; no em dash.
 

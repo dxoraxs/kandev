@@ -286,6 +286,7 @@
   "maintenanceRepositoryNotFound": "此仓库已不存在。",
   "maintenanceRepositoryNotLocal": "智能体只能处理本机上的仓库。",
   "cleanupRepository": "清理仓库",
+  "cleanupChooseRepository": "请在筛选器中选择要清理的仓库。",
   "cleanupTitle": "清理 {{name}}？",
   "cleanupIntro": "代理将在此仓库的主检出目录中工作：",
   "cleanupStepCommit": "将工作树中未提交的更改作为 WIP 提交。",

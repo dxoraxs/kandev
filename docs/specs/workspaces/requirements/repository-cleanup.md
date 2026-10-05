@@ -15,7 +15,8 @@ that were never checked out, and worktrees left behind by finished work. Folding
 all of it back into the default branch and removing what is merged is a
 repetitive, judgment-heavy chore.
 
-This capability adds a cleanup action to a repository. It starts an agent task
+This capability adds a cleanup action to the board's top bar, aimed at the
+repository the board is filtered to. It starts an agent task
 that merges every branch and worktree into the default branch on the
 repository's main checkout, resolves conflicts, removes merged branches locally
 and on the remote, removes worktrees, and pushes, after one confirmation from
@@ -42,17 +43,21 @@ The execution model is recorded in
 ### REQ-WORKSPACES-REPO-CLEANUP-001: Cleanup action
 
 **Intent:** The owner starts a repository cleanup with one action from the
-repository.
+board of that repository.
 
-**User story:** As a workspace owner, I want a cleanup button on a repository,
-so that an agent folds every branch into the default branch and removes what is
+**User story:** As a workspace owner, I want a cleanup button in the board's top
+bar, so that an agent folds every branch into the default branch and removes what is
 merged.
 
 #### Acceptance criteria
 
-- **AC-WORKSPACES-REPO-CLEANUP-001.1:** Each local repository row in workspace
-  repository settings shall show an icon-only cleanup action with a broom icon,
-  an accessible name, and a tooltip on fine pointers.
+- **AC-WORKSPACES-REPO-CLEANUP-001.1:** The top bar of the kanban page shall
+  show an icon-only cleanup action with a broom icon, an accessible name, and a
+  tooltip on fine pointers. The action targets the repository selected in the
+  board's repository filter. When no repository is selected and the workspace
+  has exactly one local repository, it targets that repository. Otherwise the
+  action is disabled and its tooltip asks the owner to choose a repository in
+  the filter. Repository settings rows shall not show the action.
 - **AC-WORKSPACES-REPO-CLEANUP-001.2:** When the owner activates the action, the
   system shall show a confirmation dialog that explains the steps (merge every
   branch and worktree into the default branch, commit uncommitted worktree
@@ -68,12 +73,14 @@ merged.
 - **AC-WORKSPACES-REPO-CLEANUP-001.5:** When the workspace has no default agent
   profile or no visible workflow, the system shall not create a task and shall
   show a localized error that names the missing setting.
-- **AC-WORKSPACES-REPO-CLEANUP-001.6:** For a repository whose source is not a
-  local path, the action shall not be shown.
-- **AC-WORKSPACES-REPO-CLEANUP-001.7:** On a phone, the action shall be reachable
-  in the repository row with a touch target of at least 44px, and the
-  confirmation shall use the shared dialog's phone presentation with full-width
-  actions.
+- **AC-WORKSPACES-REPO-CLEANUP-001.6:** When the workspace has no local
+  repository, the action shall not be shown. When the selected repository's
+  source is not a local path, the action shall be disabled with the same hint
+  as AC-WORKSPACES-REPO-CLEANUP-001.1.
+- **AC-WORKSPACES-REPO-CLEANUP-001.7:** On a phone, the action shall be an
+  entry in the board's listing menu with a touch target of at least 44px,
+  disabled with the same hint when no repository is targeted, and the
+  confirmation shall be a bottom sheet with full-width actions.
 - **AC-WORKSPACES-REPO-CLEANUP-001.8:** When the `features.repositoryCleanup`
   runtime flag is off, the action shall not render and the endpoint shall reject
   the cleanup kind.

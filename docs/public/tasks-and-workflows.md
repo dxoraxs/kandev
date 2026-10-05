@@ -160,7 +160,9 @@ settings from the default workspace.
 > [!EXPERIMENTAL]
 > Repository cleanup is feature-flagged. Enable `features.repositoryCleanup` (`KANDEV_FEATURES_REPOSITORY_CLEANUP`) in **Settings → System → Feature Toggles** and restart Kandev; until then the cleanup button is hidden.
 
-Use the broom button on a local repository's row in **Settings → Workspaces → _workspace_ → Repositories** to have an agent fold every branch into the default branch and remove what is merged. Remote repositories do not show the button.
+Use the broom button in the Kanban board's top bar, next to the sort control, to have an agent fold every branch into the default branch and remove what is merged. On a phone, the same action is **Clean up repository** in the menu that opens from the board title.
+
+The broom cleans the repository selected in the board's repository filter. When the workspace has exactly one local repository and the filter is empty, it cleans that repository. Otherwise the broom stays unavailable until you select a local repository in the filter. Workspaces without a local repository do not show it.
 
 1. Select the broom and read the confirmation. Nothing starts until you select **Start cleanup**.
 2. Kandev creates a cleanup task with the workspace **Default Agent Profile** and opens it. If a maintenance task (cleanup or plan adaptation) for the repository is already active, that task opens instead.

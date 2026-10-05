@@ -292,6 +292,7 @@
   "maintenanceRepositoryNotFound": "Этого репозитория больше нет.",
   "maintenanceRepositoryNotLocal": "Агент может работать только с репозиториями на этом компьютере.",
   "cleanupRepository": "Почистить репозиторий",
+  "cleanupChooseRepository": "Выберите репозиторий в фильтре, чтобы почистить его.",
   "cleanupTitle": "Почистить {{name}}?",
   "cleanupIntro": "Агент будет работать в основной рабочей копии этого репозитория:",
   "cleanupStepCommit": "Закоммитить незафиксированные изменения рабочих деревьев как WIP.",

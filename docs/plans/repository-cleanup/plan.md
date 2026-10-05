@@ -14,7 +14,8 @@ legacy_specs: []
 
 ## Overview
 
-Add a broom action to each local repository in workspace settings. It starts
+Add a broom action to the board's top bar, aimed at the repository the board
+is filtered to (Task 04 moved it there from the repository settings rows). It starts
 an agent task on the repository's main checkout that merges every branch and
 worktree into the default branch, asks the owner to confirm a summary, then
 deletes merged branches locally and on the remote, removes worktrees, and
@@ -53,6 +54,7 @@ Related decision:
 | [01 Runtime flag](task-01-runtime-flag.md) | 1 | none | `features.repositoryCleanup` end to end, off. |
 | [02 Cleanup kind and prompt](task-02-cleanup-kind-and-prompt.md) | 2 | 01, plan-file-adaptation 02 | Kind, protected list, prompt. |
 | [03 Broom button](task-03-broom-button.md) | 3 | 02 | Button, dialog, E2E, docs. |
+| [04 Board placement](task-04-board-placement.md) | 4 | 03 | Broom in the board top bar and phone listing menu; removed from settings rows. |
 
 ## Risks
 
@@ -74,25 +76,31 @@ Related decision:
 
 ## ASCII UI preview
 
-### UI-01: Repository row with the broom action
+### UI-01: Broom in the board top bar
 
-Desktop (fine pointer, 28px controls; tooltip "Clean up repository"):
+Desktop and tablet (kanban page; tooltip "Clean up repository"). The broom
+targets the repository selected in the filter menu (the sliders button).
 
 ```text
-+---------------------------------------------------------------------+
-| [git] city_companion  [Local]                  [broom] [Edit] [Delete] |
-|       /Users/…/city_companion                                       |
-+---------------------------------------------------------------------+
++-- Home ---------------------[ search ]---------------------------------------+
+|        [New plan] [kanban|graph|threads|list] [broom] [By priority v] [filter] |
++------------------------------------------------------------------------------+
 ```
 
-Phone (below 768px): the same row; the broom is a 44px icon button with an
-accessible name and no tooltip dependency.
+No repository selected and more than one local repository: the broom is
+disabled; tooltip "Choose a repository in the filter to clean it up".
+
+Phone (below 768px): an entry in the listing menu (opened from the page
+title), after New plan; 44px, full width.
 
 ```text
-+----------------------------------+
-| [git] city_companion  [Local]    |
-| /Users/…/city_companion          |
-|            [broom] [Edit] [Delete]  |
++-- Display options ---------------+
+| [file+] New plan                 |
+| [broom] Clean up repository      |
+|   Choose a repository in the     |
+|   filter to clean it up.         |  (only when disabled)
+| > Filters                        |
+| > Sort                           |
 +----------------------------------+
 ```
 
@@ -117,6 +125,7 @@ Desktop dialog (shared `Dialog`); phone bottom sheet (shared `Drawer` when `isMo
 Phone: the same content in a bottom sheet; actions stacked full width,
 primary first, 44px targets.
 
-Structural requirements: icon-only action with accessible name in the row;
+Structural requirements: icon-only action with accessible name in the top bar
+(a labeled entry on phones);
 the dialog lists the four steps and the protected-task note and has exactly
 two actions. Wording and spacing are illustrative; copy is localized.

@@ -46,6 +46,8 @@ export type MobileMenuSheetProps = {
   listingControls?: ReactNode;
   /** Set on the plan board: adds a New plan entry to the display options. */
   onNewPlan?: () => void;
+  /** Set when the board offers repository cleanup; `onOpen` is unset until a repository is chosen. */
+  cleanup?: { onOpen: (() => void) | undefined };
 };
 
 function MobileSearchSection({
@@ -241,6 +243,7 @@ function MobileMenuContent({
   listingOnly,
   listingControls,
   onNewPlan,
+  cleanup,
 }: Pick<
   MobileMenuSheetProps,
   | "workspaceId"
@@ -252,6 +255,7 @@ function MobileMenuContent({
   | "listingOnly"
   | "listingControls"
   | "onNewPlan"
+  | "cleanup"
 > & {
   isMobile: boolean;
   open: boolean;
@@ -287,6 +291,16 @@ function MobileMenuContent({
               }
             : undefined
         }
+        cleanup={
+          cleanup && {
+            onOpen: cleanup.onOpen
+              ? () => {
+                  onOpenChange(false);
+                  cleanup.onOpen?.();
+                }
+              : undefined,
+          }
+        }
       />
       {listingControls && (
         <MobileListingOptionsContext.Provider value={{ close: () => onOpenChange(false) }}>
@@ -321,6 +335,7 @@ export function MobileMenuSheet({
   listingOnly = false,
   listingControls,
   onNewPlan,
+  cleanup,
 }: MobileMenuSheetProps) {
   const navControls = useAppNavDialogs(() => onOpenChange(false));
   const { contentRef, isMobile, viewValue, handleViewChange, displayOptions, focusMenu } =
@@ -349,6 +364,7 @@ export function MobileMenuSheet({
       listingOnly={listingOnly}
       listingControls={listingControls}
       onNewPlan={onNewPlan}
+      cleanup={cleanup}
     />
   );
 }
@@ -367,6 +383,7 @@ function MobileMenuRender(
     | "listingOnly"
     | "listingControls"
     | "onNewPlan"
+    | "cleanup"
   > & {
     isMobile: boolean;
     contentRef: RefObject<HTMLDivElement | null>;

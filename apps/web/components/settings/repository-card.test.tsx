@@ -2,7 +2,6 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@/lib/i18n";
 import { StateProvider } from "@/components/state-provider";
-import { defaultState } from "@/lib/state/default-state";
 import { RepositoryCard } from "./repository-card";
 import { SettingsSaveProvider } from "./settings-save-provider";
 import { ToastProvider } from "@/components/toast-provider";
@@ -90,53 +89,6 @@ function renderCard(repo: RepositoryWithScripts, autoOpen = false) {
     </StateProvider>,
   );
 }
-
-describe("RepositoryCard cleanup action", () => {
-  function renderWithFlag(readOnly: boolean) {
-    return render(
-      <StateProvider
-        initialState={{ features: { ...defaultState.features, repositoryCleanup: true } }}
-      >
-        <ToastProvider>
-          <SettingsSaveProvider>
-            <RepositoryCard
-              repository={repository()}
-              workspaceId="workspace-1"
-              savedRepository={repository()}
-              isRepositoryDirty={false}
-              areScriptsDirty={false}
-              readOnly={readOnly}
-              onUpdate={vi.fn()}
-              onAddScript={vi.fn()}
-              onUpdateScript={vi.fn()}
-              onDeleteScript={vi.fn()}
-              onSave={vi.fn()}
-              onDelete={vi.fn()}
-            />
-          </SettingsSaveProvider>
-        </ToastProvider>
-      </StateProvider>,
-    );
-  }
-
-  it("shows the broom before Edit on a local repository when the flag is on", () => {
-    renderWithFlag(false);
-    const broom = screen.getByTestId("repository-cleanup-button");
-    const edit = screen.getByRole("button", { name: "Edit" });
-    // eslint-disable-next-line no-bitwise
-    expect(broom.compareDocumentPosition(edit) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it("hides the broom in read-only mode", () => {
-    renderWithFlag(true);
-    expect(screen.queryByTestId("repository-cleanup-button")).toBeNull();
-  });
-
-  it("hides the broom while the flag is off", () => {
-    renderCard(repository());
-    expect(screen.queryByTestId("repository-cleanup-button")).toBeNull();
-  });
-});
 
 describe("RepositoryCard preview", () => {
   it("uses the singular form for exactly one custom script", () => {
