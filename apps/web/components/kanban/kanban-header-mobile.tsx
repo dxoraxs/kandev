@@ -11,6 +11,7 @@ import { MobileListingMenuActions } from "./mobile-listing-menu-actions";
 import type { TasksListDisplayOptions } from "./mobile-menu-task-list-options";
 import { useAppStore } from "@/components/state-provider";
 import type { TaskListingPage } from "@/lib/task-listing/view-navigation";
+import type { BoardCleanupAction } from "./board-cleanup-action";
 
 type KanbanHeaderMobileProps = {
   workspaceId?: string;
@@ -25,6 +26,7 @@ type KanbanHeaderMobileProps = {
   mobileListingStatus?: ReactNode;
   /** Set on the plan board: adds a New plan entry to the listing menu. */
   onNewPlan?: () => void;
+  cleanup?: BoardCleanupAction | null;
 };
 
 const MODE_LABELS: Record<TaskListingPage, string> = {
@@ -45,6 +47,7 @@ export function KanbanHeaderMobile({
   taskListingControls,
   mobileListingStatus,
   onNewPlan,
+  cleanup,
 }: KanbanHeaderMobileProps) {
   const { t } = useTranslation();
   const isMenuOpen = useAppStore((state) => state.mobileKanban.isMenuOpen);
@@ -117,6 +120,7 @@ export function KanbanHeaderMobile({
         tasksListOptions={tasksListOptions}
         listingControls={taskListingControls}
         onNewPlan={onNewPlan}
+        cleanup={cleanup ? { onOpen: cleanup.onOpen } : undefined}
         pageActions={
           <MobileListingMenuActions
             showWorkspaceActions={false}

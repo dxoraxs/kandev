@@ -481,7 +481,6 @@ export function RepositoryCard({
         deleteLoading={false}
         onOpenDelete={() => {}}
         open={() => {}}
-        readOnly
       />
     );
   }

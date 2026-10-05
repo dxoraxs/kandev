@@ -22,6 +22,8 @@ vi.mock("@/hooks/use-kanban-display-settings", () => ({
     onViewModeChange: vi.fn(),
     workspaces: [],
     activeWorkspaceId: "ws-1",
+    repositories: [],
+    selectedRepositoryId: null,
   }),
 }));
 vi.mock("@/hooks/use-release-notes", () => ({ useReleaseNotes: () => ({ hasNotes: false }) }));

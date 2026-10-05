@@ -27,6 +27,11 @@ import { KanbanHeaderMobile } from "./kanban-header-mobile";
 import { MainTopBarPluginActions } from "./main-top-bar-plugin-actions";
 import { MobileMenuSheet } from "./mobile-menu-sheet";
 import { NewPlanButton, useNewPlanEntry } from "./new-plan-action";
+import {
+  BoardCleanupButton,
+  useBoardCleanupAction,
+  type BoardCleanupAction,
+} from "./board-cleanup-action";
 import type { TasksListDisplayOptions } from "./mobile-menu-task-list-options";
 import {
   resolveTaskListingNavigation,
@@ -229,6 +234,7 @@ function TabletHeader({
   onOpenHealthDialog,
   taskListingControls,
   onNewPlan,
+  cleanup,
 }: {
   title: string;
   workspaceLabel: string;
@@ -244,6 +250,7 @@ function TabletHeader({
   onOpenHealthDialog: () => void;
   taskListingControls?: ReactNode;
   onNewPlan?: () => void;
+  cleanup?: BoardCleanupAction | null;
 }) {
   const { t } = useTranslation();
   const pluginTaskFilters = usePluginTaskFilters();
@@ -279,6 +286,7 @@ function TabletHeader({
           <TooltipProvider>
             <ViewToggleGroup toggleValue={toggleValue} onValueChange={handleViewChange} size="lg" />
           </TooltipProvider>
+          {cleanup && <BoardCleanupButton action={cleanup} />}
           {currentPage === "kanban" && <KanbanHeaderSort />}
           {currentPage !== "threads" && (
             <KanbanDisplayDropdown
@@ -323,6 +331,7 @@ function DesktopHeader({
   onOpenHealthDialog,
   taskListingControls,
   onNewPlan,
+  cleanup,
 }: {
   title: string;
   workspaceLabel: string;
@@ -337,6 +346,7 @@ function DesktopHeader({
   onOpenHealthDialog: () => void;
   taskListingControls?: ReactNode;
   onNewPlan?: () => void;
+  cleanup?: BoardCleanupAction | null;
 }) {
   const { t } = useTranslation();
   const headerRef = useRef<HTMLElement>(null);
@@ -374,6 +384,7 @@ function DesktopHeader({
           <TooltipProvider>
             <ViewToggleGroup toggleValue={toggleValue} onValueChange={handleViewChange} size="lg" />
           </TooltipProvider>
+          {cleanup && <BoardCleanupButton action={cleanup} />}
           {currentPage === "kanban" && !isNarrow && <KanbanHeaderSort />}
           <KanbanDisplayDropdown
             triggerSize="icon-lg"
@@ -439,6 +450,22 @@ function HeaderDialogs({
   );
 }
 
+/** The board-only actions of the top bar: New plan and repository cleanup. */
+function useBoardActions(
+  workspaceId: string | undefined,
+  currentPage: TaskListingPage,
+  workflowId: string | null,
+  display: ReturnType<typeof useKanbanDisplaySettings>,
+) {
+  const newPlan = useNewPlanEntry(workspaceId, currentPage, workflowId);
+  const cleanup = useBoardCleanupAction({
+    currentPage,
+    repositories: display.repositories,
+    selectedRepositoryId: display.selectedRepositoryId,
+  });
+  return { newPlan, cleanup };
+}
+
 export function KanbanHeader({
   workspaceId,
   currentPage = "kanban",
@@ -463,7 +490,7 @@ export function KanbanHeader({
   const title = getHeaderTitle(currentPage, t);
   const workspaceLabel = getWorkspaceLabel(workspaces, activeWorkspaceId, t);
 
-  const newPlan = useNewPlanEntry(workspaceId, currentPage, workflowId);
+  const { newPlan, cleanup } = useBoardActions(workspaceId, currentPage, workflowId, display);
   const healthProps = toHeaderHealthProps(healthIndicator);
   const sharedSearch = {
     searchQuery,
@@ -484,6 +511,7 @@ export function KanbanHeader({
           taskListingControls={taskListingControls}
           {...sharedSearch}
           tasksListOptions={tasksListOptions}
+          cleanup={cleanup}
         />
       );
     }
@@ -500,6 +528,7 @@ export function KanbanHeader({
             handleViewChange={handleViewChange}
             setMenuOpen={setMenuOpen}
             taskListingControls={taskListingControls}
+            cleanup={cleanup}
             {...healthProps}
           />
           <MobileMenuSheet
@@ -523,6 +552,7 @@ export function KanbanHeader({
         taskListingControls={taskListingControls}
         toggleValue={toggleValue}
         handleViewChange={handleViewChange}
+        cleanup={cleanup}
         {...healthProps}
       />
     );
@@ -532,6 +562,7 @@ export function KanbanHeader({
     <>
       {renderHeader()}
       {newPlan.dialog}
+      {cleanup?.dialog}
       <HeaderDialogs releaseNotes={releaseNotes} healthIndicator={healthIndicator} />
     </>
   );

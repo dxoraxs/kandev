@@ -286,6 +286,7 @@
   "maintenanceRepositoryNotFound": "This repository no longer exists.",
   "maintenanceRepositoryNotLocal": "Only repositories on this machine can be handled by an agent.",
   "cleanupRepository": "Clean up repository",
+  "cleanupChooseRepository": "Choose a repository in the filter to clean it up.",
   "cleanupTitle": "Clean up {{name}}?",
   "cleanupIntro": "An agent will work in this repository's main checkout:",
   "cleanupStepCommit": "Commit uncommitted worktree changes as WIP.",

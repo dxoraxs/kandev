@@ -286,6 +286,7 @@
   "maintenanceRepositoryNotFound": "Ţĥĩś ŕēƥōśĩţōŕŷ ńō ĺōńĝēŕ ēxĩśţś.",
   "maintenanceRepositoryNotLocal": "Ōńĺŷ ŕēƥōśĩţōŕĩēś ōń ţĥĩś ḿàćĥĩńē ćàń ƀē ĥàńďĺēď ƀŷ àń àĝēńţ.",
   "cleanupRepository": "Ćĺēàń ũƥ ŕēƥōśĩţōŕŷ",
+  "cleanupChooseRepository": "Ćĥōōśē à ŕēƥōśĩţōŕŷ ĩń ţĥē ƒĩĺţēŕ ţō ćĺēàń ĩţ ũƥ.",
   "cleanupTitle": "Ćĺēàń ũƥ {{name}}?",
   "cleanupIntro": "Àń àĝēńţ ŵĩĺĺ ŵōŕķ ĩń ţĥĩś ŕēƥōśĩţōŕŷ'ś ḿàĩń ćĥēćķōũţ:",
   "cleanupStepCommit": "Ćōḿḿĩţ ũńćōḿḿĩţţēď ŵōŕķţŕēē ćĥàńĝēś àś ŴĨƤ.",
