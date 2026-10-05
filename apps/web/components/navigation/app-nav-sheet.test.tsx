@@ -35,6 +35,7 @@ beforeEach(() => {
   inOffice = false;
   state.userSettings = { ...defaultState.userSettings };
   state.workspaces.items[0].office_workflow_id = null;
+  state.features = { canvases: false } as typeof state.features;
 });
 
 vi.mock("@/hooks/use-responsive-breakpoint", () => ({
@@ -132,6 +133,10 @@ vi.mock("@/components/improve-kandev-dialog", () => ({
 
 vi.mock("@/components/system-health/health-indicator", () => ({
   HealthIssuesDialog: () => <div data-testid="health-dialog" />,
+}));
+
+vi.mock("@/hooks/domains/plans/use-waiting-owner", () => ({
+  useWaitingOwner: () => ({ status: "ready", items: [], failedWorkspaces: [], reload: vi.fn() }),
 }));
 
 vi.mock("@/components/integrations/integrations-menu", () => ({
@@ -501,5 +506,25 @@ describe("AppNavSections theme toggle", () => {
 
     fireEvent.click(toggle);
     expect(mocks.setTheme).toHaveBeenCalledWith("light");
+  });
+});
+
+describe("AppNavSheet plan files", () => {
+  beforeEach(resetAppNavMocks);
+  afterEach(cleanup);
+
+  it("offers the Waiting for owner row only while plan files are enabled", () => {
+    const open = () => {
+      render(<AppNavSheet />);
+      fireEvent.click(screen.getByTestId(NAV_TRIGGER));
+    };
+    open();
+    expect(screen.queryByTestId("mobile-sidebar-plans-waiting")).toBeNull();
+    cleanup();
+    state.features = { canvases: false, planFiles: true } as typeof state.features;
+    open();
+    expect(screen.getByTestId("mobile-sidebar-plans-waiting").getAttribute("href")).toBe(
+      "/plans/waiting",
+    );
   });
 });
