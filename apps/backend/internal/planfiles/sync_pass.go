@@ -143,6 +143,7 @@ func (p *pass) run(ctx context.Context) error {
 	p.loadDirty(ctx)
 	entries = p.rejectDuplicates(entries)
 	tracked := p.resolveAll(ctx, entries)
+	p.wakeDue(ctx, tracked)
 	var deps []depWork
 	for _, tr := range tracked {
 		if row := p.applyTracked(ctx, tr); row != nil {

@@ -89,7 +89,7 @@ func (s *Service) currentTime() time.Time {
 }
 
 func (s *Service) today() string {
-	return s.currentTime().In(time.Local).Format(noteDateLayout)
+	return dayOf(s.currentTime())
 }
 
 // decisionEdit is a validated decision: the status to write and the note line.

@@ -35,6 +35,7 @@ const (
 	ReasonInvalidDependency = "invalid_dependency"
 	ReasonInvalidTrack      = "invalid_track"
 	ReasonGitStatusFailed   = "git_status_failed"
+	ReasonWakeFailed        = "wake_failed"
 )
 
 // ErrPassRunning reports that a sync pass or a write already holds the
@@ -94,7 +95,16 @@ func (s *Service) SetSyncDeps(tasks TaskAccess, archiver TaskArchiver) {
 func (s *Service) LockWorkspace(workspaceID string) func() {
 	lock := s.passLock(workspaceID)
 	lock.Lock()
-	return lock.Unlock
+	return s.releaser(lock)
+}
+
+// releaser unlocks the workspace lock and then announces the wake-ups the
+// pass queued.
+func (s *Service) releaser(lock *sync.Mutex) func() {
+	return func() {
+		lock.Unlock()
+		s.flushWakeNotices()
+	}
 }
 
 // tryLockWorkspace takes the workspace lock when it is free.
@@ -103,7 +113,7 @@ func (s *Service) tryLockWorkspace(workspaceID string) (func(), bool) {
 	if !lock.TryLock() {
 		return nil, false
 	}
-	return lock.Unlock, true
+	return s.releaser(lock), true
 }
 
 func (s *Service) passLock(workspaceID string) *sync.Mutex {

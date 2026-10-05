@@ -18,7 +18,8 @@ export type BackendMessageType =
   | "column.deleted"
   | "session.turn_finished"
   | "session.clarification_requested"
-  | "office.inbox_item";
+  | "office.inbox_item"
+  | "plan_file.date_reached";
 
 export type BackendMessage<T extends BackendMessageType, P> = {
   id?: string;
@@ -142,4 +143,8 @@ export type BackendMessageMap = {
     TaskSessionNotificationPayload
   >;
   "office.inbox_item": BackendMessage<"office.inbox_item", OfficeInboxItemNotificationPayload>;
+  "plan_file.date_reached": BackendMessage<
+    "plan_file.date_reached",
+    OfficeInboxItemNotificationPayload
+  >;
 };

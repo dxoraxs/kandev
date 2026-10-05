@@ -18,6 +18,7 @@ var (
 	decisionTotal   = expvar.NewMap("plan_files_decision_total")
 	commitTotal     = expvar.NewMap("plan_files_commit_total")
 	indexTotal      = expvar.NewMap("plan_files_index_total")
+	wakeTotal       = expvar.NewInt("plan_files_wake_total")
 )
 
 // Write-back outcomes. The set is closed; it is also the label set of
@@ -75,4 +76,10 @@ const (
 func incIndex(log *logger.Logger, outcome string) {
 	indexTotal.Add("outcome="+outcome, 1)
 	log.Info("plan_files.metric.index", zap.String("outcome", outcome))
+}
+
+// incWake counts one written date wake-up.
+func incWake(log *logger.Logger) {
+	wakeTotal.Add(1)
+	log.Info("plan_files.metric.wake")
 }

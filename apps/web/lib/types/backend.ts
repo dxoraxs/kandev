@@ -571,6 +571,10 @@ export type BackendMessageMap = SessionBackendMessageMap &
     "canvas.removed": BackendMessage<"canvas.removed", CanvasLifecyclePayload>;
 
     "office.inbox_item": BackendMessage<"office.inbox_item", OfficeInboxItemNotificationPayload>;
+    "plan_file.date_reached": BackendMessage<
+      "plan_file.date_reached",
+      OfficeInboxItemNotificationPayload
+    >;
 
     "executor.created": BackendMessage<"executor.created", ExecutorPayload>;
     "executor.updated": BackendMessage<"executor.updated", ExecutorPayload>;

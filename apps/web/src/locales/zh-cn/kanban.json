@@ -127,6 +127,7 @@
   "boardSort": "看板排序",
   "boardSortCreatedDesc": "最新优先",
   "boardSortPriorityDesc": "优先级",
+  "boardSortDateAsc": "日期",
   "priorityFilter": "优先级筛选",
   "bulkSelected_other": "已选择 {{count}} 个",
   "bulkActions": "操作",

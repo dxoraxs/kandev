@@ -127,6 +127,7 @@
   "boardSort": "ボードの並び順",
   "boardSortCreatedDesc": "新しい順",
   "boardSortPriorityDesc": "優先度順",
+  "boardSortDateAsc": "日付順",
   "priorityFilter": "優先度フィルタ",
   "bulkSelected_one": "{{count}}件選択中",
   "bulkSelected_other": "{{count}}件選択中",

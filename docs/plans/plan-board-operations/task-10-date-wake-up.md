@@ -1,7 +1,7 @@
 ---
 id: "10-date-wake-up"
 title: "Date wake-up and date sort"
-status: pending
+status: done
 wave: 10
 depends_on: ["04-owner-decisions", "09-progress-and-flags"]
 plan: "plan.md"
@@ -80,4 +80,20 @@ Task 04, Task 09
 
 ## Results
 
-Pending.
+Wake-up step `wakeDue` runs after `resolveAll` and before `applyTracked`, so the task move, card facts, and index reflect the new status in the same pass. "Today" is the server local time zone (`time.Local`, same as owner notes); tests cover 23:59:59 and 00:00:00 local. The note date is today, so a past-dated plan gets the wake day. The hash compare-and-swap failure is reported as `wake_failed` and retried next pass. Notifications are queued during the pass and delivered when the workspace lock is released (`releaser`). Plans whose task has an unwritten board edit are skipped until that edit is written back. Existing providers do not subscribe to `plan_file.date_reached` until the owner enables it (public docs belong to work order 12). The local provider shows the event through a new WS handler. The event label keys live in the `common` namespace because the harness-lint hook rejects any edit to a file named settings.json.
+
+Verification (final output line):
+
+- `(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)`: ok .../planfiles/scan 1.643s (all four packages ok)
+- `make -C apps/backend lint`: 0 issues.
+- `(cd apps/backend && go test ./internal/notifications/... ./internal/user/models/... -count=1)`: ok .../user/models 0.450s (all ok)
+- `(cd apps && pnpm --filter @kandev/web test -- lib/kanban/task-order.test.ts)`: Tests 33 passed (33)
+- `(cd apps && pnpm --filter @kandev/web test -- lib/kanban/kanban-sort.test.ts)`: Tests 7 passed (7)
+- `(cd apps/web && pnpm run typecheck)`: tsc --noEmit, no errors
+- `(cd apps/web && pnpm run i18n:check)`: i18n keys OK ... ja, ko, pt-pt, ru, zh-cn, zh-hk, zh-tw complete.
+- `(cd apps && pnpm --filter @kandev/web lint)`: no warnings or errors
+- `(cd apps/web && pnpm run i18n:ratchet)`: i18n new-code ratchet clean
+- `go test ./internal/backendapp/...`: fails only TestBackendStartupConflictStopsBeforeSharedStateInitialization, TestBackendStartupExternalDatabaseConflictDiagnostic, TestSystemTemporaryCapacityRootsUseDisposableE2ERoot (macOS /var vs /private/var); the same three fail on a clean checkout of the parent commit.
+- `golangci-lint run ./internal/planfiles/... ./internal/backendapp/... ./internal/notifications/... ./internal/user/...`: 0 issues.
+- `python3.12 scripts/list-docs.py validate`: Validated 350 decisions and 1347 specifications.
+- `python3.12 scripts/lint-spec-files.py --all`: All specification files passed.

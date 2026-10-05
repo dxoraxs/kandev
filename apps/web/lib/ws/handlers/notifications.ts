@@ -1,6 +1,7 @@
 import type { StoreApi } from "zustand";
 import {
   NOTIFICATION_EVENT_OFFICE_INBOX_ITEM,
+  NOTIFICATION_EVENT_PLAN_FILE_DATE_REACHED,
   NOTIFICATION_EVENT_SESSION_CLARIFICATION_REQUESTED,
   NOTIFICATION_EVENT_SESSION_TURN_FINISHED,
   NOTIFICATION_EVENT_SYSTEM_UPDATE_AVAILABLE,
@@ -117,6 +118,14 @@ export function registerNotificationsHandlers(store: StoreApi<AppState>): WsHand
       {
         titleKey: "common:notificationInboxItemTitle",
         bodyKey: "common:notificationInboxItemBody",
+      },
+    ),
+    [NOTIFICATION_EVENT_PLAN_FILE_DATE_REACHED]: registerNotificationHandler(
+      store,
+      NOTIFICATION_EVENT_PLAN_FILE_DATE_REACHED,
+      {
+        titleKey: "common:notificationPlanDateReachedTitle",
+        bodyKey: "common:notificationPlanDateReachedBody",
       },
     ),
     [NOTIFICATION_EVENT_SYSTEM_UPDATE_AVAILABLE]: (message: { payload: UpdateAvailablePayload }) =>

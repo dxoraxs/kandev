@@ -89,7 +89,7 @@ func (s *Service) AppriseAvailable() bool {
 }
 
 func (s *Service) AvailableEvents() []string {
-	return []string{EventTaskSessionTurnFinished, EventTaskSessionClarificationAsked, EventOfficeInboxItem, EventSystemUpdateAvailable}
+	return []string{EventTaskSessionTurnFinished, EventTaskSessionClarificationAsked, EventOfficeInboxItem, EventSystemUpdateAvailable, EventPlanFileDateReached}
 }
 
 func (s *Service) ListProviders(ctx context.Context, userID string) ([]*models.Provider, map[string][]string, error) {
@@ -580,6 +580,7 @@ func (s *Service) validateEvents(events []string) error {
 		EventTaskSessionClarificationAsked: {},
 		EventOfficeInboxItem:               {},
 		EventSystemUpdateAvailable:         {},
+		EventPlanFileDateReached:           {},
 	}
 	for _, event := range events {
 		if _, ok := allowed[event]; !ok {

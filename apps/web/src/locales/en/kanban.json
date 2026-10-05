@@ -127,6 +127,7 @@
   "boardSort": "Board sort",
   "boardSortCreatedDesc": "Board order",
   "boardSortPriorityDesc": "Priority",
+  "boardSortDateAsc": "Date",
   "priorityFilter": "Priority filter",
   "bulkSelected_one": "{{count}} selected",
   "bulkSelected_other": "{{count}} selected",

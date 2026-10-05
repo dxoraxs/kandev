@@ -2,5 +2,6 @@ export const NOTIFICATION_EVENT_SESSION_TURN_FINISHED = "session.turn_finished";
 export const NOTIFICATION_EVENT_SESSION_CLARIFICATION_REQUESTED = "session.clarification_requested";
 export const NOTIFICATION_EVENT_SYSTEM_UPDATE_AVAILABLE = "system.update_available";
 export const NOTIFICATION_EVENT_OFFICE_INBOX_ITEM = "office.inbox_item";
+export const NOTIFICATION_EVENT_PLAN_FILE_DATE_REACHED = "plan_file.date_reached";
 
 export const DEFAULT_NOTIFICATION_EVENTS = [NOTIFICATION_EVENT_SESSION_CLARIFICATION_REQUESTED];

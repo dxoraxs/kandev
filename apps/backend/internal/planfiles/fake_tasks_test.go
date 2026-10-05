@@ -45,6 +45,8 @@ type fakeTaskSystem struct {
 	reorders   [][]string
 	failCreate map[string]error
 	listCalls  int
+	// onGetTask runs at the start of every GetTask call, before any lock.
+	onGetTask func(id string)
 
 	// blockers maps a task to the tasks it depends on. depCalls logs every
 	// dependency call, so a test can assert that a pass made none.
@@ -155,6 +157,9 @@ func (f *fakeTaskSystem) ListRepositories(_ context.Context, _ string) ([]*taskm
 }
 
 func (f *fakeTaskSystem) GetTask(_ context.Context, id string) (*taskmodels.Task, error) {
+	if f.onGetTask != nil {
+		f.onGetTask(id)
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	t, ok := f.tasks[id]

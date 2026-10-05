@@ -1481,6 +1481,9 @@ func startGatewayAndServe(
 		})
 	}
 	agentSettingsController.SetRuntimeUpdateNotifier(notificationSvc)
+	if services.PlanFiles != nil {
+		services.PlanFiles.SetDateNotifier(notificationSvc)
+	}
 	stopRuntimeUpdates := agentSettingsController.StartRuntimeUpdateBackground(ctx, hostUtilityReady)
 	stopRuntimeUpdatesCleanup := func() error { stopRuntimeUpdates(); return nil }
 	addCleanup(stopRuntimeUpdatesCleanup)

@@ -59,6 +59,13 @@ type Service struct {
 	// clock supplies the current time; nil means time.Now. Read through currentTime.
 	clock func() time.Time
 
+	// dateNotifier receives date wake-ups; nil means they are not announced.
+	dateNotifier DateNotifier
+	// wakeMu guards pendingWakes.
+	wakeMu sync.Mutex
+	// pendingWakes holds the wake-ups of finished passes not yet announced.
+	pendingWakes []wakeNotice
+
 	// workspaceAuthorizer enforces per-user workspace scoping. Nil, or a
 	// context without caller identity, means unscoped: internal callers such
 	// as the poller are allowed.
