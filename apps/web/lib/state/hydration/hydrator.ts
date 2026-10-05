@@ -1,6 +1,6 @@
 import { mapSidebarWorkspaces } from "../slices/ui/sidebar-workspace-state";
 /* eslint-disable max-lines -- Hydration owns the cross-slice merge boundary. */
-import { cardDisplayFromMetadata } from "@/lib/kanban/card-display";
+import { withCardDisplay, withSnapshotCardDisplay } from "./card-display-hydration";
 import type { Draft } from "immer";
 import type { AppState, HydrationState } from "../store";
 import type { KanbanState } from "../slices/kanban/types";
@@ -140,25 +140,6 @@ function seedOrderRevisionsFromSteps(
     draft.kanbanMulti.orderRevisionByStepId,
     steps,
   );
-}
-
-/** Boot-payload tasks carry raw metadata; derive the card hints the same way the WS mapper does. */
-function withCardDisplay<T extends { metadata?: unknown }>(
-  tasks: T[] | undefined,
-): T[] | undefined {
-  return tasks?.map((task) => ({ ...task, cardDisplay: cardDisplayFromMetadata(task.metadata) }));
-}
-
-function withSnapshotCardDisplay(
-  snapshots: NonNullable<HydrationState["kanbanMulti"]>["snapshots"],
-): typeof snapshots {
-  if (!snapshots) return snapshots;
-  return Object.fromEntries(
-    Object.entries(snapshots).map(([id, snapshot]) => [
-      id,
-      snapshot ? { ...snapshot, tasks: withCardDisplay(snapshot.tasks) } : snapshot,
-    ]),
-  ) as typeof snapshots;
 }
 
 /** Hydrate kanban and workspace slices. */

@@ -25,6 +25,7 @@ import {
 import { mergeHydratedQuickChatSessions } from "@/lib/state/slices/ui/quick-chat-sync";
 import type { AgentRuntimeAvailability } from "@/lib/types/agent-runtime";
 import type { HydrationState } from "./store";
+import { withCardDisplay, withSnapshotCardDisplay } from "./hydration/card-display-hydration";
 import { seedSettledSessionBoundaries } from "@/lib/state/slices/session/turn-actions";
 import { migrateSidebarViewDraft, migrateView } from "./slices/ui/ui-slice";
 import { mergeAgentProfileRecentUseState } from "@/lib/agent-profile-recent-use";
@@ -411,6 +412,18 @@ function mergeTaskSessionState(initialState: HydrationState) {
   };
 }
 
+function mergeKanbanState(initialState: HydrationState): DefaultState["kanban"] {
+  const kanban = { ...defaultState.kanban, ...initialState.kanban };
+  const tasks = withCardDisplay(initialState.kanban?.tasks);
+  return tasks ? { ...kanban, tasks } : kanban;
+}
+
+function mergeKanbanMultiState(initialState: HydrationState): DefaultState["kanbanMulti"] {
+  const kanbanMulti = { ...defaultState.kanbanMulti, ...initialState.kanbanMulti };
+  const snapshots = withSnapshotCardDisplay(initialState.kanbanMulti?.snapshots);
+  return snapshots ? { ...kanbanMulti, snapshots } : kanbanMulti;
+}
+
 /**
  * Builds the full default state from the SSR/boot hydration payload, merging
  * per-slice (kanban, turns, settings, ...) so partial payloads never clobber
@@ -425,8 +438,8 @@ export function mergeInitialState(initialState?: HydrationState): DefaultState {
   return {
     ...defaultState,
     ...hydration,
-    kanban: { ...defaultState.kanban, ...initialState.kanban },
-    kanbanMulti: { ...defaultState.kanbanMulti, ...initialState.kanbanMulti },
+    kanban: mergeKanbanState(initialState),
+    kanbanMulti: mergeKanbanMultiState(initialState),
     workflows: { ...defaultState.workflows, ...initialState.workflows },
     workspaceContextRead: {
       ...defaultState.workspaceContextRead,

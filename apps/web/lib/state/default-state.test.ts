@@ -78,3 +78,18 @@ describe("settings agent hydration", () => {
     ]);
   });
 });
+
+describe("card display hydration state", () => {
+  const metadata = { card_display: { executor: { name: "Claude", kind: "agent" } } };
+  const executor = { name: "Claude", kind: "agent" };
+
+  it("derives card hints for boot kanban tasks and workflow snapshots", () => {
+    const state = mergeInitialState({
+      kanban: { tasks: [{ id: "task-1", metadata }] },
+      kanbanMulti: { snapshots: { "workflow-1": { tasks: [{ id: "task-2", metadata }] } } },
+    } as unknown as HydrationState);
+
+    expect(state.kanban.tasks[0]?.cardDisplay).toEqual({ executor });
+    expect(state.kanbanMulti.snapshots["workflow-1"]?.tasks[0]?.cardDisplay).toEqual({ executor });
+  });
+});
