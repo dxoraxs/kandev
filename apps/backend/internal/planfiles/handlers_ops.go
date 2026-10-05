@@ -100,3 +100,18 @@ func (c *Controller) httpCreatePlan(ctx *gin.Context) {
 		ctx.JSON(http.StatusCreated, result)
 	}
 }
+
+// registerWaitingRoutes registers GET /waiting-owner. It spans workspaces, so
+// it takes no workspace parameter.
+func (c *Controller) registerWaitingRoutes(api *gin.RouterGroup) {
+	api.GET("/waiting-owner", c.httpWaitingOwner)
+}
+
+func (c *Controller) httpWaitingOwner(ctx *gin.Context) {
+	result, err := c.service.WaitingOwner(ctx.Request.Context())
+	if err != nil {
+		c.failure(ctx, "failed to list the plans waiting for the owner", err)
+		return
+	}
+	ctx.JSON(http.StatusOK, result)
+}

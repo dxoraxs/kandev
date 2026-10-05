@@ -260,7 +260,7 @@ as warning pills: `Stale`, `Open items`, `Uncommitted`. Same row on phone.
 - [x] [Task 08: Plan dependencies](task-08-dependencies.md)
 - [ ] [Task 09: Progress and card flags](task-09-progress-and-flags.md)
 - [ ] [Task 10: Date wake-up and date sort](task-10-date-wake-up.md)
-- [ ] [Task 11: Waiting for owner page](task-11-waiting-owner-page.md)
+- [x] [Task 11: Waiting for owner page](task-11-waiting-owner-page.md)
 - [ ] [Task 12: E2E, public docs, and promotion](task-12-e2e-and-docs.md)
 
 All work orders are sequential: they share `internal/planfiles`, the store

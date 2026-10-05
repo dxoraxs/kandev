@@ -118,5 +118,16 @@
   "unadaptedCount_one": "{{count}} ficheiro sem estado no quadro",
   "unadaptedCount_other": "{{count}} ficheiros sem estado no quadro",
   "unadaptedTitle": "Ficheiros de plano fora do quadro",
+  "waitingColumnDate": "Data",
+  "waitingColumnExecutor": "Executante",
+  "waitingColumnPlan": "Plano",
+  "waitingColumnRepository": "Repositório",
+  "waitingColumnWorkspace": "Espaço de trabalho",
+  "waitingEmpty": "Não há planos à espera da sua decisão.",
+  "waitingFailed": "Não foi possível carregar: {{names}}",
+  "waitingLoadError": "Não foi possível carregar a lista de planos em espera.",
+  "waitingRetry": "Tentar novamente",
+  "waitingTitle": "À espera do responsável",
+  "waitingTitleCount": "À espera do responsável ({{total}})",
   "wakeOnDate": "Mover os planos para À espera de si quando a data chegar"
 }

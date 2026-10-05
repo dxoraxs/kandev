@@ -136,5 +136,16 @@
   "unadaptedCount_one": "{{count}} файл без статуса доски",
   "unadaptedCount_other": "{{count}} файла без статуса доски",
   "unadaptedTitle": "Файлы планов вне доски",
+  "waitingColumnDate": "Дата",
+  "waitingColumnExecutor": "Исполнитель",
+  "waitingColumnPlan": "План",
+  "waitingColumnRepository": "Репозиторий",
+  "waitingColumnWorkspace": "Рабочее пространство",
+  "waitingEmpty": "Нет планов, которые ждут вас.",
+  "waitingFailed": "Не удалось загрузить: {{names}}",
+  "waitingLoadError": "Не удалось загрузить список ожидающих планов.",
+  "waitingRetry": "Повторить",
+  "waitingTitle": "Ждут владельца",
+  "waitingTitleCount": "Ждут владельца ({{total}})",
   "wakeOnDate": "Переносить планы в «Ждёт вас», когда наступает их дата"
 }

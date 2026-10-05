@@ -11,6 +11,7 @@ import {
   planDecisionErrorCode,
   getPlanFilesConfig,
   getUnadaptedPlanFiles,
+  getWaitingOwner,
   putPlanFilesConfig,
   syncPlanFilesNow,
 } from "./plan-files-api";
@@ -308,5 +309,55 @@ describe("plan-files-api create", () => {
     expect(planCreateErrorCode(await create())).toBe("repository_not_found");
     expect(planCreateErrorCode(await create())).toBeNull();
     expect(planCreateErrorCode(new Error("x"))).toBeNull();
+  });
+});
+
+describe("plan-files-api waiting owner", () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  it("getWaitingOwner reads the cross-workspace list without a workspace parameter", async () => {
+    const item = {
+      workspace_id: "ws-1",
+      workspace_name: "kandev",
+      task_id: "t-1",
+      title: "Plan",
+      repository_name: "kandev",
+      rel_path: "docs/plans/a.md",
+      date: "2026-10-05",
+      executor: "Claude",
+      priority: "medium",
+    };
+    const fetchSpy = vi.fn().mockResolvedValueOnce(
+      json({
+        items: [item],
+        failed_workspaces: [{ workspace_id: "ws-2", workspace_name: "dm" }],
+      }),
+    );
+    global.fetch = fetchSpy as unknown as typeof fetch;
+    const res = await getWaitingOwner();
+    const [url] = fetchSpy.mock.calls[0]! as [string, RequestInit];
+    expect(url).toContain("/api/v1/plan-files/waiting-owner");
+    expect(url).not.toContain("workspace_id");
+    expect(res.items).toEqual([item]);
+    expect(res.failed_workspaces).toEqual([{ workspace_id: "ws-2", workspace_name: "dm" }]);
+  });
+
+  it("getWaitingOwner resolves empty lists for null fields", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        json({ items: null, failed_workspaces: null }),
+      ) as unknown as typeof fetch;
+    expect(await getWaitingOwner()).toEqual({ items: [], failed_workspaces: [] });
+  });
+
+  it("getWaitingOwner rejects with an ApiError on a server failure", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(json({ error: "boom" }, 500)) as unknown as typeof fetch;
+    await expect(getWaitingOwner()).rejects.toBeInstanceOf(ApiError);
   });
 });

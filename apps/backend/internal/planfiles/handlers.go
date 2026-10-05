@@ -34,7 +34,8 @@ type Controller struct {
 
 // RegisterRoutes wires the plan-file HTTP endpoints. Every route takes the
 // workspace as the workspace_id query parameter, except the task decision,
-// which takes it from the task's row.
+// which takes it from the task's row, and the waiting-owner list, which spans
+// workspaces.
 func RegisterRoutes(router *gin.Engine, svc *Service, log *logger.Logger) {
 	ctrl := &Controller{service: svc, logger: log}
 	api := router.Group("/api/v1/plan-files")
@@ -46,6 +47,7 @@ func RegisterRoutes(router *gin.Engine, svc *Service, log *logger.Logger) {
 	ctrl.registerDecisionRoutes(api)
 	ctrl.registerGitRoutes(api)
 	ctrl.registerCreateRoutes(api)
+	ctrl.registerWaitingRoutes(api)
 }
 
 // registerSyncRoutes registers POST /sync, the "Sync now" action.

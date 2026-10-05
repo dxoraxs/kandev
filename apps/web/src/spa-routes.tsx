@@ -61,8 +61,10 @@ import type {
 import { TaskDetailRoute } from "./task-detail-route";
 import { CanvasRoute } from "./canvas-route";
 import { NeedsYouInboxRoute } from "./needs-you-inbox-route";
+import { PlansWaitingRoute } from "./plans-waiting-route";
 import { AuthRouteRedirect, RouteLoading } from "./spa-route-chrome";
 import { NEEDS_YOU_INBOX_HREF } from "@/lib/navigation/needs-you-inbox-destination";
+import { PLANS_WAITING_HREF } from "@/lib/navigation/plans-waiting-destination";
 import { generateUUID } from "@/lib/utils";
 
 const OfficeRoutes = lazy(() =>
@@ -109,6 +111,7 @@ type SpaRoute =
   | { kind: "canvas"; canvasId: string }
   | { kind: "canvasSettings"; workspaceId: string }
   | { kind: "needsYouInbox" }
+  | { kind: "plans-waiting" }
   | { kind: "settings"; pathname: string }
   | { kind: "office"; pathname: string }
   | { kind: "plugin"; path: string }
@@ -124,6 +127,7 @@ type DataBackedSpaRoute = Exclude<
       | "canvas"
       | "canvasSettings"
       | "needsYouInbox"
+      | "plans-waiting"
       | "settings"
       | "office"
       | "login"
@@ -143,6 +147,7 @@ type RouteDataState = {
 type SpaRouteOptions = {
   canvasesEnabled?: boolean;
   needsYouInboxEnabled?: boolean;
+  plansWaitingEnabled?: boolean;
 };
 
 export function resolveSpaRoute(
@@ -157,6 +162,7 @@ export function resolveSpaRoute(
     resolveTopLevelRoute(normalized, searchParams) ??
     resolveCanvasRoute(normalized, options.canvasesEnabled === true) ??
     resolveNeedsYouInboxRoute(normalized, options.needsYouInboxEnabled === true) ??
+    resolvePlansWaitingRoute(normalized, options.plansWaitingEnabled === true) ??
     resolveNestedRoute(normalized) ??
     resolvePluginRoute(normalized) ??
     resolveKanbanRoute(searchParams)
@@ -168,6 +174,13 @@ export function resolveSpaRoute(
 function resolveNeedsYouInboxRoute(normalized: string, enabled: boolean): SpaRoute | null {
   if (!enabled) return null;
   return normalized === NEEDS_YOU_INBOX_HREF ? { kind: "needsYouInbox" } : null;
+}
+
+// Same gating as the Needs You inbox: a disabled flag falls through to the
+// kanban catch-all.
+function resolvePlansWaitingRoute(normalized: string, enabled: boolean): SpaRoute | null {
+  if (!enabled) return null;
+  return normalized === PLANS_WAITING_HREF ? { kind: "plans-waiting" } : null;
 }
 
 function resolveCanvasRoute(normalized: string, canvasesEnabled: boolean): SpaRoute | null {
@@ -302,7 +315,12 @@ export function SpaRoutes({ routeData }: { routeData?: BootRouteData }) {
   const searchParams = useSearchParams();
   const canvasesEnabled = useFeature("canvases");
   const needsYouInboxEnabled = useFeature("needsYouInbox");
-  const route = resolveSpaRoute(pathname, searchParams, { canvasesEnabled, needsYouInboxEnabled });
+  const plansWaitingEnabled = useFeature("planFiles");
+  const route = resolveSpaRoute(pathname, searchParams, {
+    canvasesEnabled,
+    needsYouInboxEnabled,
+    plansWaitingEnabled,
+  });
 
   // Reaching /login, /setup, or /invite here means the pre-auth gate in
   // main.tsx already decided the app shell should render (authenticated, or
@@ -315,6 +333,9 @@ export function SpaRoutes({ routeData }: { routeData?: BootRouteData }) {
   }
   if (route.kind === "needsYouInbox") {
     return <NeedsYouInboxRoute enabled={needsYouInboxEnabled} />;
+  }
+  if (route.kind === "plans-waiting") {
+    return <PlansWaitingRoute enabled={plansWaitingEnabled} />;
   }
   if (route.kind === "plugin") {
     return <PluginRoute path={route.path} />;

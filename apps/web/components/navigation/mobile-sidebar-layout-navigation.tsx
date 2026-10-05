@@ -30,6 +30,7 @@ import {
 } from "@/lib/state/slices/needs-you-inbox/selectors";
 import { selectOfficeInboxCount } from "@/lib/state/slices/office/selectors";
 import { NEEDS_YOU_INBOX_HREF } from "@/lib/navigation/needs-you-inbox-destination";
+import { PlansWaitingMobileRow } from "@/components/plans-waiting/plans-waiting-nav";
 import { DestinationRows } from "./destination-rows";
 import { MobileAutomationsSection } from "./mobile-automations-section";
 import { MobileCanvasesSection } from "./mobile-canvases-section";
@@ -149,7 +150,7 @@ function MobileNewTaskRow({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-function MobileRequiredRows({
+export function MobileRequiredRows({
   onNavigate,
   omitSections,
   omitDestinations,
@@ -163,6 +164,7 @@ function MobileRequiredRows({
   const workspaceId = useAppStore((state) => state.workspaces.activeId);
   const mode = useOfficeModeState();
   const needsYouEnabled = useFeature("needsYouInbox");
+  const plansWaitingEnabled = useFeature("planFiles");
   const needsYouCount = useAppStore(selectNeedsYouInboxCount);
   const needsYouHasMore = useAppStore(selectNeedsYouInboxHasMore);
   const officeInboxCount = useAppStore(selectOfficeInboxCount);
@@ -172,7 +174,12 @@ function MobileRequiredRows({
       (destination.id === "tasks" || destination.id === "threads") &&
       !omitDestinations.includes(destination.id),
   );
-  if (fixedDestinations.length === 0 && mode !== "office" && !(needsYouEnabled && workspaceId))
+  if (
+    fixedDestinations.length === 0 &&
+    mode !== "office" &&
+    !plansWaitingEnabled &&
+    !(needsYouEnabled && workspaceId)
+  )
     return null;
   return (
     <div className="flex flex-col gap-3" data-testid="mobile-sidebar-fixed-navigation">
@@ -211,6 +218,7 @@ function MobileRequiredRows({
           </Link>
         </Button>
       )}
+      <PlansWaitingMobileRow onNavigate={onNavigate} />
     </div>
   );
 }

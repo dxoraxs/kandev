@@ -1,7 +1,7 @@
 ---
 id: "11-waiting-owner-page"
 title: "Waiting for owner page"
-status: pending
+status: done
 wave: 11
 depends_on: ["04-owner-decisions"]
 plan: "plan.md"
@@ -95,4 +95,23 @@ Task 04
 
 ## Results
 
-Pending.
+The page lists plans from the task metadata `card_display.date` and `card_display.executor.name`. Until the sync pass writes those facts (work order 10 and Unified plan sync task 01) the date and executor columns stay empty; the page reads them defensively and does not depend on them. The route is `/plans/waiting` (kind `plans-waiting`), gated by `features.planFiles`. A workspace whose reads fail is returned in `failed_workspaces`, and an inaccessible, disabled, or unconfigured workspace contributes nothing and is not reported.
+
+Verification:
+
+```text
+(cd apps/backend && go test ./internal/planfiles/... -count=1 -race)
+ok  	github.com/kandev/kandev/internal/planfiles/scan	1.324s
+make -C apps/backend lint
+0 issues.
+(cd apps && pnpm --filter @kandev/web test -- app/plans-waiting/plans-waiting-page-client.test.tsx)
+Tests  10 passed (10)
+(cd apps && pnpm --filter @kandev/web test -- src/spa-routes.test.ts)
+Tests  4 passed (4)
+(cd apps/web && pnpm run typecheck)
+exit 0
+(cd apps/web && pnpm run i18n:check)
+no non-JSX copy, exit 0
+(cd apps && pnpm --filter @kandev/web lint)
+exit 0
+```

@@ -118,5 +118,16 @@
   "unadaptedCount_one": "{{count}} 个文件没有看板状态",
   "unadaptedCount_other": "{{count}} 个文件没有看板状态",
   "unadaptedTitle": "不在看板上的计划文件",
+  "waitingColumnDate": "日期",
+  "waitingColumnExecutor": "执行者",
+  "waitingColumnPlan": "计划",
+  "waitingColumnRepository": "仓库",
+  "waitingColumnWorkspace": "工作区",
+  "waitingEmpty": "没有等待您决定的计划。",
+  "waitingFailed": "无法加载：{{names}}",
+  "waitingLoadError": "无法加载等待中的计划列表。",
+  "waitingRetry": "重试",
+  "waitingTitle": "等待负责人",
+  "waitingTitleCount": "等待负责人（{{total}}）",
   "wakeOnDate": "日期到达时将计划移到“等待你处理”"
 }

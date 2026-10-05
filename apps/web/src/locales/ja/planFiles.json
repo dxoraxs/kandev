@@ -118,5 +118,16 @@
   "unadaptedCount_one": "ボードのステータスがないファイル {{count}} 件",
   "unadaptedCount_other": "ボードのステータスがないファイル {{count}} 件",
   "unadaptedTitle": "ボードにないプランファイル",
+  "waitingColumnDate": "日付",
+  "waitingColumnExecutor": "実行者",
+  "waitingColumnPlan": "プラン",
+  "waitingColumnRepository": "リポジトリ",
+  "waitingColumnWorkspace": "ワークスペース",
+  "waitingEmpty": "あなたの判断を待っているプランはありません。",
+  "waitingFailed": "読み込めませんでした: {{names}}",
+  "waitingLoadError": "判断待ちプランの一覧を読み込めませんでした。",
+  "waitingRetry": "再試行",
+  "waitingTitle": "オーナー待ち",
+  "waitingTitleCount": "オーナー待ち ({{total}})",
   "wakeOnDate": "日付になったプランを「あなたの対応待ち」に移動する"
 }

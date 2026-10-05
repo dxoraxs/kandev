@@ -118,5 +118,16 @@
   "unadaptedCount_one": "{{count}} 個檔案沒有看板狀態",
   "unadaptedCount_other": "{{count}} 個檔案沒有看板狀態",
   "unadaptedTitle": "不在看板上的計劃檔案",
+  "waitingColumnDate": "日期",
+  "waitingColumnExecutor": "執行者",
+  "waitingColumnPlan": "計劃",
+  "waitingColumnRepository": "儲存庫",
+  "waitingColumnWorkspace": "工作區",
+  "waitingEmpty": "沒有等待您決定的計劃。",
+  "waitingFailed": "無法載入：{{names}}",
+  "waitingLoadError": "無法載入等待中的計劃列表。",
+  "waitingRetry": "重試",
+  "waitingTitle": "等待負責人",
+  "waitingTitleCount": "等待負責人（{{total}}）",
   "wakeOnDate": "日期到達時將計劃移到「等待你處理」"
 }

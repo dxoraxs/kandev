@@ -52,8 +52,9 @@ type Service struct {
 	// passLocks serializes sync passes and board write-backs per workspace.
 	passLocks sync.Map // workspaceID -> *sync.Mutex
 
-	tasks    TaskAccess
-	archiver TaskArchiver
+	tasks      TaskAccess
+	archiver   TaskArchiver
+	workspaces WorkspaceLister
 
 	// clock supplies the current time to owner decisions; nil means time.Now.
 	clock func() time.Time

@@ -2095,4 +2095,8 @@ export const i18nGuardFiles = [
   "components/kanban/new-plan-dialog.tsx",
   "components/kanban/new-plan-form.tsx",
   "components/kanban/new-plan-action.tsx",
+  "app/plans-waiting/plans-waiting-page-client.tsx",
+  "components/plans-waiting/waiting-owner-table.tsx",
+  "components/plans-waiting/waiting-owner-list.tsx",
+  "components/plans-waiting/plans-waiting-nav.tsx",
 ];

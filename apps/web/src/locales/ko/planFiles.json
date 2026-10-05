@@ -118,5 +118,16 @@
   "unadaptedCount_one": "보드 상태가 없는 파일 {{count}}개",
   "unadaptedCount_other": "보드 상태가 없는 파일 {{count}}개",
   "unadaptedTitle": "보드에 없는 플랜 파일",
+  "waitingColumnDate": "날짜",
+  "waitingColumnExecutor": "실행자",
+  "waitingColumnPlan": "계획",
+  "waitingColumnRepository": "저장소",
+  "waitingColumnWorkspace": "워크스페이스",
+  "waitingEmpty": "당신의 결정을 기다리는 계획이 없습니다.",
+  "waitingFailed": "불러오지 못함: {{names}}",
+  "waitingLoadError": "대기 중인 계획 목록을 불러오지 못했습니다.",
+  "waitingRetry": "다시 시도",
+  "waitingTitle": "소유자 대기 중",
+  "waitingTitleCount": "소유자 대기 중 ({{total}})",
   "wakeOnDate": "날짜가 되면 계획을 '내 응답 대기'로 이동"
 }

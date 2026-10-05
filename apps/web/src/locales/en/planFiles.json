@@ -118,5 +118,16 @@
   "unadaptedCount_one": "{{count}} file without board status",
   "unadaptedCount_other": "{{count}} files without board status",
   "unadaptedTitle": "Plan files not on the board",
+  "waitingColumnDate": "Date",
+  "waitingColumnExecutor": "Executor",
+  "waitingColumnPlan": "Plan",
+  "waitingColumnRepository": "Repository",
+  "waitingColumnWorkspace": "Workspace",
+  "waitingEmpty": "No plans are waiting for you.",
+  "waitingFailed": "Could not load: {{names}}",
+  "waitingLoadError": "The list of waiting plans could not be loaded.",
+  "waitingRetry": "Try again",
+  "waitingTitle": "Waiting for owner",
+  "waitingTitleCount": "Waiting for owner ({{total}})",
   "wakeOnDate": "Move plans to Waiting for you when their date arrives"
 }

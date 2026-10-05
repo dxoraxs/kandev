@@ -336,3 +336,42 @@ export function planCreateErrorCode(err: unknown): PlanCreateErrorCode | null {
     ? (code as PlanCreateErrorCode)
     : null;
 }
+
+export type WaitingOwnerItem = {
+  workspace_id: string;
+  workspace_name: string;
+  task_id: string;
+  title: string;
+  repository_name: string;
+  rel_path: string;
+  /** YYYY-MM-DD, empty when the plan has no valid date. */
+  date: string;
+  /** Empty when the plan names no executor. */
+  executor: string;
+  priority: string;
+};
+
+export type WaitingOwnerFailedWorkspace = {
+  workspace_id: string;
+  workspace_name: string;
+};
+
+export type WaitingOwnerResult = {
+  items: WaitingOwnerItem[];
+  failed_workspaces: WaitingOwnerFailedWorkspace[];
+};
+
+/**
+ * Plans that wait for the owner in every workspace the caller can access,
+ * ordered by date with undated plans last. A workspace that could not be read
+ * is named in `failed_workspaces` and never hides the others.
+ */
+export async function getWaitingOwner(
+  options: ApiRequestOptions = {},
+): Promise<WaitingOwnerResult> {
+  const res = await fetchJson<{
+    items: WaitingOwnerItem[] | null;
+    failed_workspaces: WaitingOwnerFailedWorkspace[] | null;
+  }>("/api/v1/plan-files/waiting-owner", options);
+  return { items: res.items ?? [], failed_workspaces: res.failed_workspaces ?? [] };
+}
